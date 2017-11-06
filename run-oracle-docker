@@ -1,0 +1,3 @@
+#!/bin/bash
+# Create 
+docker run --rm -p 1521:1521 -p 8080:8080 --env SCHEMAS=PRU  -v "$(pwd)"/docker:/u01/scripts/batch --name ora carloscastillo/rgt-oracle-xe-11g

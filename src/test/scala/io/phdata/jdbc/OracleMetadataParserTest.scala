@@ -1,11 +1,14 @@
 package io.phdata.jdbc
 import java.sql.{JDBCType, ResultSet, SQLType}
 
+import io.phdata.jdbc.config.Configuration
+import oracle.sql
 import io.phdata.jdbc.domain.{Column, Table}
+import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
 import org.scalatest._
 
 class OracleMetadataParserTest extends FunSuite {
-  val config = ParserMain.parseConfig("application.conf")
+  val config = Configuration.parse("application.conf")
 
   val connection = DatabaseMetadataParser.getConnection(config).get
 
@@ -19,17 +22,22 @@ class OracleMetadataParserTest extends FunSuite {
     assert(results.length == 7)
   }
 
-  test("parse metadata") {
+  test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    val definitions: Set[Table] = parser.getTableDefinitions("HR").get
+    val definitions: Set[Table] = parser.getTablesMetadata("HR").get
+    definitions.foreach(println)
     assert(definitions.size == 7)
+  }
 
-    val regionTable = definitions.filter(_.name == "REGIONS").head
+  test("parse single table metadata") {
+    val parser = new OracleMetadataParser(connection)
+
+    val result = parser.getTableMetadata("HR", "REGIONS")
     val expected = Table("REGIONS",
-                         Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1)),
-                         Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2)))
+      Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
+      Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)))
 
-    assert(expected == regionTable)
+    assert(expected == result)
   }
 
   protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {

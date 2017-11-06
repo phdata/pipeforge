@@ -1,6 +1,6 @@
-package io.phdata.jdbc
+package io.phdata.jdbc.parsing
 
-import java.sql.{Connection, Statement}
+import java.sql.Connection
 
 import com.typesafe.scalalogging.LazyLogging
 

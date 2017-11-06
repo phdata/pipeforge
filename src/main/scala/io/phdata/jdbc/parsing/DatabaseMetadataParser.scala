@@ -1,9 +1,10 @@
-package io.phdata.jdbc
+package io.phdata.jdbc.parsing
 
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.domain.{Column, Configuration, Table}
+import io.phdata.jdbc.config.Configuration
+import io.phdata.jdbc.domain.{Column, Table}
 
 import scala.util.{Failure, Success, Try}
 
@@ -19,13 +20,10 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def getTablesStatement(schema: String, table: String): String
 
-  def getTableDefinitions(schema: String): Try[Set[Table]] = {
+  def getTablesMetadata(schema: String): Try[Set[Table]] = {
     try {
       val tables = listTables(schema).map { table =>
-        val allColumns = getColumnDefinitions(schema, table)
-        val pks = primaryKeys(schema, table, allColumns)
-        val columns = allColumns.diff(pks)
-        Table(table, pks, columns)
+        getTableMetadata(schema, table)
       }
       Success(tables)
     } catch {
@@ -35,6 +33,13 @@ trait DatabaseMetadataParser extends LazyLogging {
     }
   }
 
+  def getTableMetadata(schema: String, table: String) = {
+    val allColumns = getColumnDefinitions(schema, table)
+    val pks = primaryKeys(schema, table, allColumns)
+    val columns = allColumns.diff(pks)
+    Table(table, pks, columns)
+  }
+
   def listTables(schema: String): Set[String] = {
     val stmt: Statement = newStatement
     val query = listTablesStatement(schema)
@@ -42,24 +47,32 @@ trait DatabaseMetadataParser extends LazyLogging {
     results(stmt.executeQuery(query))(_.getString(1)).toSet
   }
 
-  protected def getColumnDefinitions(schema: String, table: String): Set[Column] = {
+  protected def getColumnDefinitions(schema: String,
+                                     table: String): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
+
     val stmt: Statement = newStatement
     val query = getTablesStatement(schema, table)
     logger.debug("Executing query: {}", query)
-    val metaData = results(stmt.executeQuery(query))(_.getMetaData).toList.head
+    val metaData: ResultSetMetaData =
+      results(stmt.executeQuery(query))(_.getMetaData).toList.head
 
     (1 to metaData.getColumnCount).map { i =>
-      Column(metaData.getColumnName(i),
-             JDBCType.valueOf(metaData.getColumnType(i)),
-             asBoolean(metaData.isNullable(i)),
-             i)
+      Column(
+        metaData.getColumnName(i),
+        JDBCType.valueOf(metaData.getColumnType(i)),
+        asBoolean(metaData.isNullable(i)),
+        i,
+        metaData.getPrecision(i), // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSetMetaData.html
+        metaData.getScale(i)
+      )
     }.toSet
   }
 
   protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
     new Iterator[T] {
       def hasNext = resultSet.next()
+
       def next() = f(resultSet)
     }
   }
@@ -68,8 +81,8 @@ trait DatabaseMetadataParser extends LazyLogging {
                             table: String,
                             columns: Set[Column]): Set[Column] = {
     logger.trace("Getting primary keys for schema: {}, table: {}",
-                 schema,
-                 table)
+      schema,
+      table)
     val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     val pks = results(rs) { record =>
       record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
@@ -81,9 +94,11 @@ trait DatabaseMetadataParser extends LazyLogging {
           case Some(column) =>
             Some(
               Column(column.name,
-                     column.dataType,
-                     column.nullable,
-                     column.index))
+                column.dataType,
+                column.nullable,
+                column.index,
+                column.precision,
+                column.scale))
           case None => None
         }
     }.toSet
@@ -99,7 +114,7 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.databaseType.toLowerCase match {
           case "mysql" =>
             new MySQLMetadataParser(connection)
-              .getTableDefinitions(configuration.schema)
+              .getTablesMetadata(configuration.schema)
           case _ =>
             Failure(new Exception(
               s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
@@ -113,7 +128,7 @@ object DatabaseMetadataParser extends LazyLogging {
   def getConnection(configuration: Configuration) =
     Try(
       DriverManager.getConnection(configuration.jdbcUrl,
-                                  configuration.username,
-                                  configuration.password))
+        configuration.username,
+        configuration.password))
 
 }

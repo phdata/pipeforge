@@ -1,4 +1,4 @@
-package io.phdata.jdbc
+package io.phdata.jdbc.parsing
 
 import java.sql._
 

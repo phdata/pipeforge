@@ -9,8 +9,6 @@ import io.phdata.jdbc.parsing.DatabaseMetadataParser
 import io.phdata.jdbc.pipewrench.TableBuilder
 import io.phdata.jdbc.util.YamlWrapper
 
-import scala.util.{Failure, Success}
-
 /**
   * Query a source database via JDBC and output generated Pipewrench config
   * (`tables.yml`) for all tables in a given schema.

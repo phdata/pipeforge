@@ -19,7 +19,8 @@ object TableBuilder {
       "split_by_colummn" -> getSplitByColumn(table),
       "destination" ->
         Map("name" -> table.name.toLowerCase),
-      "columns" -> ColumnBuilder.buildColumns(table.columns)
+      "columns" -> ColumnBuilder.buildColumns(table.columns),
+      "primary_keys" -> table.primaryKeys.toList
     )
   }
 

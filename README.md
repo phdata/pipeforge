@@ -1,5 +1,15 @@
 # JDBC Metadata Parser
 
+## Compiling the Project
+
+In the project root dir
+
+```
+$ sbt assembly
+```
+
+This will create an uber jar that is used by the `pipeforge` command.
+The folder `bin` can then be added to your PATH
 ## Configuration
 The application takes no parametes and runs only off of configuration files.
 Configuration templates can be found in ./conf.

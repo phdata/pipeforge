@@ -20,7 +20,7 @@ object TableBuilder {
       "destination" ->
         Map("name" -> table.name.toLowerCase),
       "columns" -> ColumnBuilder.buildColumns(table.columns),
-      "primary_keys" -> table.primaryKeys.toList
+      "primary_keys" -> table.primaryKeys.toList.map(_.name)
     )
   }
 

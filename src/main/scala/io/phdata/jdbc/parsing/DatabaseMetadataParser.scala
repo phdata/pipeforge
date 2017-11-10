@@ -3,8 +3,9 @@ package io.phdata.jdbc.parsing
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.Configuration
+import io.phdata.jdbc.config.DatabaseConf
 import io.phdata.jdbc.domain.{Column, Table}
+import oracle.jdbc.driver.OracleConnection
 
 import scala.util.{Failure, Success, Try}
 
@@ -51,16 +52,18 @@ trait DatabaseMetadataParser extends LazyLogging {
                                      table: String): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
+    val map = connection.asInstanceOf[OracleConnection].getTypeMap
+
     val stmt: Statement = newStatement
     val query = getTablesStatement(schema, table)
     logger.debug("Executing query: {}", query)
     val metaData: ResultSetMetaData =
-      results(stmt.executeQuery(query))(_.getMetaData).toList.head
-
+      results(stmt.executeQuery(query))(_.getMetaData).toList.head // _.getOracleObject
+    val oracleM = metaData.asInstanceOf[oracle.jdbc.OracleResultSetMetaData]
     (1 to metaData.getColumnCount).map { i =>
       Column(
         metaData.getColumnName(i),
-        JDBCType.valueOf(metaData.getColumnType(i)),
+        JDBCType.valueOf(oracleM.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,
         metaData.getPrecision(i), // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSetMetaData.html
@@ -106,7 +109,7 @@ trait DatabaseMetadataParser extends LazyLogging {
 }
 
 object DatabaseMetadataParser extends LazyLogging {
-  def parse(configuration: Configuration): Try[Set[Table]] = {
+  def parse(configuration: DatabaseConf): Try[Set[Table]] = {
     logger.info("Extracting metadata information: {}", configuration)
 
     getConnection(configuration) match {
@@ -114,6 +117,9 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.databaseType.toLowerCase match {
           case "mysql" =>
             new MySQLMetadataParser(connection)
+              .getTablesMetadata(configuration.schema)
+          case "oracle" =>
+            new OracleMetadataParser(connection)
               .getTablesMetadata(configuration.schema)
           case _ =>
             Failure(new Exception(
@@ -125,7 +131,7 @@ object DatabaseMetadataParser extends LazyLogging {
     }
   }
 
-  def getConnection(configuration: Configuration) =
+  def getConnection(configuration: DatabaseConf) =
     Try(
       DriverManager.getConnection(configuration.jdbcUrl,
         configuration.username,

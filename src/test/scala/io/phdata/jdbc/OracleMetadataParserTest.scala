@@ -1,14 +1,14 @@
 package io.phdata.jdbc
-import java.sql.{JDBCType, ResultSet, SQLType}
 
-import io.phdata.jdbc.config.Configuration
-import oracle.sql
+import java.sql.{JDBCType, ResultSet}
+
+import io.phdata.jdbc.config.DatabaseConf
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
 import org.scalatest._
 
 class OracleMetadataParserTest extends FunSuite {
-  val config = Configuration.parse("application.conf")
+  val config = DatabaseConf.parse("source-database.conf")
 
   val connection = DatabaseMetadataParser.getConnection(config).get
 
@@ -18,7 +18,6 @@ class OracleMetadataParserTest extends FunSuite {
       "SELECT owner, table_name FROM ALL_TABLES where owner = 'HR'")
     val results =
       getResults(rs)(x => x.getString(1) + "." + x.getString(2)).toList
-    results.foreach(println)
     assert(results.length == 7)
   }
 
@@ -33,9 +32,10 @@ class OracleMetadataParserTest extends FunSuite {
     val parser = new OracleMetadataParser(connection)
 
     val result = parser.getTableMetadata("HR", "REGIONS")
-    val expected = Table("REGIONS",
-      Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
-      Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)))
+    val expected =
+      Table("REGIONS",
+            Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
+            Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)))
 
     assert(expected == result)
   }
@@ -43,6 +43,7 @@ class OracleMetadataParserTest extends FunSuite {
   protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
     new Iterator[T] {
       def hasNext = resultSet.next()
+
       def next() = f(resultSet)
     }
   }

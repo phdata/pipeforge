@@ -1,0 +1,2 @@
+#!/bin/bash
+java -cp target/scala-2.12/Pipeforge-assembly-0.1-SNAPSHOT.jar:. io.phdata.jdbc.PipewrenchConfigBuilder

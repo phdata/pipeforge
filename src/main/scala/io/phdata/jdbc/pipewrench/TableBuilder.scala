@@ -8,7 +8,7 @@ object TableBuilder {
   def buildTablesSection(tableMetadata: Set[Table],
                          initialData: Map[String, Object]) = {
     val sorted = tableMetadata.toList.sortBy(_.name)
-    sorted.map(buildTable)
+    sorted.map(t => buildTable(t) ++ initialData)
   }
 
   def buildTable(table: Table) = {
@@ -32,6 +32,8 @@ object TableBuilder {
       )
       .orElse(
         table.columns.toList.headOption
-      ).get
+      )
+      .get
+      .name
   }
 }

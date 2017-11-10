@@ -23,11 +23,13 @@ object PipewrenchConfigBuilder extends LazyLogging {
 
     val pipewrenchConf = PipewrenchConf.parse("pipewrench.conf")
 
-    val initialConfData = YamlWrapper.read(pipewrenchConf.defaultSourceConfPath)
+    val initialConfData =
+      YamlWrapper.read(pipewrenchConf.defaultSourceConfPath)
     val initialTableData =
       YamlWrapper.read(pipewrenchConf.defaultTablesConfPath)
 
-    val generatedConfig = buildPipewrenchConfig(initialConfData, initialTableData, databaseMetadata)
+    val generatedConfig =
+      buildPipewrenchConfig(initialConfData, initialTableData, databaseMetadata)
 
     YamlWrapper.write(generatedConfig, pipewrenchConf.outFile)
   }

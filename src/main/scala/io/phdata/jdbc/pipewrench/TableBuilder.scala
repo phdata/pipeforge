@@ -12,6 +12,8 @@ object TableBuilder {
   }
 
   def buildTable(table: Table) = {
+    val allColumns = table.primaryKeys.toSeq ++ table.columns.toSeq
+
     Map(
       "id" -> table.name,
       "source" ->
@@ -19,7 +21,7 @@ object TableBuilder {
       "split_by_colummn" -> getSplitByColumn(table),
       "destination" ->
         Map("name" -> table.name.toLowerCase),
-      "columns" -> ColumnBuilder.buildColumns(table.columns),
+      "columns" -> ColumnBuilder.buildColumns(allColumns),
       "primary_keys" -> table.primaryKeys.toList.map(_.name)
     )
   }

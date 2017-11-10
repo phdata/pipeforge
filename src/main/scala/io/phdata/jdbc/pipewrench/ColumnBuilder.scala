@@ -5,7 +5,7 @@ import java.sql.JDBCType
 import io.phdata.jdbc.domain.Column
 
 object ColumnBuilder {
-  def buildColumns(columns: Set[Column]) = {
+  def buildColumns(columns: Seq[Column]) = {
     val sorted = columns.toList.sortBy(_.index)
     sorted.map(buildColumn)
   }

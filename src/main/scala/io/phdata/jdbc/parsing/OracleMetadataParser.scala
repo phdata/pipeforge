@@ -13,7 +13,7 @@ class OracleMetadataParser(_connection: Connection)
 
   def connection = _connection
 
-  override def getTablesStatement(schema: String, table: String) = s"SELECT * FROM ${table} WHERE ROWNUM = 1"
+  override def getTablesStatement(schema: String, table: String) = s"SELECT * FROM ${schema}.${table} WHERE ROWNUM = 1"
 
   override def listTablesStatement(schema: String) = s"SELECT table_name FROM ALL_TABLES WHERE owner = '$schema'"
 }

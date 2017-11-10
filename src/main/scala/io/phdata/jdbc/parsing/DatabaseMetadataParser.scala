@@ -21,24 +21,19 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def getTablesStatement(schema: String, table: String): String
 
-  def getTablesMetadata(schema: String): Try[Set[Table]] = {
-    try {
-      val tables = listTables(schema).map { table =>
-        getTableMetadata(schema, table)
-      }
-      Success(tables)
-    } catch {
-      case e: Exception =>
-        logger.error(e.getMessage)
-        Failure(e)
+  def getTablesMetadata(schema: String): Set[Try[Table]] = {
+    val tables = listTables(schema)
+
+    tables.map { t =>
+      Try(getTableMetadata(schema, t))
     }
   }
 
-  def getTableMetadata(schema: String, table: String) = {
-    val allColumns = getColumnDefinitions(schema, table)
-    val pks = primaryKeys(schema, table, allColumns)
-    val columns = allColumns.diff(pks)
-    Table(table, pks, columns)
+  def getTableMetadata(schema: String, table: String): Table = {
+      val allColumns = getColumnDefinitions(schema, table)
+      val pks = primaryKeys(schema, table, allColumns)
+      val columns = allColumns.diff(pks)
+      Table(table, pks, columns)
   }
 
   def listTables(schema: String): Set[String] = {
@@ -109,10 +104,10 @@ trait DatabaseMetadataParser extends LazyLogging {
 }
 
 object DatabaseMetadataParser extends LazyLogging {
-  def parse(configuration: DatabaseConf): Try[Set[Table]] = {
+  def parse(configuration: DatabaseConf): Set[Table] = {
     logger.info("Extracting metadata information: {}", configuration)
 
-    getConnection(configuration) match {
+    val results = getConnection(configuration) match {
       case Success(connection) =>
         configuration.databaseType.toLowerCase match {
           case "mysql" =>
@@ -122,13 +117,20 @@ object DatabaseMetadataParser extends LazyLogging {
             new OracleMetadataParser(connection)
               .getTablesMetadata(configuration.schema)
           case _ =>
-            Failure(new Exception(
-              s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
+            Set(Failure(new Exception(
+              s"Metadata parser for database type: ${configuration.databaseType} has not been configured")))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: $configuration", e)
-        Failure(e)
+        Set(Failure(e))
     }
+
+    results.flatMap(x => x match {
+      case Success(v) => Some(v)
+      case Failure(e) =>
+        logger.warn(s"${e.getMessage} ${e.getStackTrace}")
+        None
+    })
   }
 
   def getConnection(configuration: DatabaseConf) =
@@ -138,3 +140,5 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.password))
 
 }
+
+

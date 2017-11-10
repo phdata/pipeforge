@@ -23,7 +23,7 @@ class OracleMetadataParserTest extends FunSuite {
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    val definitions: Set[Table] = parser.getTablesMetadata("HR").get
+    val definitions = parser.getTablesMetadata("HR")
     definitions.foreach(println)
     assert(definitions.size == 7)
   }

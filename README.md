@@ -24,7 +24,7 @@ Conf files must be placed in the directory the application is run from
 First compile the project
 ```
 $ sbt assembly
-````
+```
 
 Then run it with the helper script
 

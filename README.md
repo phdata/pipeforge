@@ -10,6 +10,7 @@ $ sbt assembly
 
 This will create an uber jar that is used by the `pipeforge` command.
 The folder `bin` can then be added to your PATH
+
 ## Configuration
 The application takes no parametes and runs only off of configuration files.
 Configuration templates can be found in ./conf.
@@ -34,15 +35,12 @@ $ ./build-pipewrench-config
 
 ## Testing
 
-Tests require Docker.
+Integration tests require Docker.
 
-Start the test Docker Oracle image
-```
-$ ./run-oracle-docker
-```
 
 Run the tests with SBT
 
 ```
 $ sbt test
+$ sbt it:test
 ```

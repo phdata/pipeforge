@@ -3,6 +3,7 @@ package io.phdata.jdbc.parsing
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
+import io.phdata.jdbc.domain.Column
 
 class MySQLMetadataParser(_connection: Connection)
   extends DatabaseMetadataParser
@@ -13,4 +14,26 @@ class MySQLMetadataParser(_connection: Connection)
   override def getTablesStatement(schema: String, table: String) = s"SELECT * FROM ${schema}.${table} LIMIT 1"
 
   override def listTablesStatement(schema: String) = "SHOW TABLES"
+
+  override def getColumnDefinitions(schema: String,
+                                     table: String): Set[Column] = {
+    def asBoolean(i: Int) = if (i == 0) false else true
+
+    val query = getTablesStatement(schema, table)
+    logger.debug("Executing query: {}", query)
+    val metaData: ResultSetMetaData =
+      results(newStatement.executeQuery(query))(_.getMetaData).toList.head
+    val rsMetadata = metaData.asInstanceOf[oracle.jdbc.OracleResultSetMetaData]
+    (1 to metaData.getColumnCount).map { i =>
+      Column(
+        metaData.getColumnName(i),
+        JDBCType.valueOf(rsMetadata.getColumnType(i)),
+        asBoolean(metaData.isNullable(i)),
+        i,
+        metaData
+          .getPrecision(i),
+        metaData.getScale(i)
+      )
+    }.toSet
+  }
 }

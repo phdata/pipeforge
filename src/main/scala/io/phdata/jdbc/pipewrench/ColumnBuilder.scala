@@ -25,7 +25,6 @@ object ColumnBuilder {
   def mapDataType(column: Column) = {
     column match {
       case Column(_, JDBCType.NUMERIC, _, _, p, s) if s > 0 => "DECIMAL"
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s > 0 => "DECIMAL"
       case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19 =>
         "DECIMAL"
       case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10 =>
@@ -37,3 +36,4 @@ object ColumnBuilder {
     }
   }
 }
+// map column java for numeric types

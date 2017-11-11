@@ -5,74 +5,35 @@ import java.sql._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.DatabaseConf
 import io.phdata.jdbc.domain.{Column, Table}
-import oracle.jdbc.driver.OracleConnection
+import io.phdata.jdbc.util.ExceptionUtil._
 
 import scala.util.{Failure, Success, Try}
 
 trait DatabaseMetadataParser extends LazyLogging {
-
   def connection: Connection
 
   def listTablesStatement(schema: String): String
 
-  def metadata = connection.getMetaData
-
-  def newStatement = connection.createStatement()
-
   def getTablesStatement(schema: String, table: String): String
+
+  def getColumnDefinitions(schema: String, table: String): Set[Column]
 
   def getTablesMetadata(schema: String): Set[Try[Table]] = {
     val tables = listTables(schema)
 
     tables.map { t =>
       Try(getTableMetadata(schema, t))
+        .messageOnFailure(
+          s"Error getting metadata for $schema.$t"
+        )
     }
   }
 
   def getTableMetadata(schema: String, table: String): Table = {
-      val allColumns = getColumnDefinitions(schema, table)
-      val pks = primaryKeys(schema, table, allColumns)
-      val columns = allColumns.diff(pks)
-      Table(table, pks, columns)
-  }
-
-  def listTables(schema: String): Set[String] = {
-    val stmt: Statement = newStatement
-    val query = listTablesStatement(schema)
-    logger.debug("Executing query: {}", query)
-    results(stmt.executeQuery(query))(_.getString(1)).toSet
-  }
-
-  protected def getColumnDefinitions(schema: String,
-                                     table: String): Set[Column] = {
-    def asBoolean(i: Int) = if (i == 0) false else true
-
-    val map = connection.asInstanceOf[OracleConnection].getTypeMap
-
-    val stmt: Statement = newStatement
-    val query = getTablesStatement(schema, table)
-    logger.debug("Executing query: {}", query)
-    val metaData: ResultSetMetaData =
-      results(stmt.executeQuery(query))(_.getMetaData).toList.head // _.getOracleObject
-    val oracleM = metaData.asInstanceOf[oracle.jdbc.OracleResultSetMetaData]
-    (1 to metaData.getColumnCount).map { i =>
-      Column(
-        metaData.getColumnName(i),
-        JDBCType.valueOf(oracleM.getColumnType(i)),
-        asBoolean(metaData.isNullable(i)),
-        i,
-        metaData.getPrecision(i), // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSetMetaData.html
-        metaData.getScale(i)
-      )
-    }.toSet
-  }
-
-  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
-    }
+    val allColumns = getColumnDefinitions(schema, table)
+    val pks = primaryKeys(schema, table, allColumns)
+    val columns = allColumns.diff(pks)
+    Table(table, pks, columns)
   }
 
   protected def primaryKeys(schema: String,
@@ -101,6 +62,25 @@ trait DatabaseMetadataParser extends LazyLogging {
         }
     }.toSet
   }
+
+  def metadata = connection.getMetaData
+
+  def listTables(schema: String): Set[String] = {
+    val stmt: Statement = newStatement
+    val query = listTablesStatement(schema)
+    logger.debug("Executing query: {}", query)
+    results(stmt.executeQuery(query))(_.getString(1)).toSet
+  }
+
+  def newStatement = connection.createStatement()
+
+  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
+    new Iterator[T] {
+      def hasNext = resultSet.next()
+
+      def next() = f(resultSet)
+    }
+  }
 }
 
 object DatabaseMetadataParser extends LazyLogging {
@@ -118,19 +98,21 @@ object DatabaseMetadataParser extends LazyLogging {
               .getTablesMetadata(configuration.schema)
           case _ =>
             Set(Failure(new Exception(
-              s"Metadata parser for database type: ${configuration.databaseType} has not been configured")))
+              s"Metadata parser for database type: " +
+                s"${configuration.databaseType} has not been configured")))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: $configuration", e)
-        Set(Failure(e))
+        throw e
     }
 
-    results.flatMap(x => x match {
-      case Success(v) => Some(v)
-      case Failure(e) =>
-        logger.warn(s"${e.getMessage} ${e.getStackTrace}")
-        None
-    })
+    results.flatMap(x =>
+      x match {
+        case Success(v) => Some(v)
+        case Failure(e) =>
+          logger.warn(s"${e.getMessage} ${e.getStackTrace}")
+          None
+      })
   }
 
   def getConnection(configuration: DatabaseConf) =
@@ -140,5 +122,3 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.password))
 
 }
-
-

@@ -1,6 +1,6 @@
 package io.phdata.jdbc.pipewrench
 
-import java.sql.{JDBCType, SQLType}
+import java.sql.JDBCType
 
 import io.phdata.jdbc.domain.Column
 import org.scalatest.FunSuite

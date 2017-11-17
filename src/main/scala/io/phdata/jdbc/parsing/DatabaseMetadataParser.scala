@@ -3,7 +3,8 @@ package io.phdata.jdbc.parsing
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.DatabaseConf
+import io.phdata.jdbc.config.ObjectType.ObjectType
+import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.util.ExceptionUtil._
 
@@ -14,12 +15,15 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def listTablesStatement(schema: String): String
 
-  def getTablesStatement(schema: String, table: String): String
+  def singleRecordQuery(schema: String, table: String): String
+
+  def listViewsStatement(schema: String): String
 
   def getColumnDefinitions(schema: String, table: String): Set[Column]
 
-  def getTablesMetadata(schema: String): Set[Try[Table]] = {
-    val tables = listTables(schema)
+  def getTablesMetadata(objectType: ObjectType,
+                        schema: String): Set[Try[Table]] = {
+    val tables = listTables(objectType, schema)
 
     tables.map { t =>
       Try(getTableMetadata(schema, t))
@@ -40,8 +44,8 @@ trait DatabaseMetadataParser extends LazyLogging {
                             table: String,
                             columns: Set[Column]): Set[Column] = {
     logger.trace("Getting primary keys for schema: {}, table: {}",
-      schema,
-      table)
+                 schema,
+                 table)
     val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     val pks = results(rs) { record =>
       record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
@@ -53,11 +57,11 @@ trait DatabaseMetadataParser extends LazyLogging {
           case Some(column) =>
             Some(
               Column(column.name,
-                column.dataType,
-                column.nullable,
-                column.index,
-                column.precision,
-                column.scale))
+                     column.dataType,
+                     column.nullable,
+                     column.index,
+                     column.precision,
+                     column.scale))
           case None => None
         }
     }.toSet
@@ -65,9 +69,11 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def metadata = connection.getMetaData
 
-  def listTables(schema: String): Set[String] = {
+  def listTables(objectType: ObjectType, schema: String): Set[String] = {
     val stmt: Statement = newStatement
-    val query = listTablesStatement(schema)
+    val query =
+      if (objectType == ObjectType.table) listTablesStatement(schema)
+      else listViewsStatement(schema)
     logger.debug("Executing query: {}", query)
     results(stmt.executeQuery(query))(_.getString(1)).toSet
   }
@@ -92,14 +98,15 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.databaseType.toLowerCase match {
           case "mysql" =>
             new MySQLMetadataParser(connection)
-              .getTablesMetadata(configuration.schema)
+              .getTablesMetadata(configuration.objectType, configuration.schema)
           case "oracle" =>
             new OracleMetadataParser(connection)
-              .getTablesMetadata(configuration.schema)
+              .getTablesMetadata(configuration.objectType, configuration.schema)
           case _ =>
-            Set(Failure(new Exception(
-              s"Metadata parser for database type: " +
-                s"${configuration.databaseType} has not been configured")))
+            Set(
+              Failure(
+                new Exception(s"Metadata parser for database type: " +
+                  s"${configuration.databaseType} has not been configured")))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: $configuration", e)
@@ -112,13 +119,13 @@ object DatabaseMetadataParser extends LazyLogging {
         case Failure(e) =>
           logger.warn(s"${e.getMessage} ${e.getStackTrace}")
           None
-      })
+    })
   }
 
   def getConnection(configuration: DatabaseConf) =
     Try(
       DriverManager.getConnection(configuration.jdbcUrl,
-        configuration.username,
-        configuration.password))
+                                  configuration.username,
+                                  configuration.password))
 
 }

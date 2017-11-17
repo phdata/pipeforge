@@ -13,8 +13,8 @@ class PipewrenchConfigBuilderTest extends FunSuite {
   test("Create config") {
     val tables = Set(
       Table("REGIONS",
-        Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
-        Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0))))
+            Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
+            Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0))))
 
     val result =
       PipewrenchConfigBuilder.buildPipewrenchConfig(
@@ -22,7 +22,7 @@ class PipewrenchConfigBuilderTest extends FunSuite {
         YamlWrapper.read(initialTableDataPath),
         tables)
 
-    // @TODO do something
+    // @TODO assert something
     assert(result != null)
   }
 }

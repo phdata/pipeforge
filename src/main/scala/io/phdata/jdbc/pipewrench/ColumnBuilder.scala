@@ -32,8 +32,9 @@ object ColumnBuilder {
       case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5 =>
         "INTEGER"
       case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3 => "SHORT"
-      case _ => column.dataType.toString
+      case _                                                          => column.dataType.toString
     }
   }
 }
+
 // map column java for numeric types

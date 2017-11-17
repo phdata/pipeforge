@@ -2,7 +2,7 @@ package io.phdata.jdbc
 
 import java.sql.ResultSet
 
-import io.phdata.jdbc.config.DatabaseConf
+import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MySQLMetadataParser, OracleMetadataParser}
 import org.scalatest._
 import org.testcontainers.containers.MySQLContainer
@@ -14,7 +14,8 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll {
     "HR",
     testDb.getJdbcUrl,
     testDb.getUsername,
-    testDb.getPassword)
+    testDb.getPassword,
+    ObjectType.table)
 
   lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
@@ -40,9 +41,9 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll {
 
   test("parse tables metadata") {
     val parser = new MySQLMetadataParser(connection)
-    val definitions = parser.getTablesMetadata("HR")
+    val definitions = parser.getTablesMetadata(ObjectType.table, "HR")
     definitions.foreach(println)
-    assert(definitions.size == 0)
+    assert(definitions.size == 0) // @TODO add sample data
   }
 
   protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {

@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
 class OracleMetadataParser(_connection: Connection)
-  extends DatabaseMetadataParser
+    extends DatabaseMetadataParser
     with LazyLogging {
 
   def connection = _connection
@@ -14,11 +14,14 @@ class OracleMetadataParser(_connection: Connection)
   override def listTablesStatement(schema: String) =
     s"SELECT table_name FROM ALL_TABLES WHERE owner = '$schema'"
 
+  override def listViewsStatement(schema: String) =
+    s"SELECT view_name FROM ALL_VIEWS where owner = '$schema'"
+
   override def getColumnDefinitions(schema: String,
-                                     table: String): Set[Column] = {
+                                    table: String): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
-    val query = getTablesStatement(schema, table)
+    val query = singleRecordQuery(schema, table)
     logger.debug("Executing query: {}", query)
     val metaData: ResultSetMetaData =
       results(newStatement.executeQuery(query))(_.getMetaData).toList.head
@@ -37,6 +40,6 @@ class OracleMetadataParser(_connection: Connection)
     }.toSet
   }
 
-  override def getTablesStatement(schema: String, table: String) =
+  override def singleRecordQuery(schema: String, table: String) =
     s"SELECT * FROM ${schema}.${table} WHERE ROWNUM = 1"
 }

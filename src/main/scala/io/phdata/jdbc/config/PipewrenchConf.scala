@@ -14,7 +14,7 @@ import com.typesafe.config.ConfigFactory
   *                              that will be included in each table element
   *                              in the generated config. This file would
   *                              include things like metadata tags.
-  * @param outFile Path where generated configuration will be written
+  * @param outFile               Path where generated configuration will be written
   */
 case class PipewrenchConf(defaultSourceConfPath: String,
                           defaultTablesConfPath: String,

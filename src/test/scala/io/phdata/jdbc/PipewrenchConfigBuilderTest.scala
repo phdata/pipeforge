@@ -7,7 +7,6 @@ import io.phdata.jdbc.util.YamlWrapper
 import org.scalatest.FunSuite
 
 class PipewrenchConfigBuilderTest extends FunSuite {
-  val initialConfDataPath = "src/test/resources/initialConfData.yml"
   val initialTableDataPath = "src/test/resources/initialTableData.yml"
 
   test("Create config") {
@@ -16,11 +15,8 @@ class PipewrenchConfigBuilderTest extends FunSuite {
             Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
             Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0))))
 
-    val result =
-      PipewrenchConfigBuilder.buildPipewrenchConfig(
-        YamlWrapper.read(initialConfDataPath),
-        YamlWrapper.read(initialTableDataPath),
-        tables)
+    val result = Map("tables" ->
+      PipewrenchConfigBuilder.buildPipewrenchConfig(tables, YamlWrapper.read(initialTableDataPath)))
 
     // @TODO assert something
     assert(result != null)

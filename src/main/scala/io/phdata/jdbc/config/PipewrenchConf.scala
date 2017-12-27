@@ -21,15 +21,17 @@ case class PipewrenchConf(defaultSourceConfPath: String,
                           outFile: String)
 
 object PipewrenchConf {
+  import net.ceedubs.ficus.Ficus._
+
   def parse(configName: String) = {
     val configFactory = ConfigFactory.load(configName)
 
     new PipewrenchConf(
       defaultSourceConfPath =
-        configFactory.getString("default-source-conf-path"),
+        configFactory.as[String]("default-source-conf-path"),
       defaultTablesConfPath =
-        configFactory.getString("default-tables-conf-path"),
-      outFile = configFactory.getString("out-file")
+        configFactory.as[String]("default-tables-conf-path"),
+      outFile = configFactory.as[String]("out-file")
     )
   }
 }

@@ -1,7 +1,6 @@
 package io.phdata.jdbc.config
 
 import com.typesafe.config.ConfigFactory
-import io.phdata.jdbc.config.ObjectType.ObjectType
 
 /**
   *
@@ -16,19 +15,24 @@ case class DatabaseConf(databaseType: String,
                         jdbcUrl: String,
                         username: String,
                         password: String,
-                        objectType: ObjectType)
+                        objectType: ObjectType.Value,
+                        tables: Option[Set[String]] = None)
 
 object DatabaseConf {
+  import net.ceedubs.ficus.Ficus._
+  import net.ceedubs.ficus.readers.EnumerationReader._
+
   def parse(configName: String) = {
     val configFactory = ConfigFactory.load(configName)
 
     new DatabaseConf(
-      databaseType = configFactory.getString("database-type"),
-      schema = configFactory.getString("schema"),
-      jdbcUrl = configFactory.getString("jdbc-url"),
-      username = configFactory.getString("username"),
-      password = configFactory.getString("password"),
-      objectType = ObjectType.withName(configFactory.getString("object-type"))
+      databaseType = configFactory.as[String]("database-type"),
+      schema = configFactory.as[String]("schema"),
+      jdbcUrl = configFactory.as[String]("jdbc-url"),
+      username = configFactory.as[String]("username"),
+      password = configFactory.as[String]("password"),
+      objectType = configFactory.as[ObjectType.Value]("object-type"),
+      tables = configFactory.as[Option[Set[String]]]("tables")
     )
   }
 }

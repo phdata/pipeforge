@@ -21,22 +21,21 @@ class MySQLMetadataParser(_connection: Connection)
     logger.debug("Executing query: {}", query)
     val metaData: ResultSetMetaData =
       results(newStatement.executeQuery(query))(_.getMetaData).toList.head
-    val rsMetadata = metaData.asInstanceOf[oracle.jdbc.OracleResultSetMetaData]
+    val rsMetadata = metaData.asInstanceOf[com.mysql.cj.jdbc.result.ResultSetMetaData]
     (1 to metaData.getColumnCount).map { i =>
       Column(
         metaData.getColumnName(i),
         JDBCType.valueOf(rsMetadata.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,
-        metaData
-          .getPrecision(i),
+        metaData.getPrecision(i),
         metaData.getScale(i)
       )
     }.toSet
   }
 
   override def singleRecordQuery(schema: String, table: String) =
-    s"SELECT * FROM ${schema}.${table} LIMIT 1"
+    s"SELECT * FROM $schema.$table LIMIT 1"
 
   override def listViewsStatement(schema: String): String =
     throw new NotImplementedError()

@@ -20,6 +20,8 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
       "com.typesafe" % "config" % "1.3.1",
+      // https://github.com/iheartradio/ficus
+      "com.iheart" %% "ficus" % "1.4.3",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "org.testcontainers" % "oracle-xe" % "1.4.3" % "test",
       "org.testcontainers" % "mysql" % "1.4.3" % "test"

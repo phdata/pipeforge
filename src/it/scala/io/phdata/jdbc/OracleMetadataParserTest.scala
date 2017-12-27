@@ -19,7 +19,7 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
                      oracle.getJdbcUrl,
                      oracle.getUsername,
                      oracle.getPassword,
-                     ObjectType.table)
+                     ObjectType.TABLE)
 
   lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
@@ -47,7 +47,7 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    val definitions = parser.getTablesMetadata(ObjectType.table, "HR")
+    val definitions = parser.getTablesMetadata(ObjectType.TABLE, "HR", None)
     assert(definitions.size == 7)
     val expected = Success(
       Table("REGIONS",
@@ -59,7 +59,7 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
 
   test("parse views metadata") {
     val parser = new OracleMetadataParser(connection)
-    val definitions = parser.getTablesMetadata(ObjectType.view, "HR")
+    val definitions = parser.getTablesMetadata(ObjectType.VIEW, "HR", None)
 
     val expected = Set(
       Success(Table(

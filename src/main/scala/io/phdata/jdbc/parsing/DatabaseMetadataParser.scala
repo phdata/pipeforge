@@ -3,7 +3,6 @@ package io.phdata.jdbc.parsing
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.ObjectType.ObjectType
 import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.util.ExceptionUtil._
@@ -21,9 +20,13 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def getColumnDefinitions(schema: String, table: String): Set[Column]
 
-  def getTablesMetadata(objectType: ObjectType,
-                        schema: String): Set[Try[Table]] = {
-    val tables = listTables(objectType, schema)
+  def getTablesMetadata(objectType: ObjectType.Value,
+                        schema: String, tableWhiteList: Option[Set[String]]): Set[Try[Table]] = {
+    // If a white listing of tables is provided then only parse those tables
+    val tables = tableWhiteList match {
+      case Some(t) => t
+      case None => listTables(objectType, schema)
+    }
 
     tables.map { t =>
       Try(getTableMetadata(schema, t))
@@ -69,10 +72,10 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def metadata = connection.getMetaData
 
-  def listTables(objectType: ObjectType, schema: String): Set[String] = {
+  def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
     val stmt: Statement = newStatement
     val query =
-      if (objectType == ObjectType.table) listTablesStatement(schema)
+      if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug("Executing query: {}", query)
     results(stmt.executeQuery(query))(_.getString(1)).toSet
@@ -98,10 +101,10 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.databaseType.toLowerCase match {
           case "mysql" =>
             new MySQLMetadataParser(connection)
-              .getTablesMetadata(configuration.objectType, configuration.schema)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
           case "oracle" =>
             new OracleMetadataParser(connection)
-              .getTablesMetadata(configuration.objectType, configuration.schema)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
           case _ =>
             Set(
               Failure(

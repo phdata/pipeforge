@@ -22,6 +22,8 @@ lazy val root = (project in file("."))
       "com.typesafe" % "config" % "1.3.1",
       // https://github.com/iheartradio/ficus
       "com.iheart" %% "ficus" % "1.4.3",
+      // https://github.com/scallop/scallop
+      "org.rogach" %% "scallop" % "3.1.1",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "org.testcontainers" % "oracle-xe" % "1.4.3" % "test",
       "org.testcontainers" % "mysql" % "1.4.3" % "test"

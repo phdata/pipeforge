@@ -22,7 +22,7 @@ object DatabaseConf {
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.EnumerationReader._
 
-  def parse(configName: String) = {
+  def parse(configName: String, password: String) = {
     val configFactory = ConfigFactory.load(configName)
 
     new DatabaseConf(
@@ -30,7 +30,7 @@ object DatabaseConf {
       schema = configFactory.as[String]("schema"),
       jdbcUrl = configFactory.as[String]("jdbc-url"),
       username = configFactory.as[String]("username"),
-      password = configFactory.as[String]("password"),
+      password = password,
       objectType = configFactory.as[ObjectType.Value]("object-type"),
       tables = configFactory.as[Option[Set[String]]]("tables")
     )

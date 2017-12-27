@@ -36,6 +36,7 @@ object ColumnBuilder {
 }
 
 object DataType extends Enumeration {
+  val BOOLEAN = Value("BOOLEAN")
   val DECIMAL = Value("DECIMAL")
   val BIG_INT = Value("BIGINT")
   val INTEGER = Value("INTEGER")

@@ -12,19 +12,20 @@ import org.testcontainers.containers.MySQLContainer
 import scala.util.{Failure, Success}
 
 class MySQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
-  lazy val testDb = new MySQLContainer()
+
+  private lazy val testDb = new MySQLContainer()
   private lazy val databaseName = "test"
   private lazy val tableName = "it_table"
   private lazy val viewName = "it_view"
 
-  lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
+  private lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
     databaseName,
     testDb.getJdbcUrl,
     testDb.getUsername,
     testDb.getPassword,
     ObjectType.TABLE)
 
-  lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+  private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()

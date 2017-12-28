@@ -12,12 +12,13 @@ import org.testcontainers.containers.OracleContainer
 import scala.util.{Failure, Success}
 
 class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
-  lazy val oracle = new OracleContainer()
-  lazy val databaseName = "HR"
-  lazy val tableName = "REGIONS"
-  lazy val viewName = "EMP_DETAILS_VIEW"
 
-  lazy val dockerConfig =
+  private lazy val oracle = new OracleContainer()
+  private lazy val databaseName = "HR"
+  private lazy val tableName = "REGIONS"
+  private lazy val viewName = "EMP_DETAILS_VIEW"
+
+  private lazy val dockerConfig =
     new DatabaseConf(DatabaseType.ORACLE,
                      databaseName,
                      oracle.getJdbcUrl,
@@ -25,7 +26,7 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
                      oracle.getPassword,
                      ObjectType.TABLE)
 
-  lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+  private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()

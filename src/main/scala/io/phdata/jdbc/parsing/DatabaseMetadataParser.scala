@@ -9,6 +9,7 @@ import io.phdata.jdbc.domain.{Column, Table}
 import scala.util.{Failure, Success, Try}
 
 trait DatabaseMetadataParser extends LazyLogging {
+
   def connection: Connection
 
   def listTablesStatement(schema: String): String
@@ -48,12 +49,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     Table(table, pks, columns)
   }
 
-  def primaryKeys(schema: String,
-                  table: String,
-                  columns: Set[Column]): Set[Column] = {
-    logger.trace("Getting primary keys for schema: {}, table: {}",
-                 schema,
-                 table)
+  def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
     val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     val pks = results(rs) { record =>
       record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
@@ -62,7 +58,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     mapPrimaryKeyToColumn(pks, columns)
   }
 
-  def mapMetaDataToColumn(metaData: ResultSetMetaData, rsMetadata: ResultSetMetaData) = {
+  def mapMetaDataToColumn(metaData: ResultSetMetaData, rsMetadata: ResultSetMetaData): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
     (1 to metaData.getColumnCount).map { i =>
@@ -81,14 +77,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     primaryKeys.flatMap {
       case (key, index) =>
         columns.find(_.name == key) match {
-          case Some(column) =>
-            Some(
-              Column(column.name,
-                column.dataType,
-                column.nullable,
-                column.index,
-                column.precision,
-                column.scale))
+          case Some(column) => Some(column)
           case None => None
         }
     }.toSet

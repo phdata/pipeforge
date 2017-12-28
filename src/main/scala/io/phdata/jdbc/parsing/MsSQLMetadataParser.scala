@@ -5,7 +5,7 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
-class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParser with LazyLogging{
+class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParser {
 
   override def connection = _connection
 

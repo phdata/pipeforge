@@ -14,13 +14,12 @@ import scala.util.{Failure, Success}
 
 class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
 
-  lazy val testDb = new MSSQLServerContainer()
-
+  private lazy val testDb = new MSSQLServerContainer()
   private lazy val databaseName = "master"
   private lazy val tableName = "it_table"
   private lazy val viewName = "it_view"
 
-  lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
+  private lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
     databaseName,
     testDb.getJdbcUrl + ";database=master",
     testDb.getUsername,
@@ -28,7 +27,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     ObjectType.TABLE
   )
 
-   lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+   private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()

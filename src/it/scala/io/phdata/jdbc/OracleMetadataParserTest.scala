@@ -13,10 +13,13 @@ import scala.util.{Failure, Success}
 
 class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
   lazy val oracle = new OracleContainer()
+  lazy val databaseName = "HR"
+  lazy val tableName = "REGIONS"
+  lazy val viewName = "EMP_DETAILS_VIEW"
 
   lazy val dockerConfig =
     new DatabaseConf(DatabaseType.ORACLE,
-                     "HR",
+                     databaseName,
                      oracle.getJdbcUrl,
                      oracle.getUsername,
                      oracle.getPassword,
@@ -48,15 +51,15 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.TABLE, "HR", None) match {
+    parser.getTablesMetadata(ObjectType.TABLE, databaseName, Some(Set(tableName))) match {
       case Success(definitions) =>
-        assert(definitions.size == 7)
-        val expected =
-          Table("REGIONS",
+        assert(definitions.size == 1)
+        val expected = Set(
+          Table(tableName,
             Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
-            Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)))
-
-        assert(definitions.map(x => x == expected).reduce(_ || _))
+            Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)
+            )))
+        assertResult(expected)(definitions)
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
@@ -64,11 +67,11 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
 
   test("parse views metadata") {
     val parser = new OracleMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.VIEW, "HR", None) match {
+    parser.getTablesMetadata(ObjectType.VIEW, databaseName, Some(Set(viewName))) match {
       case Success(definitions) =>
         val expected = Set(
           Table(
-            "EMP_DETAILS_VIEW",
+            viewName,
             Set(),
             Set(
               Column("JOB_ID", JDBCType.VARCHAR, false, 2, 10, 0),
@@ -89,7 +92,6 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
               Column("LAST_NAME", JDBCType.VARCHAR, false, 8, 25, 0)
             )
           ))
-
         assertResult(expected)(definitions)
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)

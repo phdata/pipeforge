@@ -2,7 +2,6 @@ package io.phdata.jdbc.parsing
 
 import java.sql._
 
-import com.sun.net.httpserver.Authenticator
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
@@ -56,6 +55,21 @@ trait DatabaseMetadataParser extends LazyLogging {
     }.toMap
 
     mapPrimaryKeyToColumn(pks, columns)
+  }
+
+  def mapMetaDataToColumn(metaData: ResultSetMetaData, rsMetadata: ResultSetMetaData) = {
+    def asBoolean(i: Int) = if (i == 0) false else true
+
+    (1 to metaData.getColumnCount).map { i =>
+      Column(
+        metaData.getColumnName(i),
+        JDBCType.valueOf(rsMetadata.getColumnType(i)),
+        asBoolean(metaData.isNullable(i)),
+        i,
+        metaData.getPrecision(i),
+        metaData.getScale(i)
+      )
+    }.toSet
   }
 
   def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]) = {

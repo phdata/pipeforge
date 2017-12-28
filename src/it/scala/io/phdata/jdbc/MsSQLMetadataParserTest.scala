@@ -21,21 +21,21 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private lazy val viewName = "it_view"
 
   lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
-    "master",
+    databaseName,
     testDb.getJdbcUrl + ";database=master",
     testDb.getUsername,
     testDb.getPassword,
     ObjectType.TABLE
   )
 
-   lazy val sa_connection = DatabaseMetadataParser.getConnection(dockerConfig).get
-   lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig.copy(jdbcUrl = s"${dockerConfig.jdbcUrl};database=$databaseName")).get
+   lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     testDb.withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT)
     testDb.start()
-    Thread.sleep(10000)
+    // MSSQL Server takes a while to fully start sleep here is needed
+    Thread.sleep(2000)
     createTestTable()
     insertTestData()
     createTestView()
@@ -99,7 +99,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
       s"""
          |CREATE DATABASE $databaseName
        """.stripMargin
-    val stmt = sa_connection.createStatement()
+    val stmt = connection.createStatement()
     stmt.execute(query)
   }
 

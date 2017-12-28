@@ -6,7 +6,6 @@ import java.util
 import org.yaml.snakeyaml.{DumperOptions, Yaml}
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.io.Source
 

@@ -19,10 +19,10 @@ object PipewrenchConfigBuilder extends LazyLogging {
   def main(args: Array[String]): Unit = {
     val cliArgs = new CliArgsParser(args)
 
-    val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf, cliArgs.databasePassword.toOption.get)
+    val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf(), cliArgs.databasePassword())
     DatabaseMetadataParser.parse(sourceDbConf) match {
       case Success(databaseMetadata) =>
-        val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata)
+        val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
         val generatedConfig = buildPipewrenchConfig(databaseMetadata, tableMetadata)
         YamlWrapper.write(generatedConfig, cliArgs.outputPath)
       case Failure(e) =>
@@ -34,17 +34,17 @@ object PipewrenchConfigBuilder extends LazyLogging {
     * CLI parameter parser
     *
     * Args:
-    * database-configuration (s) - Path to the source database configuration file
+    * database-configuration (s) Required - Path to the source database configuration file
     * database-password (p) Required - The source database password
-    * table-metadata (m) - Path to the metadata yml file which will be used the enhance the tables.yml output
+    * table-metadata (m) Required - Path to the metadata yml file which will be used the enhance the tables.yml output
     * output-path (o) - Output path for the file generated tables.yml file
     *
     * @param args
     */
   private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
-    lazy val databaseConf = opt[String]("database-configuration", 's', required = false).getOrElse("source-database.conf")
+    lazy val databaseConf = opt[String]("database-configuration", 's', required = true)
     lazy val databasePassword = opt[String]("database-password", 'p', required = true)
-    lazy val tableMetadata = opt[String]("table-metadata", 'm', required = false).getOrElse("src/main/resources/metadata.yml")
+    lazy val tableMetadata = opt[String]("table-metadata", 'm', required = true)
     lazy val outputPath = opt[String]("output-path", 'o', required = false).getOrElse("tables.yml")
 
     verify()

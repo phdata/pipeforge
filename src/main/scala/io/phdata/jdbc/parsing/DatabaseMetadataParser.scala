@@ -22,18 +22,23 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
-    // If a white listing of tables is provided then only parse those tables
-    val tables = tableWhiteList match {
-      // TODO: Add check to see if whitelisted tables are in the source database before parsing.  Throw ex if a table is not found
-      case Some(t) => t
-      case None => listTables(objectType, schema)
+    val sourceTables = listTables(objectType, schema)
+    checkWhiteListedTables(sourceTables, tableWhiteList) match {
+      case Success(tables) => Try(tables.map(getTableMetadata(schema, _)))
+      case Failure(ex) => Failure(ex)
     }
+  }
 
-    Try(
-      tables.map { t =>
-        getTableMetadata(schema, t)
-      }
-    )
+  def checkWhiteListedTables(sourceTables: Set[String], tableWhiteList: Option[Set[String]]): Try[Set[String]] = {
+    tableWhiteList match {
+      case Some(whiteList) =>
+        if (whiteList.subsetOf(sourceTables)) {
+          Success(whiteList)
+        } else {
+          Failure(new Exception(s"A table in the whitelist was not found in the source system, whitelist=$whiteList, source tables=$sourceTables"))
+        }
+      case None => Success(sourceTables)
+    }
   }
 
   def getTableMetadata(schema: String, table: String): Table = {
@@ -44,8 +49,8 @@ trait DatabaseMetadataParser extends LazyLogging {
   }
 
   def primaryKeys(schema: String,
-                            table: String,
-                            columns: Set[Column]): Set[Column] = {
+                  table: String,
+                  columns: Set[Column]): Set[Column] = {
     logger.trace("Getting primary keys for schema: {}, table: {}",
                  schema,
                  table)
@@ -139,17 +144,10 @@ object DatabaseMetadataParser extends LazyLogging {
   }
 
   def getConnection(configuration: DatabaseConf) = {
-    val f = Try(
+    Try(
       DriverManager.getConnection(configuration.jdbcUrl,
         configuration.username,
         configuration.password))
-
-    f match {
-      case Success(con) => con
-      case Failure(ex) => logger.error("Error", ex)
-    }
-
-    f
   }
 
 }

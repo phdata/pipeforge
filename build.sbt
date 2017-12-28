@@ -9,7 +9,6 @@ lazy val root = (project in file("."))
   .settings(name := "Pipeforge",
     version := "0.1-SNAPSHOT",
     organization := "io.phdata",
-    version := "0.1-SNAPSHOT",
     scalaVersion := "2.12.3",
     mainClass in Compile := Some("io.phdata.jdbc.PipewrenchConfigBuilder"),
     resolvers += "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",

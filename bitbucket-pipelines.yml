@@ -5,3 +5,5 @@ pipelines:
     - step:
         script: 
           - sbt clean test it:test assembly
+options:
+  docker: true

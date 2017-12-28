@@ -13,7 +13,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
 
   override def singleRecordQuery(schema: String, table: String) = s"SELECT TOP 1 * FROM $table"
 
-  override def listViewsStatement(schema: String) = ???
+  override def listViewsStatement(schema: String) = "SELECT * FROM sys.views"
 
   override def getColumnDefinitions(schema: String, table: String): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true

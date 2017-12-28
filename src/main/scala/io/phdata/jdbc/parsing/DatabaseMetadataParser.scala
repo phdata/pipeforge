@@ -24,6 +24,7 @@ trait DatabaseMetadataParser extends LazyLogging {
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
     // If a white listing of tables is provided then only parse those tables
     val tables = tableWhiteList match {
+      // TODO: Add check to see if whitelisted tables are in the source database before parsing.  Throw ex if a table is not found
       case Some(t) => t
       case None => listTables(objectType, schema)
     }

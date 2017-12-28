@@ -3,7 +3,7 @@ package io.phdata.jdbc.parsing
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
+import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.util.ExceptionUtil._
 
@@ -98,11 +98,11 @@ object DatabaseMetadataParser extends LazyLogging {
 
     val results = getConnection(configuration) match {
       case Success(connection) =>
-        configuration.databaseType.toLowerCase match {
-          case "mysql" =>
+        configuration.databaseType match {
+          case DatabaseType.MYSQL =>
             new MySQLMetadataParser(connection)
               .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
-          case "oracle" =>
+          case DatabaseType.ORACLE =>
             new OracleMetadataParser(connection)
               .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
           case _ =>

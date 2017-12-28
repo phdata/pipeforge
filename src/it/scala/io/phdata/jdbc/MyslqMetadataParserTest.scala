@@ -3,7 +3,7 @@ package io.phdata.jdbc
 import java.sql.{JDBCType, ResultSet}
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
+import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MySQLMetadataParser}
 import org.scalatest._
@@ -16,7 +16,7 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private lazy val databaseName = "test"
   private lazy val tableName = "it_test"
 
-  lazy val dockerConfig = new DatabaseConf("mysql",
+  lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
     databaseName,
     testDb.getJdbcUrl,
     testDb.getUsername,

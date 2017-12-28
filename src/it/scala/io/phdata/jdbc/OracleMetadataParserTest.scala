@@ -2,7 +2,7 @@ package io.phdata.jdbc
 
 import java.sql.{JDBCType, ResultSet}
 
-import io.phdata.jdbc.config.{DatabaseConf, ObjectType}
+import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
 import org.scalatest._
@@ -14,7 +14,7 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
   lazy val oracle = new OracleContainer()
 
   lazy val dockerConfig =
-    new DatabaseConf("oracle",
+    new DatabaseConf(DatabaseType.ORACLE,
                      "HR",
                      oracle.getJdbcUrl,
                      oracle.getUsername,

@@ -1,9 +1,7 @@
 package io.phdata.jdbc
 
-import java.io.File
-
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.jdbc.config.{DatabaseConf, PipewrenchConf}
+import io.phdata.jdbc.config.DatabaseConf
 import io.phdata.jdbc.domain.Table
 import io.phdata.jdbc.parsing.DatabaseMetadataParser
 import io.phdata.jdbc.pipewrench.TableBuilder

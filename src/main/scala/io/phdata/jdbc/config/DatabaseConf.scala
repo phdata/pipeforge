@@ -10,7 +10,7 @@ import com.typesafe.config.ConfigFactory
   * @param username     The username
   * @param password     The password
   */
-case class DatabaseConf(databaseType: String,
+case class DatabaseConf(databaseType: DatabaseType.Value,
                         schema: String,
                         jdbcUrl: String,
                         username: String,
@@ -26,7 +26,7 @@ object DatabaseConf {
     val configFactory = ConfigFactory.load(configName)
 
     new DatabaseConf(
-      databaseType = configFactory.as[String]("database-type"),
+      databaseType = configFactory.as[DatabaseType.Value]("database-type"),
       schema = configFactory.as[String]("schema"),
       jdbcUrl = configFactory.as[String]("jdbc-url"),
       username = configFactory.as[String]("username"),

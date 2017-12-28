@@ -22,7 +22,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     logger.debug("Executing query: {}", query)
     val metaData: ResultSetMetaData =
       results(newStatement.executeQuery(query))(_.getMetaData).toList.head
-    val rsMetadata = metaData.asInstanceOf[net.sourceforge.jtds.jdbc.JtdsResultSetMetaData]
+    val rsMetadata = metaData.asInstanceOf[com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData]
     (1 to metaData.getColumnCount).map { i =>
       Column(
         metaData.getColumnName(i),

@@ -2,6 +2,7 @@ package io.phdata.jdbc.parsing
 
 import java.sql._
 
+import com.sun.net.httpserver.Authenticator
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
@@ -123,10 +124,18 @@ object DatabaseMetadataParser extends LazyLogging {
     }
   }
 
-  def getConnection(configuration: DatabaseConf) =
-    Try(
+  def getConnection(configuration: DatabaseConf) = {
+    val f = Try(
       DriverManager.getConnection(configuration.jdbcUrl,
-                                  configuration.username,
-                                  configuration.password))
+        configuration.username,
+        configuration.password))
+
+    f match {
+      case Success(con) => con
+      case Failure(ex) => logger.error("Error", ex)
+    }
+
+    f
+  }
 
 }

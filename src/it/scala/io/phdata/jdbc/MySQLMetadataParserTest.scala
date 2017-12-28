@@ -27,7 +27,7 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    testDb.withExposedPorts(1521)
+    testDb.withExposedPorts(MySQLContainer.MYSQL_PORT)
     testDb.start()
     createTestTable()
     insertTestData()
@@ -50,7 +50,7 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     parser.getTablesMetadata(ObjectType.TABLE, databaseName, None) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
-        val expected = Success(
+        val expected =
           Table(tableName,
             Set(Column("primary_key", JDBCType.INTEGER, false, 1, 11, 0)),
             Set(Column("b_boolean",JDBCType.BIT,true,7,1,0),
@@ -58,8 +58,8 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
               Column("b_bigint",JDBCType.BIGINT,true,6,20,0),
               Column("d_datetime",JDBCType.TIMESTAMP,true,4,19,0),
               Column("str",JDBCType.VARCHAR,true,2,32,0),
-              Column("d_date",JDBCType.DATE,true,3,10,0))))
-        assert(definitions.map(x => x == (expected)).reduce(_ || _))
+              Column("d_date",JDBCType.DATE,true,3,10,0)))
+        assert(definitions.map(x => x == expected).reduce(_ || _))
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }

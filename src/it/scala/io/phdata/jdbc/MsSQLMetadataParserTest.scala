@@ -1,9 +1,10 @@
 package io.phdata.jdbc
 
-import java.sql.ResultSet
+import java.sql.{JDBCType, ResultSet}
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
+import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MsSQLMetadataParser}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest._
@@ -16,7 +17,8 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   lazy val testDb = new MSSQLServerContainer()
 
   private lazy val databaseName = "master"
-  private lazy val tableName = "it_test"
+  private lazy val tableName = "it_table"
+  private lazy val viewName = "it_view"
 
   lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
     "master",
@@ -36,6 +38,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     Thread.sleep(10000)
     createTestTable()
     insertTestData()
+    createTestView()
   }
 
   override def afterAll(): Unit = {
@@ -55,6 +58,37 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     parser.getTablesMetadata(ObjectType.TABLE, databaseName, Some(Set(tableName))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
+        val expected = Set(
+          Table(tableName,
+          Set(
+            Column("ID",JDBCType.INTEGER,false,1,10,0),
+            Column("LastName",JDBCType.VARCHAR,false,2,255,0)),
+          Set(
+            Column("FirstName",JDBCType.VARCHAR,true,3,255,0),
+            Column("Age",JDBCType.INTEGER,true,4,10,0)
+          )))
+        assertResult(expected)(definitions)
+
+      case Failure(ex) =>
+        logger.error("Error gathering metadata from source", ex)
+    }
+  }
+
+  test("parse views metadata") {
+    val parser = new MsSQLMetadataParser(connection)
+    parser.getTablesMetadata(ObjectType.VIEW, databaseName, Some(Set(viewName))) match {
+      case Success(definitions) =>
+        assert(definitions.size == 1)
+        val expected = Set(
+          Table(viewName,
+            Set(),
+            Set(
+              Column("ID",JDBCType.INTEGER,false,1,10,0),
+              Column("LastName",JDBCType.VARCHAR,false,2,255,0),
+              Column("FirstName",JDBCType.VARCHAR,true,3,255,0),
+              Column("Age",JDBCType.INTEGER,true,4,10,0)))
+        )
+        assertResult(expected)(definitions)
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
@@ -91,6 +125,15 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
          |  (ID, LastName, FirstName, Age)
          |VALUES
          |  (1, 'developer', 'phdata', 1)
+       """.stripMargin
+    val stmt = connection.createStatement()
+    stmt.execute(query)
+  }
+
+  private def createTestView(): Unit = {
+    val query =
+      s"""
+         |CREATE VIEW $viewName AS SELECT * FROM $tableName
        """.stripMargin
     val stmt = connection.createStatement()
     stmt.execute(query)

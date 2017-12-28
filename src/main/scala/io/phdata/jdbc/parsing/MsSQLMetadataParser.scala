@@ -9,11 +9,21 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
 
   override def connection = _connection
 
-  override def listTablesStatement(schema: String) = "SELECT * FROM sys.tables"
+  override def listTablesStatement(schema: String) =
+    s"""
+       |SELECT TABLE_NAME
+       |FROM information_schema.tables
+       |WHERE TABLE_CATALOG = '$schema' AND TABLE_TYPE = 'BASE TABLE'
+     """.stripMargin
 
   override def singleRecordQuery(schema: String, table: String) = s"SELECT TOP 1 * FROM $table"
 
-  override def listViewsStatement(schema: String) = "SELECT * FROM sys.views"
+  override def listViewsStatement(schema: String) =
+    s"""
+       |SELECT TABLE_NAME
+       |FROM information_schema.views
+       |WHERE TABLE_CATALOG = '$schema'
+     """.stripMargin
 
   override def getColumnDefinitions(schema: String, table: String): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true

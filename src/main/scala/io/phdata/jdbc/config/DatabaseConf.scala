@@ -1,5 +1,7 @@
 package io.phdata.jdbc.config
 
+import java.io.File
+
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -23,7 +25,8 @@ object DatabaseConf {
   import net.ceedubs.ficus.readers.EnumerationReader._
 
   def parse(configName: String, password: String) = {
-    val configFactory = ConfigFactory.load(configName)
+    val file = new File(configName)
+    val configFactory = ConfigFactory.parseFile(file)
 
     new DatabaseConf(
       databaseType = configFactory.as[DatabaseType.Value]("database-type"),

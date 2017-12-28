@@ -11,26 +11,29 @@ import org.testcontainers.containers.MySQLContainer
 
 import scala.util.{Failure, Success}
 
-class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
-  lazy val testDb = new MySQLContainer()
-  private lazy val databaseName = "test"
-  private lazy val tableName = "it_test"
+class MySQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
 
-  lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
+  private lazy val testDb = new MySQLContainer()
+  private lazy val databaseName = "test"
+  private lazy val tableName = "it_table"
+  private lazy val viewName = "it_view"
+
+  private lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
     databaseName,
     testDb.getJdbcUrl,
     testDb.getUsername,
     testDb.getPassword,
     ObjectType.TABLE)
 
-  lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+  private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    testDb.withExposedPorts(1521)
+    testDb.withExposedPorts(MySQLContainer.MYSQL_PORT)
     testDb.start()
     createTestTable()
     insertTestData()
+    createTestView()
   }
 
   override def afterAll(): Unit = {
@@ -42,7 +45,7 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     val stmt = connection.createStatement()
     val rs: ResultSet = stmt.executeQuery("SELECT table_name FROM information_schema.tables")
     val results = getResults(rs)(x => x.getString(1)).toList
-    assertResult(62)(results.length)
+    assertResult(63)(results.length)
   }
 
   test("parse tables metadata") {
@@ -50,7 +53,7 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
     parser.getTablesMetadata(ObjectType.TABLE, databaseName, None) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
-        val expected = Success(
+        val expected = Set(
           Table(tableName,
             Set(Column("primary_key", JDBCType.INTEGER, false, 1, 11, 0)),
             Set(Column("b_boolean",JDBCType.BIT,true,7,1,0),
@@ -58,8 +61,31 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
               Column("b_bigint",JDBCType.BIGINT,true,6,20,0),
               Column("d_datetime",JDBCType.TIMESTAMP,true,4,19,0),
               Column("str",JDBCType.VARCHAR,true,2,32,0),
-              Column("d_date",JDBCType.DATE,true,3,10,0))))
-        assert(definitions.map(x => x == (expected)).reduce(_ || _))
+              Column("d_date",JDBCType.DATE,true,3,10,0)
+            )))
+        assertResult(expected)(definitions)
+      case Failure(ex) =>
+        logger.error("Error gathering metadata from source", ex)
+    }
+  }
+
+  test("parse views metadata") {
+    val parser = new MySQLMetadataParser(connection)
+    parser.getTablesMetadata(ObjectType.VIEW, databaseName, Some(Set(viewName))) match {
+      case Success(definitions) =>
+        assert(definitions.size == 1)
+        val expected = Set(
+          Table(viewName,
+            Set(),
+            Set(Column("primary_key", JDBCType.INTEGER, false, 1, 11, 0),
+              Column("b_boolean",JDBCType.BIT,true,7,1,0),
+              Column("i_int",JDBCType.INTEGER,true,5,11,0),
+              Column("b_bigint",JDBCType.BIGINT,true,6,20,0),
+              Column("d_datetime",JDBCType.TIMESTAMP,true,4,19,0),
+              Column("str",JDBCType.VARCHAR,true,2,32,0),
+              Column("d_date",JDBCType.DATE,true,3,10,0)
+            )))
+        assertResult(expected)(definitions)
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
@@ -89,6 +115,15 @@ class MysqlMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
          |  (str, d_date, d_datetime, i_int, b_bigint, b_boolean)
          |VALUES
          |  ('test', CURRENT_DATE, CURRENT_TIMESTAMP, 1, 1, 0)
+       """.stripMargin
+    val stmt = connection.createStatement()
+    stmt.execute(query)
+  }
+
+  private def createTestView(): Unit = {
+    val query =
+      s"""
+         |CREATE VIEW $viewName AS SELECT * FROM $tableName
        """.stripMargin
     val stmt = connection.createStatement()
     stmt.execute(query)

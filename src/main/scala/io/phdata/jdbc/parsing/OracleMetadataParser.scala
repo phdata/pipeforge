@@ -11,6 +11,9 @@ class OracleMetadataParser(_connection: Connection)
 
   def connection = _connection
 
+  override def singleRecordQuery(schema: String, table: String) =
+    s"SELECT * FROM $schema.$table WHERE ROWNUM = 1"
+
   override def listTablesStatement(schema: String) =
     s"SELECT table_name FROM ALL_TABLES WHERE owner = '$schema'"
 
@@ -33,13 +36,9 @@ class OracleMetadataParser(_connection: Connection)
         JDBCType.valueOf(oracleRsMetadata.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,
-        metaData
-          .getPrecision(i),
+        metaData.getPrecision(i),
         metaData.getScale(i)
       )
     }.toSet
   }
-
-  override def singleRecordQuery(schema: String, table: String) =
-    s"SELECT * FROM ${schema}.${table} WHERE ROWNUM = 1"
 }

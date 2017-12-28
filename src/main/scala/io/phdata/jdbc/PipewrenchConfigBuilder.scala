@@ -8,6 +8,8 @@ import io.phdata.jdbc.pipewrench.TableBuilder
 import io.phdata.jdbc.util.YamlWrapper
 import org.rogach.scallop.ScallopConf
 
+import scala.util.{Failure, Success}
+
 /**
   * Query a source database via JDBC and output generated Pipewrench config
   * (`tables.yml`) for all tables in a given schema.
@@ -18,12 +20,14 @@ object PipewrenchConfigBuilder extends LazyLogging {
     val cliArgs = new CliArgsParser(args)
 
     val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf, cliArgs.databasePassword.toOption.get)
-    val databaseMetadata = DatabaseMetadataParser.parse(sourceDbConf)
-
-    val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata)
-    val generatedConfig = buildPipewrenchConfig(databaseMetadata, tableMetadata)
-
-    YamlWrapper.write(generatedConfig, cliArgs.outputPath)
+    DatabaseMetadataParser.parse(sourceDbConf) match {
+      case Success(databaseMetadata) =>
+        val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata)
+        val generatedConfig = buildPipewrenchConfig(databaseMetadata, tableMetadata)
+        YamlWrapper.write(generatedConfig, cliArgs.outputPath)
+      case Failure(e) =>
+        logger.error("Error gathering metadata from source", e)
+    }
   }
 
   /**
@@ -40,7 +44,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
   private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
     lazy val databaseConf = opt[String]("database-configuration", 's', required = false).getOrElse("source-database.conf")
     lazy val databasePassword = opt[String]("database-password", 'p', required = true)
-    lazy val tableMetadata = opt[String]("table-metadata", 'm', required = false).getOrElse("table-metadata.yml")
+    lazy val tableMetadata = opt[String]("table-metadata", 'm', required = false).getOrElse("src/main/resources/metadata.yml")
     lazy val outputPath = opt[String]("output-path", 'o', required = false).getOrElse("tables.yml")
 
     verify()

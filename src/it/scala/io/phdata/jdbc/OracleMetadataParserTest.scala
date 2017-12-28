@@ -2,15 +2,16 @@ package io.phdata.jdbc
 
 import java.sql.{JDBCType, ResultSet}
 
+import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
 import org.scalatest._
 import org.testcontainers.containers.OracleContainer
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
-class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
+class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
   lazy val oracle = new OracleContainer()
 
   lazy val dockerConfig =
@@ -47,14 +48,18 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll {
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    val definitions = parser.getTablesMetadata(ObjectType.TABLE, "HR", None)
-    assert(definitions.size == 7)
-    val expected = Success(
-      Table("REGIONS",
+    parser.getTablesMetadata(ObjectType.TABLE, "HR", None) match {
+      case Success(definitions) =>
+        assert(definitions.size == 7)
+        val expected = Success(
+          Table("REGIONS",
             Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
             Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0))))
 
-    assert(definitions.map(x => x == (expected)).reduce(_ || _))
+        assert(definitions.map(x => x == (expected)).reduce(_ || _))
+      case Failure(ex) =>
+        logger.error("Error gathering metadata from source", ex)
+    }
   }
 
   test("parse views metadata") {

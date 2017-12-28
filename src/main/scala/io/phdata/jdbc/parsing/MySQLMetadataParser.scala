@@ -11,7 +11,12 @@ class MySQLMetadataParser(_connection: Connection)
 
   def connection = _connection
 
+  override def singleRecordQuery(schema: String, table: String) =
+    s"SELECT * FROM $schema.$table LIMIT 1"
+
   override def listTablesStatement(schema: String) = "SHOW TABLES"
+
+  override def listViewsStatement(schema: String): String = ???
 
   override def getColumnDefinitions(schema: String,
                                     table: String): Set[Column] = {
@@ -33,10 +38,4 @@ class MySQLMetadataParser(_connection: Connection)
       )
     }.toSet
   }
-
-  override def singleRecordQuery(schema: String, table: String) =
-    s"SELECT * FROM $schema.$table LIMIT 1"
-
-  override def listViewsStatement(schema: String): String =
-    throw new NotImplementedError()
 }

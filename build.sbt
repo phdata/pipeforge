@@ -16,6 +16,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "mysql" % "mysql-connector-java" % "6.0.6",
       "oracle" % "ojdbc6" % "11.2.0.3",
+      "net.sourceforge.jtds" % "jtds" % "1.3.1",
       "org.yaml" % "snakeyaml" % "1.5",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",

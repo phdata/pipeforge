@@ -5,7 +5,6 @@ import java.sql._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
-import io.phdata.jdbc.util.ExceptionUtil._
 
 import scala.util.{Failure, Success, Try}
 
@@ -21,19 +20,19 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getColumnDefinitions(schema: String, table: String): Set[Column]
 
   def getTablesMetadata(objectType: ObjectType.Value,
-                        schema: String, tableWhiteList: Option[Set[String]]): Set[Try[Table]] = {
+                        schema: String,
+                        tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
     // If a white listing of tables is provided then only parse those tables
     val tables = tableWhiteList match {
       case Some(t) => t
       case None => listTables(objectType, schema)
     }
 
-    tables.map { t =>
-      Try(getTableMetadata(schema, t))
-        .messageOnFailure(
-          s"Error getting metadata for $schema.$t"
-        )
-    }
+    Try(
+      tables.map { t =>
+        getTableMetadata(schema, t)
+      }
+    )
   }
 
   def getTableMetadata(schema: String, table: String): Table = {
@@ -43,7 +42,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     Table(table, pks, columns)
   }
 
-  protected def primaryKeys(schema: String,
+  def primaryKeys(schema: String,
                             table: String,
                             columns: Set[Column]): Set[Column] = {
     logger.trace("Getting primary keys for schema: {}, table: {}",
@@ -54,17 +53,21 @@ trait DatabaseMetadataParser extends LazyLogging {
       record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
     }.toMap
 
-    pks.flatMap {
+    mapPrimaryKeyToColumn(pks, columns)
+  }
+
+  def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]) = {
+    primaryKeys.flatMap {
       case (key, index) =>
         columns.find(_.name == key) match {
           case Some(column) =>
             Some(
               Column(column.name,
-                     column.dataType,
-                     column.nullable,
-                     column.index,
-                     column.precision,
-                     column.scale))
+                column.dataType,
+                column.nullable,
+                column.index,
+                column.precision,
+                column.scale))
           case None => None
         }
     }.toSet
@@ -93,10 +96,10 @@ trait DatabaseMetadataParser extends LazyLogging {
 }
 
 object DatabaseMetadataParser extends LazyLogging {
-  def parse(configuration: DatabaseConf): Set[Table] = {
+  def parse(configuration: DatabaseConf): Try[Set[Table]] = {
     logger.info("Extracting metadata information: {}", configuration)
 
-    val results = getConnection(configuration) match {
+    getConnection(configuration) match {
       case Success(connection) =>
         configuration.databaseType match {
           case DatabaseType.MYSQL =>
@@ -105,24 +108,18 @@ object DatabaseMetadataParser extends LazyLogging {
           case DatabaseType.ORACLE =>
             new OracleMetadataParser(connection)
               .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
+          case DatabaseType.MSSQL =>
+            new MsSQLMetadataParser(connection)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
           case _ =>
-            Set(
               Failure(
                 new Exception(s"Metadata parser for database type: " +
-                  s"${configuration.databaseType} has not been configured")))
+                  s"${configuration.databaseType} has not been configured"))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: $configuration", e)
         throw e
     }
-
-    results.flatMap(x =>
-      x match {
-        case Success(v) => Some(v)
-        case Failure(e) =>
-          logger.warn(s"${e.getMessage} ${e.getStackTrace}")
-          None
-    })
   }
 
   def getConnection(configuration: DatabaseConf) =

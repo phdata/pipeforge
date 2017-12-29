@@ -4,6 +4,4 @@ pipelines:
   default:
     - step:
         script: 
-          - sbt clean test it:test assembly
-options:
-  docker: true
+          - sbt clean test assembly

@@ -3,6 +3,8 @@ import sbt._
 
 lazy val IntegrationTest = config("it") extend (Test)
 
+parallelExecution in Test := false
+
 lazy val root = (project in file("."))
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
@@ -27,7 +29,9 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "org.testcontainers" % "oracle-xe" % "1.4.3" % "test",
       "org.testcontainers" % "mysql" % "1.4.3" % "test",
-      "org.testcontainers" % "mssqlserver" % "1.4.3" % "test"
+      "org.testcontainers" % "mssqlserver" % "1.4.3" % "test",
+      "com.whisk" %% "docker-testkit-scalatest" % "0.9.5" % "test",
+      "com.whisk" %% "docker-testkit-impl-spotify" % "0.9.5" % "test"
     ),
     test in assembly := {}
   )

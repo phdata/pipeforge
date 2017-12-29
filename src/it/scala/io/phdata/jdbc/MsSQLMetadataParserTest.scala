@@ -2,28 +2,42 @@ package io.phdata.jdbc
 
 import java.sql.{JDBCType, ResultSet}
 
-import com.typesafe.scalalogging.LazyLogging
+import com.whisk.docker.{DockerContainer, DockerReadyChecker}
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MsSQLMetadataParser}
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import org.scalatest._
-import org.testcontainers.containers.MSSQLServerContainer
 
 import scala.util.{Failure, Success}
 
-class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
+class MsSQLMetadataParserTest extends DockerTestRunner {
 
-  private lazy val testDb = new MSSQLServerContainer()
-  private lazy val databaseName = "master"
-  private lazy val tableName = "it_table"
-  private lazy val viewName = "it_view"
+  import scala.concurrent.duration._
+
+  private lazy val PASSWORD = "!IntegrationTests"
+  private lazy val DATABASE = "master"
+  private lazy val USER = "SA"
+  private lazy val TABLE = "it_table"
+  private lazy val VIEW = "it_view"
+
+  override val image = "microsoft/mssql-server-linux:latest"
+
+  override val advertisedPort = 1433
+
+  override val exposedPort = 1433
+
+  override val container = DockerContainer(image)
+    .withPorts((advertisedPort, Some(exposedPort)))
+    .withEnv("ACCEPT_EULA=Y", s"SA_PASSWORD=$PASSWORD")
+//    .withReadyChecker(DockerReadyChecker.LogLineContains("SQL Server is now ready for client connections."))
+
+  private lazy val URL = s"jdbc:sqlserver://${container.hostname.getOrElse("localhost")}:$exposedPort;database=$DATABASE"
+  private lazy val DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 
   private lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
-    databaseName,
-    testDb.getJdbcUrl + ";database=master",
-    testDb.getUsername,
-    testDb.getPassword,
+    DATABASE,
+    URL,
+    USER,
+    PASSWORD,
     ObjectType.TABLE
   )
 
@@ -31,18 +45,24 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    testDb.withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT)
-    testDb.start()
-    // MSSQL Server takes a while to fully start sleep here is needed
-    Thread.sleep(2000)
+    container.withReadyChecker(
+      new DatabaseReadyChecker(
+        DRIVER,
+        URL,
+        USER,
+        PASSWORD,
+        DATABASE).looped(30, 5.seconds)
+    )
+    startAllOrFail()
+    Thread.sleep(5000)
     createTestTable()
     insertTestData()
     createTestView()
   }
 
   override def afterAll(): Unit = {
+    stopAllQuietly()
     super.afterAll()
-    testDb.stop()
   }
 
   test("run query against database") {
@@ -54,11 +74,11 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
 
   test("parse tables metadata") {
     val parser = new MsSQLMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.TABLE, databaseName, Some(Set(tableName))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
-          Table(tableName,
+          Table(TABLE,
           Set(
             Column("ID",JDBCType.INTEGER,false,1,10,0),
             Column("LastName",JDBCType.VARCHAR,false,2,255,0)),
@@ -75,11 +95,11 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
 
   test("parse views metadata") {
     val parser = new MsSQLMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.VIEW, databaseName, Some(Set(viewName))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
-          Table(viewName,
+          Table(VIEW,
             Set(),
             Set(
               Column("ID",JDBCType.INTEGER,false,1,10,0),
@@ -96,7 +116,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private def createTestDatabase(): Unit = {
     val query =
       s"""
-         |CREATE DATABASE $databaseName
+         |CREATE DATABASE $DATABASE
        """.stripMargin
     val stmt = connection.createStatement()
     stmt.execute(query)
@@ -105,7 +125,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private def createTestTable(): Unit = {
     val query =
       s"""
-         |CREATE TABLE $tableName (
+         |CREATE TABLE $TABLE (
          |  ID int NOT NULL,
          |  LastName varchar(255) NOT NULL,
          |  FirstName varchar(255),
@@ -120,7 +140,7 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private def insertTestData(): Unit = {
     val query =
       s"""
-         |INSERT INTO $tableName
+         |INSERT INTO $TABLE
          |  (ID, LastName, FirstName, Age)
          |VALUES
          |  (1, 'developer', 'phdata', 1)
@@ -132,17 +152,9 @@ class MsSQLMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyL
   private def createTestView(): Unit = {
     val query =
       s"""
-         |CREATE VIEW $viewName AS SELECT * FROM $tableName
+         |CREATE VIEW $VIEW AS SELECT * FROM $TABLE
        """.stripMargin
     val stmt = connection.createStatement()
     stmt.execute(query)
-  }
-
-  protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
-    }
   }
 }

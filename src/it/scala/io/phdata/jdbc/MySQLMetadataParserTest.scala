@@ -12,20 +12,18 @@ import scala.util.{Failure, Success}
 class MySQLMetadataParserTest extends DockerTestRunner {
 
   private lazy val ROOT_PASS = "root"
-  private lazy val DATABASE = "it_test"
-  private lazy val USER = "it_user"
-  private lazy val PASSWORD = "it_test"
-  private lazy val TABLE = "it_table"
-  private lazy val VIEW = "it_view"
-
-  override val image = "mysql"
-
-  override val advertisedPort = 3306
-
-  override val exposedPort = 3306
-
-  override val container = DockerContainer(image)
-    .withPorts((advertisedPort, Some(exposedPort)))
+  // Database Properties
+  override val DATABASE = "it_test"
+  override val USER = "it_user"
+  override val PASSWORD = "it_test"
+  override val TABLE = "it_table"
+  override val VIEW = "it_view"
+  // Container Properties
+  override val IMAGE = "mysql"
+  override val ADVERTISED_PORT = 3306
+  override val EXPOSED_PORT = 3306
+  override val CONTAINER = DockerContainer(IMAGE)
+    .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withEnv(
       s"MYSQL_ROOT_PASSWORD=$ROOT_PASS",
       s"MYSQL_DATABASE=$DATABASE",
@@ -33,8 +31,18 @@ class MySQLMetadataParserTest extends DockerTestRunner {
       s"MYSQL_PASSWORD=$PASSWORD")
     .withReadyChecker(DockerReadyChecker.LogLineContains("mysqld: ready for connections"))
 
-  private lazy val URL = s"jdbc:mysql://${container.hostname.getOrElse("localhost")}:$exposedPort/$DATABASE"
-  private lazy val DRIVER = "com.mysql.jdbc.Driver"
+  override val URL = s"jdbc:mysql://${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT/$DATABASE"
+  override val DRIVER = "com.mysql.jdbc.Driver"
+
+  override val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MYSQL,
+    DATABASE,
+    URL,
+    USER,
+    PASSWORD,
+    ObjectType.TABLE)
+
+  override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
+
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,25 +57,15 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     stopAllQuietly()
     super.afterAll()
   }
-
-  private lazy val dockerConfig = new DatabaseConf(DatabaseType.MYSQL,
-    DATABASE,
-    URL,
-    USER,
-    PASSWORD,
-    ObjectType.TABLE)
-
-  private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
-
   test("run query against database") {
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     val rs: ResultSet = stmt.executeQuery("SELECT table_name FROM information_schema.tables")
     val results = getResults(rs)(x => x.getString(1)).toList
     assertResult(63)(results.length)
   }
 
   test("parse tables metadata") {
-    val parser = new MySQLMetadataParser(connection)
+    val parser = new MySQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, None) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
@@ -88,7 +86,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   }
 
   test("parse views metadata") {
-    val parser = new MySQLMetadataParser(connection)
+    val parser = new MySQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
@@ -122,7 +120,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
          |  b_boolean BIT,
          |  PRIMARY KEY (primary_key))
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 
@@ -134,7 +132,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
          |VALUES
          |  ('test', CURRENT_DATE, CURRENT_TIMESTAMP, 1, 1, 0)
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 
@@ -143,7 +141,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
       s"""
          |CREATE VIEW $VIEW AS SELECT * FROM $TABLE
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 }

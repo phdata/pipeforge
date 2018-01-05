@@ -1,6 +1,6 @@
 package io.phdata.jdbc
 
-import java.sql.{DriverManager, ResultSet}
+import java.sql.{Connection, DriverManager, ResultSet}
 
 import com.spotify.docker.client.{DefaultDockerClient, DockerClient}
 import com.typesafe.scalalogging.LazyLogging
@@ -14,18 +14,29 @@ import scala.util.Try
 
 trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll with LazyLogging {
 
+  // Container Properties
+  val IMAGE: String
+  val ADVERTISED_PORT: Int
+  val EXPOSED_PORT: Int
+  val CONTAINER: DockerContainer
+  // Database Properties
+  val PASSWORD: String
+  val DATABASE: String
+  val USER: String
+  val TABLE: String
+  val VIEW: String
+  val URL: String
+  val DRIVER: String
+  val DOCKER_CONFIG: String
+  val CONNECTION: Try[Connection]
+
   override val StartContainersTimeout = 10.minutes
 
   private val client: DockerClient = DefaultDockerClient.fromEnv().build()
 
   override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(client)
 
-  val image: String
-  val advertisedPort: Int
-  val exposedPort: Int
-  val container: DockerContainer
-
-  abstract override def dockerContainers: List[DockerContainer] = container :: super.dockerContainers
+  abstract override def dockerContainers: List[DockerContainer] = CONTAINER :: super.dockerContainers
 
   protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
     new Iterator[T] {

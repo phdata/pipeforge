@@ -11,24 +11,24 @@ import scala.util.{Failure, Success}
 
 class OracleMetadataParserTest extends DockerTestRunner {
 
-  private lazy val DATABASE = "HR"
-  private lazy val USER = "system"
-  private lazy val PASSWORD = "oracle"
-  private lazy val TABLE = "REGIONS"
-  private lazy val VIEW = "EMP_DETAILS_VIEW"
+  override val DATABASE = "HR"
+  override val USER = "system"
+  override val PASSWORD = "oracle"
+  override val TABLE = "REGIONS"
+  override val VIEW = "EMP_DETAILS_VIEW"
 
-  override val image = "wnameless/oracle-xe-11g:latest"
-  override val advertisedPort = 1521
-  override val exposedPort = 1521
-  override val container = DockerContainer(image)
-    .withPorts((advertisedPort, Some(exposedPort)))
+  override val IMAGE = "wnameless/oracle-xe-11g:latest"
+  override val ADVERTISED_PORT = 1521
+  override val EXPOSED_PORT = 1521
+  override val CONTAINER = DockerContainer(IMAGE)
+    .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withReadyChecker(DockerReadyChecker.LogLineContains("/usr/sbin/startup.sh"))
 
 
-  private lazy val URL = s"jdbc:oracle:thin:$USER/$PASSWORD@//${container.hostname.getOrElse("localhost")}:$exposedPort/xe"
-  private lazy val DRIVER = "oracle.jdbc.driver.OracleDriver"
+  override val URL = s"jdbc:oracle:thin:$USER/$PASSWORD@//${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT/xe"
+  override val DRIVER = "oracle.jdbc.driver.OracleDriver"
 
-  private lazy val dockerConfig =
+  override val DOCKER_CONFIG =
     new DatabaseConf(DatabaseType.ORACLE,
       DATABASE,
       URL,
@@ -36,7 +36,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
       PASSWORD,
       ObjectType.TABLE)
 
-  private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+  override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,7 +49,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   }
 
   test("run query against database") {
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     val rs: ResultSet =
       stmt.executeQuery(
         "SELECT owner, table_name FROM ALL_TABLES where owner = 'HR'")
@@ -60,7 +60,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   }
 
   test("parse tables metadata") {
-    val parser = new OracleMetadataParser(connection)
+    val parser = new OracleMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
@@ -76,7 +76,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   }
 
   test("parse views metadata") {
-    val parser = new OracleMetadataParser(connection)
+    val parser = new OracleMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
       case Success(definitions) =>
         val expected = Set(

@@ -13,26 +13,25 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   import scala.concurrent.duration._
 
-  private lazy val PASSWORD = "!IntegrationTests"
-  private lazy val DATABASE = "master"
-  private lazy val USER = "SA"
-  private lazy val TABLE = "it_table"
-  private lazy val VIEW = "it_view"
+  // Database Properties
+  override val PASSWORD = "!IntegrationTests"
+  override val DATABASE = "master"
+  override val USER = "SA"
+  override val TABLE = "it_table"
+  override val VIEW = "it_view"
+  // Container Properites
+  override val IMAGE = "microsoft/mssql-server-linux:latest"
+  override val ADVERTISED_PORT = 1433
+  override val EXPOSED_PORT = 1433
 
-  override val image = "microsoft/mssql-server-linux:latest"
-
-  override val advertisedPort = 1433
-
-  override val exposedPort = 1433
-
-  override val container = DockerContainer(image)
-    .withPorts((advertisedPort, Some(exposedPort)))
+  override val CONTAINER = DockerContainer(IMAGE)
+    .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withEnv("ACCEPT_EULA=Y", s"SA_PASSWORD=$PASSWORD")
 
-  private lazy val URL = s"jdbc:sqlserver://${container.hostname.getOrElse("localhost")}:$exposedPort;database=$DATABASE"
-  private lazy val DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  override val URL = s"jdbc:sqlserver://${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT;database=$DATABASE"
+  override val DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 
-  private lazy val dockerConfig = new DatabaseConf(DatabaseType.MSSQL,
+  override val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MSSQL,
     DATABASE,
     URL,
     USER,
@@ -40,11 +39,11 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     ObjectType.TABLE
   )
 
-   private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
+   override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    container.withReadyChecker(
+    CONTAINER.withReadyChecker(
       new DatabaseReadyChecker(
         DRIVER,
         URL,
@@ -65,14 +64,14 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
   }
 
   test("run query against database") {
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     val rs: ResultSet = stmt.executeQuery("SELECT * FROM sys.tables")
     val results = getResults(rs)(x => x.getString(1)).toList
     assertResult(6)(results.length)
   }
 
   test("parse tables metadata") {
-    val parser = new MsSQLMetadataParser(connection)
+    val parser = new MsSQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
@@ -93,7 +92,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
   }
 
   test("parse views metadata") {
-    val parser = new MsSQLMetadataParser(connection)
+    val parser = new MsSQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
@@ -117,7 +116,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
       s"""
          |CREATE DATABASE $DATABASE
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 
@@ -132,7 +131,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
          |  CONSTRAINT PK_Person PRIMARY KEY (ID,LastName)
          |)
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 
@@ -144,7 +143,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
          |VALUES
          |  (1, 'developer', 'phdata', 1)
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 
@@ -153,7 +152,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
       s"""
          |CREATE VIEW $VIEW AS SELECT * FROM $TABLE
        """.stripMargin
-    val stmt = connection.createStatement()
+    val stmt = CONNECTION.createStatement()
     stmt.execute(query)
   }
 }

@@ -22,7 +22,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   override val IMAGE = "mysql"
   override val ADVERTISED_PORT = 3306
   override val EXPOSED_PORT = 3306
-  override val CONTAINER = DockerContainer(IMAGE)
+  override lazy val CONTAINER = DockerContainer(IMAGE)
     .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withEnv(
       s"MYSQL_ROOT_PASSWORD=$ROOT_PASS",
@@ -34,14 +34,14 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   override val URL = s"jdbc:mysql://${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT/$DATABASE"
   override val DRIVER = "com.mysql.jdbc.Driver"
 
-  override val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MYSQL,
+  private lazy val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MYSQL,
     DATABASE,
     URL,
     USER,
     PASSWORD,
     ObjectType.TABLE)
 
-  override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
+  private lazy val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
 
 
   override def beforeAll(): Unit = {

@@ -6,6 +6,7 @@ import com.spotify.docker.client.{DefaultDockerClient, DockerClient}
 import com.typesafe.scalalogging.LazyLogging
 import com.whisk.docker.impl.spotify.SpotifyDockerFactory
 import com.whisk.docker.{DockerCommandExecutor, DockerContainer, DockerContainerState, DockerFactory, DockerKit, DockerReadyChecker}
+import io.phdata.jdbc.config.DatabaseConf
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import scala.concurrent.duration._
@@ -27,8 +28,6 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
   val VIEW: String
   val URL: String
   val DRIVER: String
-  val DOCKER_CONFIG: String
-  val CONNECTION: Try[Connection]
 
   override val StartContainersTimeout = 10.minutes
 

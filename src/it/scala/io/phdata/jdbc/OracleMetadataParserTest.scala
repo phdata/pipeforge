@@ -20,7 +20,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   override val IMAGE = "wnameless/oracle-xe-11g:latest"
   override val ADVERTISED_PORT = 1521
   override val EXPOSED_PORT = 1521
-  override val CONTAINER = DockerContainer(IMAGE)
+  override lazy val CONTAINER = DockerContainer(IMAGE)
     .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withReadyChecker(DockerReadyChecker.LogLineContains("/usr/sbin/startup.sh"))
 
@@ -28,7 +28,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   override val URL = s"jdbc:oracle:thin:$USER/$PASSWORD@//${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT/xe"
   override val DRIVER = "oracle.jdbc.driver.OracleDriver"
 
-  override val DOCKER_CONFIG =
+  private lazy val DOCKER_CONFIG =
     new DatabaseConf(DatabaseType.ORACLE,
       DATABASE,
       URL,
@@ -36,7 +36,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
       PASSWORD,
       ObjectType.TABLE)
 
-  override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
+  private lazy val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -24,14 +24,14 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
   override val ADVERTISED_PORT = 1433
   override val EXPOSED_PORT = 1433
 
-  override val CONTAINER = DockerContainer(IMAGE)
+  override lazy val CONTAINER = DockerContainer(IMAGE)
     .withPorts((ADVERTISED_PORT, Some(EXPOSED_PORT)))
     .withEnv("ACCEPT_EULA=Y", s"SA_PASSWORD=$PASSWORD")
 
   override val URL = s"jdbc:sqlserver://${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT;database=$DATABASE"
   override val DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 
-  override val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MSSQL,
+  private lazy val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MSSQL,
     DATABASE,
     URL,
     USER,
@@ -39,7 +39,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     ObjectType.TABLE
   )
 
-   override val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
+   private lazy val CONNECTION = DatabaseMetadataParser.getConnection(DOCKER_CONFIG).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()

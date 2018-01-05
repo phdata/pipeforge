@@ -8,7 +8,6 @@ import io.phdata.jdbc.domain.Table
 object TableBuilder extends LazyLogging {
   def buildTablesSection(tableMetadata: Set[Table],
                          initialData: Map[String, Object]) = {
-    logger.info("Building tables.yml definition tableMetadata: {}, initialData: {}", tableMetadata, initialData)
     tableMetadata.toList
       .sortBy(_.name)
       .map(t => buildTable(t) ++ initialData)

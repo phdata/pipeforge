@@ -32,3 +32,5 @@ lazy val root = (project in file("."))
     ),
     test in assembly := {}
   )
+
+enablePlugins(JavaAppPackaging)

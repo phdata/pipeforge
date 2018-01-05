@@ -24,7 +24,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
       case Success(databaseMetadata) =>
         val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
         val generatedConfig = buildPipewrenchConfig(databaseMetadata, tableMetadata)
-        YamlWrapper.write(generatedConfig, cliArgs.outputPath)
+        YamlWrapper.write(generatedConfig, cliArgs.outputPath())
       case Failure(e) =>
         logger.error("Error gathering metadata from source", e)
     }
@@ -45,7 +45,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
     lazy val databaseConf = opt[String]("database-configuration", 's', required = true)
     lazy val databasePassword = opt[String]("database-password", 'p', required = true)
     lazy val tableMetadata = opt[String]("table-metadata", 'm', required = true)
-    lazy val outputPath = opt[String]("output-path", 'o', required = false).getOrElse("tables.yml")
+    lazy val outputPath = opt[String]("output-path", 'o', required = true)
 
     verify()
   }

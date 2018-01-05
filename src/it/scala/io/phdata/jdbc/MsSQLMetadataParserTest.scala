@@ -28,7 +28,6 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
   override val container = DockerContainer(image)
     .withPorts((advertisedPort, Some(exposedPort)))
     .withEnv("ACCEPT_EULA=Y", s"SA_PASSWORD=$PASSWORD")
-//    .withReadyChecker(DockerReadyChecker.LogLineContains("SQL Server is now ready for client connections."))
 
   private lazy val URL = s"jdbc:sqlserver://${container.hostname.getOrElse("localhost")}:$exposedPort;database=$DATABASE"
   private lazy val DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver"

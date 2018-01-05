@@ -27,9 +27,6 @@ lazy val root = (project in file("."))
       // https://github.com/scallop/scallop
       "org.rogach" %% "scallop" % "3.1.1",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-      "org.testcontainers" % "oracle-xe" % "1.4.3" % "test",
-      "org.testcontainers" % "mysql" % "1.4.3" % "test",
-      "org.testcontainers" % "mssqlserver" % "1.4.3" % "test",
       "com.whisk" %% "docker-testkit-scalatest" % "0.9.5" % "test",
       "com.whisk" %% "docker-testkit-impl-spotify" % "0.9.5" % "test"
     ),

@@ -133,6 +133,7 @@ object DatabaseMetadataParser extends LazyLogging {
   }
 
   def getConnection(configuration: DatabaseConf) = {
+    logger.info(configuration.jdbcUrl)
     Try(
       DriverManager.getConnection(configuration.jdbcUrl,
         configuration.username,

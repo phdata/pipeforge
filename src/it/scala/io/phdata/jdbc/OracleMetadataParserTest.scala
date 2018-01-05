@@ -2,41 +2,50 @@ package io.phdata.jdbc
 
 import java.sql.{JDBCType, ResultSet}
 
-import com.typesafe.scalalogging.LazyLogging
+import com.whisk.docker.{DockerContainer, DockerReadyChecker}
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
-import org.scalatest._
-import org.testcontainers.containers.OracleContainer
 
 import scala.util.{Failure, Success}
 
-class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with LazyLogging {
+class OracleMetadataParserTest extends DockerTestRunner {
 
-  private lazy val oracle = new OracleContainer()
-  private lazy val databaseName = "HR"
-  private lazy val tableName = "REGIONS"
-  private lazy val viewName = "EMP_DETAILS_VIEW"
+  private lazy val DATABASE = "HR"
+  private lazy val USER = "system"
+  private lazy val PASSWORD = "oracle"
+  private lazy val TABLE = "REGIONS"
+  private lazy val VIEW = "EMP_DETAILS_VIEW"
+
+  override val image = "wnameless/oracle-xe-11g:latest"
+  override val advertisedPort = 1521
+  override val exposedPort = 1521
+  override val container = DockerContainer(image)
+    .withPorts((advertisedPort, Some(exposedPort)))
+    .withReadyChecker(DockerReadyChecker.LogLineContains("/usr/sbin/startup.sh"))
+
+
+  private lazy val URL = s"jdbc:oracle:thin:$USER/$PASSWORD@//${container.hostname.getOrElse("localhost")}:$exposedPort/xe"
+  private lazy val DRIVER = "oracle.jdbc.driver.OracleDriver"
 
   private lazy val dockerConfig =
     new DatabaseConf(DatabaseType.ORACLE,
-                     databaseName,
-                     oracle.getJdbcUrl,
-                     oracle.getUsername,
-                     oracle.getPassword,
-                     ObjectType.TABLE)
+      DATABASE,
+      URL,
+      USER,
+      PASSWORD,
+      ObjectType.TABLE)
 
   private lazy val connection = DatabaseMetadataParser.getConnection(dockerConfig).get
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    oracle.withExposedPorts(1521)
-    oracle.start()
+    startAllOrFail()
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    oracle.stop()
+    stopAllQuietly()
   }
 
   test("run query against database") {
@@ -52,11 +61,11 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.TABLE, databaseName, Some(Set(tableName))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
-          Table(tableName,
+          Table(TABLE,
             Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
             Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)
             )))
@@ -68,11 +77,11 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
 
   test("parse views metadata") {
     val parser = new OracleMetadataParser(connection)
-    parser.getTablesMetadata(ObjectType.VIEW, databaseName, Some(Set(viewName))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
       case Success(definitions) =>
         val expected = Set(
           Table(
-            viewName,
+            VIEW,
             Set(),
             Set(
               Column("JOB_ID", JDBCType.VARCHAR, false, 2, 10, 0),
@@ -96,14 +105,6 @@ class OracleMetadataParserTest extends FunSuite with BeforeAndAfterAll with Lazy
         assertResult(expected)(definitions)
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
-    }
-  }
-
-  protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
     }
   }
 }

@@ -2,7 +2,7 @@ package io.phdata.jdbc
 
 import java.sql.{JDBCType, ResultSet}
 
-import com.whisk.docker.{DockerContainer, DockerReadyChecker}
+import com.whisk.docker.DockerContainer
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MsSQLMetadataParser}

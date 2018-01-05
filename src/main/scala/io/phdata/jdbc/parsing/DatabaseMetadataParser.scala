@@ -33,6 +33,7 @@ trait DatabaseMetadataParser extends LazyLogging {
   def checkWhiteListedTables(sourceTables: Set[String], tableWhiteList: Option[Set[String]]): Try[Set[String]] = {
     tableWhiteList match {
       case Some(whiteList) =>
+        logger.debug("Checking user supplied white list against source system: {}", whiteList)
         if (whiteList.subsetOf(sourceTables)) {
           Success(whiteList)
         } else {
@@ -51,6 +52,7 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
     val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
+    logger.debug("Gathering primary keys from JDBC metadata")
     val pks = results(rs) { record =>
       record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
     }.toMap
@@ -90,7 +92,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
-    logger.debug("Executing query: {}", query)
+    logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
     results(stmt.executeQuery(query))(_.getString(1)).toSet
   }
 
@@ -107,7 +109,7 @@ trait DatabaseMetadataParser extends LazyLogging {
 
 object DatabaseMetadataParser extends LazyLogging {
   def parse(configuration: DatabaseConf): Try[Set[Table]] = {
-    logger.info("Extracting metadata information: {}", configuration)
+    logger.info("Extracting metadata information from database: {}", configuration)
 
     getConnection(configuration) match {
       case Success(connection) =>
@@ -133,7 +135,7 @@ object DatabaseMetadataParser extends LazyLogging {
   }
 
   def getConnection(configuration: DatabaseConf) = {
-    logger.info(configuration.jdbcUrl)
+    logger.debug("Connecting to database: {}", configuration)
     Try(
       DriverManager.getConnection(configuration.jdbcUrl,
         configuration.username,

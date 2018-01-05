@@ -31,7 +31,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
 
   override def getColumnDefinitions(schema: String, table: String): Set[Column] = {
     val query = singleRecordQuery(schema, table)
-    logger.debug("Executing query: {}", query)
+    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
     val metaData: ResultSetMetaData = results(newStatement.executeQuery(query))(_.getMetaData).toList.head
     val rsMetadata = metaData.asInstanceOf[com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData]
     mapMetaDataToColumn(metaData, rsMetadata)
@@ -55,6 +55,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
          |WHERE t.TABLE_CATALOG = '$schema' AND t.TABLE_NAME = '$table' AND CONSTRAINT_TYPE = 'PRIMARY KEY';
        """.stripMargin
 
+    logger.debug(s"Gathering primary keys for $schema.$table, query: {}", query)
     val pks = results(newStatement.executeQuery(query)) {
       record =>
         record.getString("COLUMN_NAME") -> record.getInt("ORDINAL_POSITION")

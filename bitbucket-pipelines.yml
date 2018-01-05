@@ -4,4 +4,4 @@ pipelines:
   default:
     - step:
         script: 
-          - sbt clean test it:test assembly
+          - sbt clean test assembly

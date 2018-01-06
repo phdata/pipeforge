@@ -12,7 +12,25 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
+/**
+  * Integration test Docker interface
+  * https://github.com/whisklabs/docker-it-scala
+  */
 trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll with LazyLogging {
+
+  // Container Properties
+  val IMAGE: String
+  val ADVERTISED_PORT: Int
+  val EXPOSED_PORT: Int
+  val CONTAINER: DockerContainer
+  // Database Properties
+  val PASSWORD: String
+  val DATABASE: String
+  val USER: String
+  val TABLE: String
+  val VIEW: String
+  val URL: String
+  val DRIVER: String
 
   override val StartContainersTimeout = 10.minutes
 
@@ -20,12 +38,7 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
 
   override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(client)
 
-  val image: String
-  val advertisedPort: Int
-  val exposedPort: Int
-  val container: DockerContainer
-
-  abstract override def dockerContainers: List[DockerContainer] = container :: super.dockerContainers
+  abstract override def dockerContainers: List[DockerContainer] = CONTAINER :: super.dockerContainers
 
   protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
     new Iterator[T] {
@@ -36,6 +49,15 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
   }
 }
 
+/**
+  * Helper function for determining if the docker container is running or not
+  * @param driver
+  * @param url
+  * @param user
+  * @param password
+  * @param database
+  * @param port
+  */
 class DatabaseReadyChecker(driver: String, url: String, user: String, password: String, database: String, port: Option[Int] = None) extends DockerReadyChecker {
   override def apply(container: DockerContainerState)(implicit docker: DockerCommandExecutor, ec: ExecutionContext) = {
     container

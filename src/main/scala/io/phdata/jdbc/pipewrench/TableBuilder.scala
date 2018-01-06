@@ -2,9 +2,13 @@ package io.phdata.jdbc.pipewrench
 
 import java.sql.JDBCType
 
+import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Table
 
-object TableBuilder {
+/**
+  * Builds Pipewrench Table definitions
+  */
+object TableBuilder extends LazyLogging {
   def buildTablesSection(tableMetadata: Set[Table],
                          initialData: Map[String, Object]) = {
     tableMetadata.toList

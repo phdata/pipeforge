@@ -5,6 +5,9 @@ import java.sql.JDBCType
 import io.phdata.jdbc.domain.Column
 import org.scalatest.FunSuite
 
+/**
+  * ColumnBuilder unit tests
+  */
 class ColumnBuilderTest extends FunSuite {
   test("map decimal") {
     val column = Column("col1", JDBCType.NUMERIC, false, 0, 10, 4)

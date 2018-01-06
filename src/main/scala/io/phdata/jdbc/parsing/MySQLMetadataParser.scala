@@ -5,6 +5,10 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+/**
+  * MySQL metadata parser implementation
+  * @param _connection
+  */
 class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParser {
 
   def connection = _connection
@@ -34,7 +38,7 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def getColumnDefinitions(schema: String,
                                     table: String): Set[Column] = {
     val query = singleRecordQuery(schema, table)
-    logger.debug("Executing query: {}", query)
+    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
     val metaData: ResultSetMetaData = results(newStatement.executeQuery(query))(_.getMetaData).toList.head
     val rsMetadata = metaData.asInstanceOf[com.mysql.cj.jdbc.result.ResultSetMetaData]
     mapMetaDataToColumn(metaData, rsMetadata)

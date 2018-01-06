@@ -6,6 +6,9 @@ import io.phdata.jdbc.domain.{Column, Table}
 import io.phdata.jdbc.util.YamlWrapper
 import org.scalatest.FunSuite
 
+/**
+  * PipewrenchConfigBuilder unit tests
+  */
 class PipewrenchConfigBuilderTest extends FunSuite {
   val initialTableDataPath = "src/test/resources/initialTableData.yml"
 

@@ -2,10 +2,16 @@ package io.phdata.jdbc.pipewrench
 
 import java.sql.JDBCType
 
+import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
-object ColumnBuilder {
+/**
+  * Builds Pipewrench column definitions
+  */
+object ColumnBuilder extends LazyLogging {
+
   def buildColumns(columns: Set[Column]) = {
+    logger.debug(s"Building Columns: {}", columns)
     columns.toList
       .sortBy(_.index)
       .map(buildColumn)
@@ -17,6 +23,7 @@ object ColumnBuilder {
       Map("name" -> column.name, "datatype" -> dataType, "comment" -> "")
 
     if (dataType == DataType.DECIMAL) {
+      logger.trace("Found decimal value: {}", column)
       map + ("scale" -> column.scale) + ("precision" -> column.precision)
     } else {
       map

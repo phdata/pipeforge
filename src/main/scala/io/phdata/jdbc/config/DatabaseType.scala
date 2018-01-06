@@ -1,5 +1,8 @@
 package io.phdata.jdbc.config
 
+/**
+  * Supported database types
+  */
 object DatabaseType extends Enumeration {
 
   val MYSQL = Value("mysql")

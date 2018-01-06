@@ -5,7 +5,11 @@ import java.sql.JDBCType
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+/**
+  * Builds Pipewrench column definitions
+  */
 object ColumnBuilder extends LazyLogging {
+
   def buildColumns(columns: Set[Column]) = {
     logger.debug(s"Building Columns: {}", columns)
     columns.toList

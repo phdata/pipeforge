@@ -5,6 +5,10 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+/**
+  * Microsoft SQL Server metadata parser implementation
+  * @param _connection
+  */
 class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParser {
 
   override def connection = _connection

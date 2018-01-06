@@ -9,6 +9,9 @@ import io.phdata.jdbc.parsing.{DatabaseMetadataParser, OracleMetadataParser}
 
 import scala.util.{Failure, Success}
 
+/**
+  * Oracle integration tests
+  */
 class OracleMetadataParserTest extends DockerTestRunner {
 
   override val DATABASE = "HR"

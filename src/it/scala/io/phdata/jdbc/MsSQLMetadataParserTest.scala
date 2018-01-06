@@ -9,6 +9,9 @@ import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MsSQLMetadataParser}
 
 import scala.util.{Failure, Success}
 
+/**
+  * Microsoft SQL Server integration tests
+  */
 class MsSQLMetadataParserTest extends DockerTestRunner {
 
   import scala.concurrent.duration._

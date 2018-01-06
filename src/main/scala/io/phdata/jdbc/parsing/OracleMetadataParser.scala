@@ -5,6 +5,10 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+/**
+  * Oracle metadata parser implementation
+  * @param _connection
+  */
 class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataParser {
 
   def connection = _connection

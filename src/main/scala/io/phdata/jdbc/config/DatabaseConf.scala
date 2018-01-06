@@ -5,12 +5,15 @@ import java.io.File
 import com.typesafe.config.ConfigFactory
 
 /**
+  * Defines the database-configuration file
   *
-  * @param databaseType Can be 'oracle' or 'mysql'
-  * @param schema       Schema or database configuration is to be generated for
+  * @param databaseType Source database type can be 'oracle', 'mysql', or 'mssql'
+  * @param schema       Schema or database to parse
   * @param jdbcUrl      JDBC connection string url
   * @param username     The username
   * @param password     The password
+  * @param objectType   Database objects to parse can be 'table' or 'view'
+  * @param tables       White listing of tables to parse
   */
 case class DatabaseConf(databaseType: DatabaseType.Value,
                         schema: String,
@@ -20,12 +23,21 @@ case class DatabaseConf(databaseType: DatabaseType.Value,
                         objectType: ObjectType.Value,
                         tables: Option[Set[String]] = None)
 
+/**
+  * Parses configuration file into DatabaseConf object
+  */
 object DatabaseConf {
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.EnumerationReader._
 
-  def parse(configName: String, password: String) = {
-    val file = new File(configName)
+  /**
+    * Converts database configuration file into DatabaseConf object
+    * @param path Database configuration file path
+    * @param password Database user password
+    * @return DatabaseConf
+    */
+  def parse(path: String, password: String) = {
+    val file = new File(path)
     val configFactory = ConfigFactory.parseFile(file)
 
     new DatabaseConf(

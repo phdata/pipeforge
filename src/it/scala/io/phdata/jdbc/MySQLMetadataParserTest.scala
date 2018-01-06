@@ -9,6 +9,9 @@ import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MySQLMetadataParser}
 
 import scala.util.{Failure, Success}
 
+/**
+  * MySQL integration tests
+  */
 class MySQLMetadataParserTest extends DockerTestRunner {
 
   private lazy val ROOT_PASS = "root"

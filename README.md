@@ -33,7 +33,7 @@ META_LOAD_FREQUENCY: "DAILY"
 sbt clean assembly
 ```
 
-Creates a jar with the required dependencies.  The jar is found in  `target/scala-2.12/pipeforce_2.12-<version>.jar`.
+Creates a jar with the required dependencies ([sbt-assembly](https://github.com/sbt/sbt-assembly)).  The jar is found in  `target/scala-2.12/pipeforce_2.12-<version>.jar`.
 
 1. Copy jar to `$INSTALL_LOCATION`
 2. Change directory to `$INSTALL_LOCATION`
@@ -51,7 +51,7 @@ java -cp pipforge-<version>.jar io.phdata.jdbc.PipewrenchConfigBuilder \
 ```sbtshell
 sbt clean assembly universal:packageBin
 ```
-Creates a bundled zip application with required dependencies and executable scripts.  Package is found in `target/universal/pipeforge-<version>.zip`.
+Creates a bundled zip application with required dependencies and executable scripts ([sbt-native-packager](https://github.com/sbt/sbt-native-packager)).  Package is found in `target/universal/pipeforge-<version>.zip`.
 
 1. Copy zip file to `$INSTALL_LCOATION`
 2. Change directory to `$INSTALL_LOCATION`
@@ -79,4 +79,4 @@ sbt clean test
 sbt clean it:test
 ```
 
-NOTE: Docker must be installed on the system running integration tests.  Docker is used to spin up test databases during testing.
+NOTE: [Docker](https://www.docker.com/) must be [installed](https://docs.docker.com/engine/installation/) on the system running integration tests.  Docker is used to spin up test databases during testing.

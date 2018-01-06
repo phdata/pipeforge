@@ -1,18 +1,21 @@
 package io.phdata.jdbc
 
-import java.sql.{Connection, DriverManager, ResultSet}
+import java.sql.{DriverManager, ResultSet}
 
 import com.spotify.docker.client.{DefaultDockerClient, DockerClient}
 import com.typesafe.scalalogging.LazyLogging
 import com.whisk.docker.impl.spotify.SpotifyDockerFactory
 import com.whisk.docker.{DockerCommandExecutor, DockerContainer, DockerContainerState, DockerFactory, DockerKit, DockerReadyChecker}
-import io.phdata.jdbc.config.DatabaseConf
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
+/**
+  * Integration test Docker interface
+  * https://github.com/whisklabs/docker-it-scala
+  */
 trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll with LazyLogging {
 
   // Container Properties
@@ -46,6 +49,15 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
   }
 }
 
+/**
+  * Helper function for determining if the docker container is running or not
+  * @param driver
+  * @param url
+  * @param user
+  * @param password
+  * @param database
+  * @param port
+  */
 class DatabaseReadyChecker(driver: String, url: String, user: String, password: String, database: String, port: Option[Int] = None) extends DockerReadyChecker {
   override def apply(container: DockerContainerState)(implicit docker: DockerCommandExecutor, ec: ExecutionContext) = {
     container

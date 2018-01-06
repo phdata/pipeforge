@@ -11,19 +11,25 @@ import org.rogach.scallop.ScallopConf
 import scala.util.{Failure, Success}
 
 /**
-  * Query a source database via JDBC and output generated Pipewrench config
-  * (`tables.yml`) for all tables in a given schema.
+  * Pipewrench config builder application connects to a source database and parses table definitions
+  * using JDBC metadata.
   */
 object PipewrenchConfigBuilder extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
+    // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
 
+    // Read and parse database-configuration file
     val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf(), cliArgs.databasePassword())
+    // Try to parse database metadata
     DatabaseMetadataParser.parse(sourceDbConf) match {
       case Success(databaseMetadata) =>
+        // Read in additional table metadata
         val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
+        // Build Pipewrench tables definition
         val generatedConfig = buildPipewrenchConfig(databaseMetadata, tableMetadata)
+        // Write Pipewrench tables files
         YamlWrapper.write(generatedConfig, cliArgs.outputPath())
       case Failure(e) =>
         logger.error("Error gathering metadata from source", e)

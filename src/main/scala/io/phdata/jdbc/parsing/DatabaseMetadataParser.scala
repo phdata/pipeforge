@@ -8,21 +8,58 @@ import io.phdata.jdbc.domain.{Column, Table}
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Parses table definitions from a database
+  */
 trait DatabaseMetadataParser extends LazyLogging {
 
+  /**
+    * Database connection
+    * @return Connection
+    */
   def connection: Connection
 
+  /**
+    * Database specific query that returns a result set containing all tables in the specified schema
+    * @param schema Schema or database name
+    * @return SQL query listing databases in schema
+    */
   def listTablesStatement(schema: String): String
 
+  /**
+    * Database specific query selecting a single row from the a schema and table
+    * @param schema Schema or database name
+    * @param table Table name
+    * @return SQL query selecting a single row from table
+    */
   def singleRecordQuery(schema: String, table: String): String
 
+  /**
+    * Database specific query that returns a result set containing all views in the specified schema
+    * @param schema Schema or database name
+    * @return
+    */
   def listViewsStatement(schema: String): String
 
+  /**
+    * Build column definitions for a specific table
+    * @param schema Schema or database name
+    * @param table Table name
+    * @return A Set of Column definitions
+    */
   def getColumnDefinitions(schema: String, table: String): Set[Column]
 
+  /**
+    * Main starting point for gathering table and column metadata
+    * @param objectType Table or View
+    * @param schema Schema or database name
+    * @param tableWhiteList Optional table whitelisting
+    * @return A Set of table definitions
+    */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
+    // Query database for a list of tables or views
     val sourceTables = listTables(objectType, schema)
     checkWhiteListedTables(sourceTables, tableWhiteList) match {
       case Success(tables) => Try(tables.map(getTableMetadata(schema, _)))
@@ -30,6 +67,12 @@ trait DatabaseMetadataParser extends LazyLogging {
     }
   }
 
+  /**
+    * Verifies all user supplied white listed tables or views with database
+    * @param sourceTables A set containing a list of source tables or views
+    * @param tableWhiteList Optional user supplied table whitelisting
+    * @return A Set of tables
+    */
   def checkWhiteListedTables(sourceTables: Set[String], tableWhiteList: Option[Set[String]]): Try[Set[String]] = {
     tableWhiteList match {
       case Some(whiteList) =>
@@ -43,6 +86,12 @@ trait DatabaseMetadataParser extends LazyLogging {
     }
   }
 
+  /**
+    * Gets metadata for an individual table and its columns
+    * @param schema Schema or database name
+    * @param table Table name
+    * @return Table definition
+    */
   def getTableMetadata(schema: String, table: String): Table = {
     val allColumns = getColumnDefinitions(schema, table)
     val pks = primaryKeys(schema, table, allColumns)
@@ -50,6 +99,13 @@ trait DatabaseMetadataParser extends LazyLogging {
     Table(table, pks, columns)
   }
 
+  /**
+    * Gets the primary keys for a table
+    * @param schema Schema or database name
+    * @param table Table name
+    * @param columns Complete set of column definitions for the table
+    * @return Primary key definitions
+    */
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
     val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     logger.debug("Gathering primary keys from JDBC metadata")
@@ -60,6 +116,12 @@ trait DatabaseMetadataParser extends LazyLogging {
     mapPrimaryKeyToColumn(pks, columns)
   }
 
+  /**
+    * Maps a JDBC result set to Column definition
+    * @param metaData Result set metadata
+    * @param rsMetadata
+    * @return A set of column definitions
+    */
   def mapMetaDataToColumn(metaData: ResultSetMetaData, rsMetadata: ResultSetMetaData): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
@@ -75,6 +137,12 @@ trait DatabaseMetadataParser extends LazyLogging {
     }.toSet
   }
 
+  /**
+    * Finds the column definitions for primary key definitions
+    * @param primaryKeys A Map containing the primary key and its column position
+    * @param columns A Set of column definitions
+    * @return Primary key column definitions
+    */
   def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]) = {
     primaryKeys.flatMap {
       case (key, index) =>
@@ -87,6 +155,12 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   def metadata = connection.getMetaData
 
+  /**
+    * Gathers a list of tables or views from the specified schema in the database
+    * @param objectType Table or View
+    * @param schema Schema or database name
+    * @return A Set of tables or views
+    */
   def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
     val stmt: Statement = newStatement
     val query =
@@ -96,8 +170,19 @@ trait DatabaseMetadataParser extends LazyLogging {
     results(stmt.executeQuery(query))(_.getString(1)).toSet
   }
 
+  /**
+    * Prepares a statement
+    * @return
+    */
   def newStatement = connection.createStatement()
 
+  /**
+    * Helper for iterating through a result set
+    * @param resultSet The result set to iterate over
+    * @param f the function to call on the result set
+    * @tparam T The output
+    * @return
+    */
   protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
     new Iterator[T] {
       def hasNext = resultSet.next()
@@ -107,12 +192,23 @@ trait DatabaseMetadataParser extends LazyLogging {
   }
 }
 
+/**
+  * Parses table definitions from database
+  */
 object DatabaseMetadataParser extends LazyLogging {
+
+  /**
+    * Parses table definition from database
+    * @param configuration Database configuration
+    * @return Set of table definitions
+    */
   def parse(configuration: DatabaseConf): Try[Set[Table]] = {
     logger.info("Extracting metadata information from database: {}", configuration)
 
+    // Establish connection to database
     getConnection(configuration) match {
       case Success(connection) =>
+        // Determine the database type and parse table definitions
         configuration.databaseType match {
           case DatabaseType.MYSQL =>
             new MySQLMetadataParser(connection)
@@ -134,6 +230,11 @@ object DatabaseMetadataParser extends LazyLogging {
     }
   }
 
+  /**
+    * Create a connection to the database
+    * @param configuration Database configuration
+    * @return
+    */
   def getConnection(configuration: DatabaseConf) = {
     logger.debug("Connecting to database: {}", configuration)
     Try(

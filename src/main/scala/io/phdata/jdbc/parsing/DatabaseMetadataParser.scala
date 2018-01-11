@@ -58,6 +58,24 @@ trait DatabaseMetadataParser extends LazyLogging {
     */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
+                        tableWhiteList: Option[Set[String]],
+                        skipWhiteListCheck: Boolean = false): Try[Set[Table]] = {
+    // Query database for a list of tables or views
+    if (skipWhiteListCheck) {
+      tableWhiteList match {
+        case Some(tables) => Try(tables.map(getTableMetadata(schema, _)))
+        case None => Failure(new Exception("Whitelist tables not specified."))
+      }
+    } else {
+      val sourceTables = listTables(objectType, schema)
+      checkWhiteListedTables(sourceTables, tableWhiteList) match {
+        case Success(tables) => Try(tables.map(getTableMetadata(schema, _)))
+        case Failure(ex) => Failure(ex)
+      }
+    }
+  }
+  def getTablesMetadata(objectType: ObjectType.Value,
+                        schema: String,
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
     // Query database for a list of tables or views
     val sourceTables = listTables(objectType, schema)
@@ -202,7 +220,7 @@ object DatabaseMetadataParser extends LazyLogging {
     * @param configuration Database configuration
     * @return Set of table definitions
     */
-  def parse(configuration: DatabaseConf): Try[Set[Table]] = {
+  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[Set[Table]] = {
     logger.info("Extracting metadata information from database: {}", configuration)
 
     // Establish connection to database
@@ -212,13 +230,16 @@ object DatabaseMetadataParser extends LazyLogging {
         configuration.databaseType match {
           case DatabaseType.MYSQL =>
             new MySQLMetadataParser(connection)
-              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables, skipWhiteListCheck)
           case DatabaseType.ORACLE =>
             new OracleMetadataParser(connection)
-              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables, skipWhiteListCheck)
           case DatabaseType.MSSQL =>
             new MsSQLMetadataParser(connection)
-              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables, skipWhiteListCheck)
+          case DatabaseType.HANA =>
+            new HANAMetadataParser(connection)
+              .getTablesMetadata(configuration.objectType, configuration.schema, configuration.tables, skipWhiteListCheck)
           case _ =>
               Failure(
                 new Exception(s"Metadata parser for database type: " +

@@ -2,3 +2,4 @@
 target
 project/target
 tables.yml
+.DS_store

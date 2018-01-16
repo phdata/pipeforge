@@ -23,7 +23,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
     // Read and parse database-configuration file
     val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf(), cliArgs.databasePassword())
     // Try to parse database metadata
-    DatabaseMetadataParser.parse(sourceDbConf) match {
+    DatabaseMetadataParser.parse(sourceDbConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
       case Success(databaseMetadata) =>
         // Read in additional table metadata
         val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
@@ -44,6 +44,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
     * database-password (p) Required - The source database password
     * table-metadata (m) Required - Path to the metadata yml file which will be used the enhance the tables.yml output
     * output-path (o) - Output path for the file generated tables.yml file
+    * check-whitelist (c) - Output path for the file generated tables.yml file
     *
     * @param args
     */
@@ -52,6 +53,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
     lazy val databasePassword = opt[String]("database-password", 'p', required = true)
     lazy val tableMetadata = opt[String]("table-metadata", 'm', required = true)
     lazy val outputPath = opt[String]("output-path", 'o', required = true)
+    lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
 
     verify()
   }

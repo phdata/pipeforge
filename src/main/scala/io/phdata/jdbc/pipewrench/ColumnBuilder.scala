@@ -26,19 +26,19 @@ import io.phdata.jdbc.domain.Column
   */
 object ColumnBuilder extends LazyLogging {
 
-  def buildColumns(columns: Set[Column]) = {
+  def buildColumns(columns: Set[Column]): Seq[Map[String, Any]] = {
     logger.debug(s"Building Columns: {}", columns)
     columns.toList
       .sortBy(_.index)
       .map(buildColumn)
   }
 
-  def buildColumn(column: Column) = {
+  def buildColumn(column: Column): Map[String, Any] = {
     val dataType = mapDataType(column)
     val map =
       Map("name" -> column.name, "datatype" -> dataType, "comment" -> "")
 
-    if (dataType == DataType.DECIMAL) {
+    if (dataType == DataType.DECIMAL.toString) {
       logger.trace("Found decimal value: {}", column)
       map + ("scale" -> column.scale) + ("precision" -> column.precision)
     } else {
@@ -46,13 +46,13 @@ object ColumnBuilder extends LazyLogging {
     }
   }
 
-  def mapDataType(column: Column) = {
+  def mapDataType(column: Column): String = {
     column match {
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s > 0 =>            DataType.DECIMAL
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19 => DataType.DECIMAL
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10 => DataType.BIG_INT
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5 =>  DataType.INTEGER
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3 =>  DataType.SHORT
+      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s > 0 =>            DataType.DECIMAL.toString
+      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19 => DataType.DECIMAL.toString
+      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10 => DataType.BIG_INT.toString
+      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5 =>  DataType.INTEGER.toString
+      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3 =>  DataType.SHORT.toString
       case _                                                          =>  column.dataType.toString
     }
   }

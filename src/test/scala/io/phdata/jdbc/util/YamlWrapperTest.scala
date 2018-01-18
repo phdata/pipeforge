@@ -16,17 +16,26 @@
 
 package io.phdata.jdbc.util
 
+import java.sql.JDBCType
+
+import io.phdata.jdbc.domain.{Column, Table}
+import io.phdata.jdbc.pipewrench.TableBuilder
 import org.scalatest.FunSuite
+
 
 /**
   * YamlWrapper unit tests
   */
 class YamlWrapperTest extends FunSuite {
   test("write yaml") {
-    val data = Map("key" -> "value",
-      "list" ->
-        Seq(Map("one" -> "two")
-          , Map("three" -> "four")))
+    val primaryKey = Column("id", JDBCType.BIGINT, nullable = false, 1, 9, 0)
+    val column = Column("name", JDBCType.VARCHAR, nullable = true, 2, 0, 0)
+    val table =  Table("test", Set(primaryKey), Set(column))
+    val data = Map("tables" -> TableBuilder.buildTablesSection(Set(table), Map.empty))
+//    val data = Map("key" -> "value",
+//      "list" ->
+//        Seq(Map("one" -> "two")
+//          , Map("three" -> "four")))
 
 
     YamlWrapper.write(data, "target/test.yml")

@@ -32,13 +32,8 @@ class YamlWrapperTest extends FunSuite {
     val column = Column("name", JDBCType.VARCHAR, nullable = true, 2, 0, 0)
     val table =  Table("test", Set(primaryKey), Set(column))
     val data = Map("tables" -> TableBuilder.buildTablesSection(Set(table), Map.empty))
-//    val data = Map("key" -> "value",
-//      "list" ->
-//        Seq(Map("one" -> "two")
-//          , Map("three" -> "four")))
 
-
-    YamlWrapper.write(data, "target/test.yml")
+    YamlWrapper.write(data, "target/test-write.yml")
   }
 
   test("read yaml") {

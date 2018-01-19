@@ -26,27 +26,27 @@ import org.scalatest.FunSuite
   */
 class ColumnBuilderTest extends FunSuite {
   test("map decimal") {
-    val column = Column("col1", JDBCType.NUMERIC, false, 0, 10, 4)
-    assertResult(DataType.DECIMAL)(ColumnBuilder.mapDataType(column))
+    val column = Column("col1", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
+    assertResult(DataType.DECIMAL.toString)(ColumnBuilder.mapDataType(column))
   }
 
   test("map big decimal") {
-    val column = Column("col1", JDBCType.NUMERIC, false, 0, 19, 0)
-    assertResult(DataType.BIG_INT)(ColumnBuilder.mapDataType(column))
+    val column = Column("col1", JDBCType.NUMERIC, nullable = false, 0, 19, 0)
+    assertResult(DataType.BIG_INT.toString)(ColumnBuilder.mapDataType(column))
   }
 
   test("map int") {
-    val column = Column("col1", JDBCType.NUMERIC, false, 0, 9, 0)
-    assertResult(DataType.INTEGER)(ColumnBuilder.mapDataType(column))
+    val column = Column("col1", JDBCType.NUMERIC, nullable = false, 0, 9, 0)
+    assertResult(DataType.INTEGER.toString)(ColumnBuilder.mapDataType(column))
   }
 
   test("map short") {
-    val column = Column("col1", JDBCType.NUMERIC, false, 0, 5, 0)
-    assertResult(DataType.SHORT)(ColumnBuilder.mapDataType(column))
+    val column = Column("col1", JDBCType.NUMERIC, nullable = false, 0, 5, 0)
+    assertResult(DataType.SHORT.toString)(ColumnBuilder.mapDataType(column))
   }
 
   test("map boolean") {
-    val column = Column("col1", JDBCType.BOOLEAN, false, 0, 0, 0)
+    val column = Column("col1", JDBCType.BOOLEAN, nullable = false, 0, 0, 0)
     assertResult(DataType.BOOLEAN.toString)(ColumnBuilder.mapDataType(column))
   }
 }

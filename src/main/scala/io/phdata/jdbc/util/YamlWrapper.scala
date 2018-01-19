@@ -49,12 +49,12 @@ object YamlWrapper {
     * @param data
     * @return
     */
-  def getYaml(data: Map[String, Object]): StringWriter = {
+  private def getYaml(data: Map[String, Object]): StringWriter = {
     val sw = new StringWriter()
 
     val javaData = toJava(data)
     yaml.dump(javaData, sw)
-    return sw
+    sw
   }
 
   /**

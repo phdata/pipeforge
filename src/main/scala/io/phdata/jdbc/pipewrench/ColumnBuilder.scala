@@ -38,6 +38,7 @@ object ColumnBuilder extends LazyLogging {
     val map =
       Map("name" -> column.name, "datatype" -> dataType, "comment" -> "")
 
+    logger.debug(s"Column definition: $column, mapped dataType: $dataType")
     if (dataType == DataType.DECIMAL.toString) {
       logger.trace("Found decimal value: {}", column)
       map + ("scale" -> column.scale) + ("precision" -> column.precision)

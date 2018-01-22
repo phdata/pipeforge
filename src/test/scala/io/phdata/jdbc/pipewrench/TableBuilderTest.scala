@@ -83,7 +83,7 @@ class TableBuilderTest extends FunSuite{
     val col4 = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
     val col5 = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
     val table = Table("tbl1", Set(), Set(col1,col2,col3,col4,col5))
-    assertResult("col2")(TableBuilder.getSplitByColumn(table))
+    assertResult("col5")(TableBuilder.getSplitByColumn(table))
   }
 
 }

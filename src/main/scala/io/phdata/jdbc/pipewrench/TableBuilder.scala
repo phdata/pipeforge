@@ -46,8 +46,13 @@ object TableBuilder extends LazyLogging {
   }
 
   def getSplitByColumn(table: Table) = {
-    table.primaryKeys.find(x => x.dataType == JDBCType.BIGINT)
+    /*table.primaryKeys.map(x=>{println(x+","+x.dataType)})*/
+    val jdbc_numerics=List (JDBCType.BIGINT,JDBCType.REAL,
+      JDBCType.DECIMAL,JDBCType.DOUBLE,JDBCType.FLOAT,JDBCType.INTEGER,
+      JDBCType.NUMERIC);
+    table.primaryKeys.find(x => {jdbc_numerics contains x.dataType})
       .orElse(table.primaryKeys.headOption)
+      .orElse(table.columns.find(x => {jdbc_numerics contains x.dataType}))
       .orElse(table.columns.headOption)
       .get
       .name

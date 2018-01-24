@@ -26,27 +26,7 @@ import org.scalatest.FunSuite
   * TableBuilder unit tests for getSplitByColumn
   */
 class TableBuilderTest extends FunSuite{
-  test("all numeric PKs") {
-    val col1 = Column("col1", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
-    val col2 = Column("col2", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
-    val col3 = Column("col3", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
-    val col4 = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
-    val col5 = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
-    val table = Table("tbl1", Set(col1,col2,col3), Set(col1,col2,col3,col4,col5))
-    assertResult("col1")(TableBuilder.getSplitByColumn(table))
-  }
-
-  test("numeric and varchar PKs") {
-    val col1 = Column("col1", JDBCType.VARCHAR, nullable = false, 0, 10, 4)
-    val col2 = Column("col2", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
-    val col3 = Column("col3", JDBCType.NUMERIC, nullable = false, 0, 10, 4)
-    val col4 = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
-    val col5 = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
-    val table = Table("tbl1", Set(col1,col2,col3), Set(col1,col2,col3,col4,col5))
-    assertResult("col2")(TableBuilder.getSplitByColumn(table))
-  }
-
-  test("decimal and non-numerics PKs") {
+  test("pick the first numeric PK") {
     val col1 = Column("col1", JDBCType.VARCHAR, nullable = false, 0, 10, 4)
     val col2 = Column("col2", JDBCType.BOOLEAN, nullable = false, 0, 10, 4)
     val col3 = Column("col3", JDBCType.DECIMAL, nullable = false, 0, 10, 4)
@@ -56,17 +36,7 @@ class TableBuilderTest extends FunSuite{
     assertResult("col3")(TableBuilder.getSplitByColumn(table))
   }
 
-  test("different numerics PKs") {
-    val col1 = Column("col1", JDBCType.VARCHAR, nullable = false, 0, 10, 4)
-    val col2 = Column("col2", JDBCType.BIGINT, nullable = false, 0, 10, 4)
-    val col3 = Column("col3", JDBCType.FLOAT, nullable = false, 0, 10, 4)
-    val col4 = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
-    val col5 = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
-    val table = Table("tbl1", Set(col1,col2,col3), Set(col1,col2,col3,col4,col5))
-    assertResult("col2")(TableBuilder.getSplitByColumn(table))
-  }
-
-  test("no numerics in PK") {
+  test("pick the first PK if there's no numeric PK") {
     val col1 = Column("col1", JDBCType.VARCHAR, nullable = false, 0, 10, 4)
     val col2 = Column("col2", JDBCType.BOOLEAN, nullable = false, 0, 10, 4)
     val col3 = Column("col3", JDBCType.CLOB, nullable = false, 0, 10, 4)
@@ -76,7 +46,7 @@ class TableBuilderTest extends FunSuite{
     assertResult("col1")(TableBuilder.getSplitByColumn(table))
   }
 
-  test("no PK") {
+  test("pick the first numeric col if there's no PK") {
     val col1 = Column("col1", JDBCType.VARCHAR, nullable = false, 0, 10, 4)
     val col2 = Column("col2", JDBCType.BOOLEAN, nullable = false, 0, 10, 4)
     val col3 = Column("col3", JDBCType.CLOB, nullable = false, 0, 10, 4)

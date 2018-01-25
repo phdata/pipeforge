@@ -7,7 +7,8 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 - -s | --database-configuration: Path to source database configuration file
 - -p | --database-password: Source database user password
 - -m | --table-metadata: Yaml file containing additional metadata that should be applied to each table
-- -o | -- output-path: Output path where the tables.yml file should be written
+- -o | --output-path: Output path where the tables.yml file should be written
+- -c | --skip-whitelist-check: Optional. Pipeforge checks table names to make sure they exist in the source schema. Use the -c option to skip the check.
 
 ### Source Database Configuration File
 ```hocon

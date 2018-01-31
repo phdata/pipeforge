@@ -63,7 +63,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @param table Table name
     * @return A Set of Column definitions
     */
-  def getColumnDefinitions(schema: String, table: String): Set[Column]
+  def getColumnDefinitions(schema: String, table: String): Try[Set[Column]]
 
   /**
     * Main starting point for gathering table and column metadata
@@ -79,13 +79,13 @@ trait DatabaseMetadataParser extends LazyLogging {
     // Query database for a list of tables or views
     if (skipWhiteListCheck) {
       tableWhiteList match {
-        case Some(tables) => Try(tables.map(getTableMetadata(schema, _)))
+        case Some(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
         case None => Failure(new Exception("Whitelist tables not specified."))
       }
     } else {
       val sourceTables = listTables(objectType, schema)
       checkWhiteListedTables(sourceTables, tableWhiteList) match {
-        case Success(tables) => Try(tables.map(getTableMetadata(schema, _)))
+        case Success(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
         case Failure(ex) => Failure(ex)
       }
     }
@@ -96,7 +96,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     // Query database for a list of tables or views
     val sourceTables = listTables(objectType, schema)
     checkWhiteListedTables(sourceTables, tableWhiteList) match {
-      case Success(tables) => Try(tables.map(getTableMetadata(schema, _)))
+      case Success(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
       case Failure(ex) => Failure(ex)
     }
   }
@@ -126,11 +126,17 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @param table Table name
     * @return Table definition
     */
-  def getTableMetadata(schema: String, table: String): Table = {
-    val allColumns = getColumnDefinitions(schema, table)
-    val pks = primaryKeys(schema, table, allColumns)
-    val columns = allColumns.diff(pks)
-    Table(table, pks, columns)
+  def getTableMetadata(schema: String, table: String): Option[Table] = {
+    getColumnDefinitions(schema, table) match {
+      case Success(allColumns) =>
+        val pks = primaryKeys(schema, table, allColumns)
+        val columns = allColumns.diff(pks)
+        Some(Table(table, pks, columns))
+      case Failure(ex) =>
+        logger.error(s"Failed to get metadata for table:$table", ex)
+        None
+    }
+
   }
 
   /**

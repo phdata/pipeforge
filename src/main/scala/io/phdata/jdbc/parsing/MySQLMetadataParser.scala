@@ -21,6 +21,8 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * MySQL metadata parser implementation
   * @param _connection
@@ -52,11 +54,16 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
      """.stripMargin
 
   override def getColumnDefinitions(schema: String,
-                                    table: String): Set[Column] = {
+                                    table: String): Try[Set[Column]] = {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    val metaData: ResultSetMetaData = results(newStatement.executeQuery(query))(_.getMetaData).toList.head
-    val rsMetadata = metaData.asInstanceOf[com.mysql.cj.jdbc.result.ResultSetMetaData]
-    mapMetaDataToColumn(metaData, rsMetadata)
+    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
+      case Some(metaData) =>
+        val rsMetadata = metaData.asInstanceOf[com.mysql.cj.jdbc.result.ResultSetMetaData]
+        Success(mapMetaDataToColumn(metaData, rsMetadata))
+      case None =>
+        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
+    }
+
   }
 }

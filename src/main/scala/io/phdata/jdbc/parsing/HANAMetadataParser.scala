@@ -15,7 +15,7 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
   override def singleRecordQuery(schema: String, table: String) =
     s"""
        |SELECT *
-       |FROM $schema.$table
+       |FROM "$schema"."$table"
        |LIMIT 1
      """.stripMargin
 

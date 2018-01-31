@@ -17,6 +17,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
   override val DATABASE = "HR"
   override val USER = "system"
   override val PASSWORD = "oracle"
+  override val NO_RECORDS_TABLE = "NO_RECORDS"
   override val TABLE = "REGIONS"
   override val VIEW = "EMP_DETAILS_VIEW"
 

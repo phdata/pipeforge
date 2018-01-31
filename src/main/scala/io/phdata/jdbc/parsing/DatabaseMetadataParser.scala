@@ -63,8 +63,17 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @param table Table name
     * @return A Set of Column definitions
     */
-  def getColumnDefinitions(schema: String, table: String): Try[Set[Column]]
-
+  def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
+    val query = singleRecordQuery(schema, table)
+    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
+    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
+      case Some(metaData) =>
+        val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
+        Success(mapMetaDataToColumn(metaData, rsMetadata))
+      case None =>
+        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
+    }
+  }
   /**
     * Main starting point for gathering table and column metadata
     * @param objectType Table or View
@@ -133,7 +142,7 @@ trait DatabaseMetadataParser extends LazyLogging {
         val columns = allColumns.diff(pks)
         Some(Table(table, pks, columns))
       case Failure(ex) =>
-        logger.error(s"Failed to get metadata for table:$table", ex)
+        logger.warn(s"Failed to get metadata for table:$table", ex)
         None
     }
 

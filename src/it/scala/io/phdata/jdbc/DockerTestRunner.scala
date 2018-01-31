@@ -28,6 +28,7 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
   val DATABASE: String
   val USER: String
   val TABLE: String
+  val NO_RECORDS_TABLE: String
   val VIEW: String
   val URL: String
   val DRIVER: String

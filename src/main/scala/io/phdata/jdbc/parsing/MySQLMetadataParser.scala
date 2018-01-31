@@ -52,18 +52,4 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM INFORMATION_SCHEMA.VIEWS
        |WHERE TABLE_SCHEMA = '$schema'
      """.stripMargin
-
-  override def getColumnDefinitions(schema: String,
-                                    table: String): Try[Set[Column]] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
-      case Some(metaData) =>
-        val rsMetadata = metaData.asInstanceOf[com.mysql.cj.jdbc.result.ResultSetMetaData]
-        Success(mapMetaDataToColumn(metaData, rsMetadata))
-      case None =>
-        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
-    }
-
-  }
 }

@@ -5,7 +5,7 @@ import java.sql.{JDBCType, ResultSet}
 import com.whisk.docker.{DockerContainer, DockerReadyChecker}
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
-import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MySQLMetadataParser}
+import io.phdata.jdbc.parsing.{DatabaseMetadataParser, MsSQLMetadataParser, MySQLMetadataParser}
 
 import scala.util.{Failure, Success}
 
@@ -19,6 +19,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   override val DATABASE = "it_test"
   override val USER = "it_user"
   override val PASSWORD = "it_test"
+  override val NO_RECORDS_TABLE = "no_records"
   override val TABLE = "it_table"
   override val VIEW = "it_view"
   // Container Properties
@@ -52,6 +53,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     startAllOrFail()
     Thread.sleep(5000)
     createTestTable()
+    createEmptyTable()
     insertTestData()
     createTestView()
   }
@@ -110,10 +112,37 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     }
   }
 
+  test("skip tables with no records") {
+    val parser = new MsSQLMetadataParser(CONNECTION)
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(NO_RECORDS_TABLE))) match {
+      case Success(definitions) =>
+        assert(definitions.isEmpty)
+      case Failure(ex) =>
+        logger.error("Error gathering metadata from source", ex)
+    }
+  }
+
   private def createTestTable(): Unit = {
     lazy val query =
       s"""
          |CREATE TABLE $DATABASE.$TABLE (
+         |  primary_key INT NOT NULL AUTO_INCREMENT,
+         |  str VARCHAR(32),
+         |  d_date DATE,
+         |  d_datetime DATETIME,
+         |  i_int INT,
+         |  b_bigint BIGINT,
+         |  b_boolean BIT,
+         |  PRIMARY KEY (primary_key))
+       """.stripMargin
+    val stmt = CONNECTION.createStatement()
+    stmt.execute(query)
+  }
+
+  private def createEmptyTable(): Unit = {
+    val query =
+      s"""
+         |CREATE TABLE $DATABASE.$NO_RECORDS_TABLE (
          |  primary_key INT NOT NULL AUTO_INCREMENT,
          |  str VARCHAR(32),
          |  d_date DATE,

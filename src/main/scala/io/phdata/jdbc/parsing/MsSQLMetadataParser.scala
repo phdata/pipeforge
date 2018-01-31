@@ -51,19 +51,6 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |WHERE TABLE_CATALOG = '$schema'
      """.stripMargin
 
-  override def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
-      case Some(metaData) =>
-        val rsMetadata = metaData.asInstanceOf[com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData]
-        Success(mapMetaDataToColumn(metaData, rsMetadata))
-      case None =>
-        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
-    }
-
-  }
-
   /**
     * NOTE: connection.getMetaData.getPrimaryKeys does not return primary keys for MsSQL, hence why this is here
     * @param schema

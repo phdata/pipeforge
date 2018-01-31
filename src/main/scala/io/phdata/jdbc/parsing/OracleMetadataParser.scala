@@ -52,17 +52,4 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
        |WHERE owner = '$schema'
      """.stripMargin
 
-  override def getColumnDefinitions(schema: String,
-                                    table: String): Try[Set[Column]] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
-      case Some(metaData) =>
-        val rsMetadata = metaData.asInstanceOf[oracle.jdbc.OracleResultSetMetaData]
-        Success(mapMetaDataToColumn(metaData, rsMetadata))
-      case None =>
-        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
-    }
-
-  }
 }

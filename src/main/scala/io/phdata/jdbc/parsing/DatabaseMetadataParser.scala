@@ -21,7 +21,6 @@ import java.sql._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
-import io.phdata.jdbc.util.Resource
 
 import scala.util.{Failure, Success, Try}
 
@@ -32,12 +31,14 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Database connection
+    *
     * @return Connection
     */
   def connection: Connection
 
   /**
     * Database specific query that returns a result set containing all tables in the specified schema
+    *
     * @param schema Schema or database name
     * @return SQL query listing databases in schema
     */
@@ -45,14 +46,16 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Database specific query selecting a single row from the a schema and table
+    *
     * @param schema Schema or database name
-    * @param table Table name
+    * @param table  Table name
     * @return SQL query selecting a single row from table
     */
   def singleRecordQuery(schema: String, table: String): String
 
   /**
     * Database specific query that returns a result set containing all views in the specified schema
+    *
     * @param schema Schema or database name
     * @return
     */
@@ -60,8 +63,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Build column definitions for a specific table
+    *
     * @param schema Schema or database name
-    * @param table Table name
+    * @param table  Table name
     * @return A Set of Column definitions
     */
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
@@ -70,24 +74,25 @@ trait DatabaseMetadataParser extends LazyLogging {
     val metadataResult: Try[Option[ResultSetMetaData]] =
       Try(results(newStatement.executeQuery(query))(_.getMetaData)).map(_.headOption)
 
-      metadataResult match {
-        case Success(Some(metaData)) =>
-          val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
-          Try(mapMetaDataToColumn(metaData, rsMetadata))
-        case Success(None) => 
-            Failure(new Exception(
-              s"$table does not contain any records, cannot provide column definitions"))
-        case Failure(v) =>
-          Failure(
-            new Exception(
-              s"$table does not contain any records, cannot provide column definitions $v"))
-      }
+    metadataResult match {
+      case Success(Some(metaData)) =>
+        val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
+        Try(mapMetaDataToColumn(metaData, rsMetadata))
+      case Success(None) =>
+        Failure(
+          new Exception(s"$table does not exist"))
+      case Failure(v) =>
+        Failure(
+          new Exception(
+            s"$table does not contain any records, cannot provide column definitions $v"))
+    }
   }
 
   /**
     * Main starting point for gathering table and column metadata
-    * @param objectType Table or View
-    * @param schema Schema or database name
+    *
+    * @param objectType     Table or View
+    * @param schema         Schema or database name
     * @param tableWhiteList Optional table whitelisting
     * @return A Set of table definitions
     */
@@ -109,6 +114,7 @@ trait DatabaseMetadataParser extends LazyLogging {
       }
     }
   }
+
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
@@ -122,7 +128,8 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Verifies all user supplied white listed tables or views with database
-    * @param sourceTables A set containing a list of source tables or views
+    *
+    * @param sourceTables   A set containing a list of source tables or views
     * @param tableWhiteList Optional user supplied table whitelisting
     * @return A Set of tables
     */
@@ -143,8 +150,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Gets metadata for an individual table and its columns
+    *
     * @param schema Schema or database name
-    * @param table Table name
+    * @param table  Table name
     * @return Table definition
     */
   def getTableMetadata(schema: String, table: String): Option[Table] = {
@@ -162,8 +170,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Gets the primary keys for a table
-    * @param schema Schema or database name
-    * @param table Table name
+    *
+    * @param schema  Schema or database name
+    * @param table   Table name
     * @param columns Complete set of column definitions for the table
     * @return Primary key definitions
     */
@@ -179,6 +188,7 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Maps a JDBC result set to Column definition
+    *
     * @param metaData Result set metadata
     * @param rsMetadata
     * @return A set of column definitions
@@ -201,8 +211,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Finds the column definitions for primary key definitions
+    *
     * @param primaryKeys A Map containing the primary key and its column position
-    * @param columns A Set of column definitions
+    * @param columns     A Set of column definitions
     * @return Primary key column definitions
     */
   def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]) = {
@@ -219,8 +230,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Gathers a list of tables or views from the specified schema in the database
+    *
     * @param objectType Table or View
-    * @param schema Schema or database name
+    * @param schema     Schema or database name
     * @return A Set of tables or views
     */
   def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
@@ -235,14 +247,16 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Prepares a statement
+    *
     * @return
     */
   def newStatement = connection.createStatement()
 
   /**
     * Helper for iterating through a result set
+    *
     * @param resultSet The result set to iterate over
-    * @param f the function to call on the result set
+    * @param f         the function to call on the result set
     * @tparam T The output
     * @return
     */
@@ -266,6 +280,7 @@ object DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Parses table definition from database
+    *
     * @param configuration Database configuration
     * @return Set of table definitions
     */
@@ -321,6 +336,7 @@ object DatabaseMetadataParser extends LazyLogging {
 
   /**
     * Create a connection to the database
+    *
     * @param configuration Database configuration
     * @return
     */

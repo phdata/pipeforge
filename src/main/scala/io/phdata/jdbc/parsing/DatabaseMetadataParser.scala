@@ -120,6 +120,7 @@ trait DatabaseMetadataParser extends LazyLogging {
                         tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
     // Query database for a list of tables or views
     val sourceTables = listTables(objectType, schema)
+    println(sourceTables)
     checkWhiteListedTables(sourceTables, tableWhiteList) match {
       case Success(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
       case Failure(ex)     => Failure(ex)

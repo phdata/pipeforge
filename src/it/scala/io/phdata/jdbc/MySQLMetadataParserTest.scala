@@ -66,7 +66,8 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     val stmt = CONNECTION.createStatement()
     val rs: ResultSet = stmt.executeQuery("SELECT table_name FROM information_schema.tables")
     val results = getResults(rs)(x => x.getString(1)).toList
-    assertResult(63)(results.length)
+    println(results)
+    assertResult(64)(results.length)
   }
 
   test("parse tables metadata") {

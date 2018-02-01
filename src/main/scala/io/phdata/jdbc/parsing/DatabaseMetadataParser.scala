@@ -74,6 +74,9 @@ trait DatabaseMetadataParser extends LazyLogging {
         case Success(Some(metaData)) =>
           val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
           Try(mapMetaDataToColumn(metaData, rsMetadata))
+        case Success(None) => 
+            Failure(new Exception(
+              s"$table does not contain any records, cannot provide column definitions"))
         case Failure(v) =>
           Failure(
             new Exception(

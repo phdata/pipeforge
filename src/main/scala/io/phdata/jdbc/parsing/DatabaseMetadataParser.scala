@@ -79,8 +79,7 @@ trait DatabaseMetadataParser extends LazyLogging {
         val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         Try(mapMetaDataToColumn(metaData, rsMetadata))
       case Success(None) =>
-        Failure(
-          new Exception(s"$table does not exist"))
+        Failure(new Exception(s"$table does not exist"))
       case Failure(v) =>
         Failure(
           new Exception(
@@ -267,7 +266,9 @@ trait DatabaseMetadataParser extends LazyLogging {
       def next() = f(resultSet)
     }
 
-    val result = iterator.toList
+    // needed to reify the list, just 'tolist' doesn't pull results
+    iterator.foreach(_.toString)
+    val result = iterator.toList.map{x => x.toString; x}
     resultSet.close()
     result
   }

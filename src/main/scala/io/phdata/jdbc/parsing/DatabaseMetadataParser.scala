@@ -67,14 +67,18 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).headOption match {
-      case Some(metaData) =>
-        val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
-        Success(mapMetaDataToColumn(metaData, rsMetadata))
-      case None =>
-        Failure(
-          new Exception(s"$table does not contain any records, cannot provide column definitions"))
-    }
+    val metadataResult: Try[Option[ResultSetMetaData]] =
+      Try(results(newStatement.executeQuery(query))(_.getMetaData)).map(_.headOption)
+
+      metadataResult match {
+        case Success(Some(metaData)) =>
+          val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
+          Try(mapMetaDataToColumn(metaData, rsMetadata))
+        case Failure(v) =>
+          Failure(
+            new Exception(
+              s"$table does not contain any records, cannot provide column definitions $v"))
+      }
   }
 
   /**
@@ -273,33 +277,33 @@ object DatabaseMetadataParser extends LazyLogging {
           case DatabaseType.MYSQL =>
             new MySQLMetadataParser(connection)
               .getTablesMetadata(configuration.objectType,
-                configuration.schema,
-                configuration.tables,
-                skipWhiteListCheck)
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case DatabaseType.ORACLE =>
             new OracleMetadataParser(connection)
               .getTablesMetadata(configuration.objectType,
-                configuration.schema,
-                configuration.tables,
-                skipWhiteListCheck)
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case DatabaseType.MSSQL =>
             new MsSQLMetadataParser(connection)
               .getTablesMetadata(configuration.objectType,
-                configuration.schema,
-                configuration.tables,
-                skipWhiteListCheck)
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case DatabaseType.HANA =>
             new HANAMetadataParser(connection)
               .getTablesMetadata(configuration.objectType,
-                configuration.schema,
-                configuration.tables,
-                skipWhiteListCheck)
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case DatabaseType.TERADATA =>
             new TeradataMetadataParser(connection)
               .getTablesMetadata(configuration.objectType,
-                configuration.schema,
-                configuration.tables,
-                skipWhiteListCheck)
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case _ =>
             Failure(
               new Exception(

@@ -29,17 +29,17 @@ class TeradataMetadataParser(_connection: Connection)
 
   override def singleRecordQuery(schema: String, table: String) =
     s"""
-       |SELECT top 1
+       |SELECT top 1 *
        |FROM $schema.$table
      """.stripMargin
 
   override def listTablesStatement(schema: String) =
     s"""
-       |SELECT * FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
+       |SELECT tablename FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
      """.stripMargin
 
   override def listViewsStatement(schema: String): String =
     s"""
-       |SELECT * FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
+       |SELECT tablename FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
      """.stripMargin
 }

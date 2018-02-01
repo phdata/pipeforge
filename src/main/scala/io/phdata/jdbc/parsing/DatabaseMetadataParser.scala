@@ -270,7 +270,9 @@ trait DatabaseMetadataParser extends LazyLogging {
     }
     // I don't know why I couldn't find an easier way to do this
     // Can't just do 'toList' because only *sometimes* the resultSet isn't fully iterated
-    iterator.foldLeft(l) { case (l, r) => l :+ r }
+    val result = iterator.foldLeft(l) { case (l, r) => l :+ r }
+    resultSet.close()
+    result
   }
 }
 

@@ -21,6 +21,8 @@ import java.sql.{Connection, ResultSetMetaData}
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.domain.Column
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * Microsoft SQL Server metadata parser implementation
   * @param _connection
@@ -48,14 +50,6 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM information_schema.views
        |WHERE TABLE_CATALOG = '$schema'
      """.stripMargin
-
-  override def getColumnDefinitions(schema: String, table: String): Set[Column] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    val metaData: ResultSetMetaData = results(newStatement.executeQuery(query))(_.getMetaData).toList.head
-    val rsMetadata = metaData.asInstanceOf[com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData]
-    mapMetaDataToColumn(metaData, rsMetadata)
-  }
 
   /**
     * NOTE: connection.getMetaData.getPrimaryKeys does not return primary keys for MsSQL, hence why this is here

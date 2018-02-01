@@ -4,6 +4,8 @@ import java.sql.{Connection, ResultSet, ResultSetMetaData}
 
 import io.phdata.jdbc.domain.Column
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * HANA metadata parser implementation
   * @param _connection
@@ -44,13 +46,5 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
     //mapPrimaryKeyToColumn(pks, columns)
     Set()
 
-  }
-  override def getColumnDefinitions(schema: String,
-                                    table: String): Set[Column] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    val metaData: ResultSetMetaData = results(newStatement.executeQuery(query))(_.getMetaData).toList.head
-    val rsMetadata = metaData.asInstanceOf[com.sap.db.jdbc.trace.ResultSetMetaData]
-    mapMetaDataToColumn(metaData, rsMetadata)
   }
 }

@@ -18,7 +18,7 @@ package io.phdata.jdbc.parsing
 import java.sql.Connection
 
 /**
-  * MySQL metadata parser implementation
+  * Teradata metadata parser implementation
   *
   * @param _connection
   */

@@ -240,8 +240,8 @@ trait DatabaseMetadataParser extends LazyLogging {
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-
-    results(newStatement.executeQuery(query))(_.getString(1)).toSet
+    val st = newStatement.executeQuery(query)
+    results(st)(_.getString(1)).toSet
   }
 
   /**
@@ -260,19 +260,18 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @return
     */
   protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
+    try {
+      val acc: mutable.MutableList[T] = mutable.MutableList[T]()
+      val r                           = resultSet.next()
+      while (resultSet.next()) {
+        acc :+ f(resultSet)
+      }
 
-    val l: mutable.MutableList[T] = mutable.MutableList[T]()
-
-    val iterator = new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
+      resultSet.close()
+      acc
+    } finally {
+      resultSet.close()
     }
-    // I don't know why I couldn't find an easier way to do this
-    // Can't just do 'toList' because only *sometimes* the resultSet isn't fully iterated
-    val result = iterator.foldLeft(l) { case (l, r) => l :+ r }
-    resultSet.close()
-    result
   }
 }
 

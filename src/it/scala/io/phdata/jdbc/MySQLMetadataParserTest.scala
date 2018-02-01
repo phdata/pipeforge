@@ -79,7 +79,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     val parser = new MySQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, None) match {
       case Success(definitions) =>
-        // assert(definitions.size == 1)
+        assert(definitions.size == 1)
         val expected = Set(
           Table(
             TABLE,

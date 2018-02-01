@@ -22,6 +22,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
   override val USER = "SA"
   override val TABLE = "it_table"
   override val VIEW = "it_view"
+  override val NO_RECORDS_TABLE = "no_records"
   // Container Properites
   override val IMAGE = "microsoft/mssql-server-linux:latest"
   override val ADVERTISED_PORT = 1433
@@ -57,6 +58,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     startAllOrFail()
     Thread.sleep(5000)
     createTestTable()
+    createEmptyTable()
     insertTestData()
     createTestView()
   }
@@ -114,6 +116,16 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     }
   }
 
+  test("skip tables with no records") {
+    val parser = new MsSQLMetadataParser(CONNECTION)
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(NO_RECORDS_TABLE))) match {
+      case Success(definitions) =>
+        assert(definitions.isEmpty)
+      case Failure(ex) =>
+        logger.error("Error gathering metadata from source", ex)
+    }
+  }
+
   private def createTestDatabase(): Unit = {
     val query =
       s"""
@@ -132,6 +144,20 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
          |  FirstName varchar(255),
          |  Age int,
          |  CONSTRAINT PK_Person PRIMARY KEY (ID,LastName)
+         |)
+       """.stripMargin
+    val stmt = CONNECTION.createStatement()
+    stmt.execute(query)
+  }
+
+  private def createEmptyTable(): Unit = {
+    val query =
+      s"""
+         |CREATE TABLE $NO_RECORDS_TABLE (
+         |  ID int NOT NULL,
+         |  LastName varchar(255) NOT NULL,
+         |  FirstName varchar(255)
+         |  CONSTRAINT PK_no_records PRIMARY KEY (ID)
          |)
        """.stripMargin
     val stmt = CONNECTION.createStatement()

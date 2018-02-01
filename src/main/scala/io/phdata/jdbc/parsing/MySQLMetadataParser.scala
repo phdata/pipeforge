@@ -42,7 +42,7 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     s"""
        |SELECT TABLE_NAME
        |FROM INFORMATION_SCHEMA.TABLES
-       |WHERE TABLE_SCHEMA = '$schema'
+       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_TYPE = 'BASE TABLE'
      """.stripMargin
 
 

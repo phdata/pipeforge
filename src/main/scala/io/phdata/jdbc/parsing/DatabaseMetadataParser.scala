@@ -22,6 +22,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.jdbc.domain.{Column, Table}
 
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -235,13 +236,12 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @return A Set of tables or views
     */
   def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
-    val stmt: Statement = newStatement
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
 
-    results(stmt.executeQuery(query))(_.getString(1)).toSet
+    results(newStatement.executeQuery(query))(_.getString(1)).toSet
   }
 
   /**
@@ -260,17 +260,17 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @return
     */
   protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
+
+    val l: mutable.MutableList[T] = mutable.MutableList[T]()
+
     val iterator = new Iterator[T] {
       def hasNext = resultSet.next()
 
       def next() = f(resultSet)
     }
-
-    // needed to reify the list, just 'tolist' doesn't pull results
-    iterator.foreach(_.toString)
-    val result = iterator.toList.map{x => x.toString; x}
-    resultSet.close()
-    result
+    // I don't know why I couldn't find an easier way to do this
+    // Can't just do 'toList' because only *sometimes* the resultSet isn't fully iterated
+    iterator.foldLeft(l) { case (l, r) => l :+ r }
   }
 }
 

@@ -12,7 +12,7 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 
 ### Source Database Configuration File
 ```hocon
-database-type="mysql" // REQUIRED Source database type valid options are mssql, mysql, and oracle
+database-type="mysql" // REQUIRED Source database type valid options are mssql, mysql, teradata, and oracle
 jdbc-url="jdbc:mysql://localhost:3306/employees" // REQUIRED JDBC connection url
 schema="employees" // REQUIRED Schema or database name to read tables or views from
 username="employee" // REQUIRED Source database username

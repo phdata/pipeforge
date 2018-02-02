@@ -25,6 +25,5 @@ object DatabaseType extends Enumeration {
   val ORACLE = Value("oracle")
   val MSSQL = Value("mssql")
   val HANA = Value("hana")
-  val TERADATA = Value("teradata")
 
 }

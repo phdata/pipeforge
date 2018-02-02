@@ -72,7 +72,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     val stmt = CONNECTION.createStatement()
     val rs: ResultSet = stmt.executeQuery("SELECT * FROM sys.tables")
     val results = getResults(rs)(x => x.getString(1)).toList
-    assertResult(7)(results.length)
+    assertResult(6)(results.length)
   }
 
   test("parse tables metadata") {

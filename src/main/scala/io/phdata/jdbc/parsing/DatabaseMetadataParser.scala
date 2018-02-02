@@ -99,16 +99,6 @@ trait DatabaseMetadataParser extends LazyLogging {
       }
     }
   }
-  def getTablesMetadata(objectType: ObjectType.Value,
-                        schema: String,
-                        tableWhiteList: Option[Set[String]]): Try[Set[Table]] = {
-    // Query database for a list of tables or views
-    val sourceTables = listTables(objectType, schema)
-    checkWhiteListedTables(sourceTables, tableWhiteList) match {
-      case Success(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
-      case Failure(ex) => Failure(ex)
-    }
-  }
 
   /**
     * Verifies all user supplied white listed tables or views with database

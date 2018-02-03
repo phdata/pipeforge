@@ -14,39 +14,148 @@
  * limitations under the License.
  */
 
-import sbt.Keys.{test, _}
+import sbt.Keys.{ test, _ }
 import sbt._
 
-lazy val IntegrationTest = config("it") extend (Test)
+name := "pipforge"
+organization in ThisBuild := "io.phdata"
+scalaVersion in ThisBuild := "2.12.3"
 
-parallelExecution in Test := false
+lazy val compilerOptions = Seq(
+  "-unchecked",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-language:postfixOps",
+  "-deprecation",
+  "-encoding",
+  "utf8"
+)
 
-lazy val root = (project in file("."))
-  .configs(IntegrationTest)
-  .settings(Defaults.itSettings: _*)
-  .settings(name := "Pipeforge",
-    version := "0.1-SNAPSHOT",
-    organization := "io.phdata",
-    scalaVersion := "2.12.3",
-    mainClass in Compile := Some("io.phdata.jdbc.PipewrenchConfigBuilder"),
-    resolvers += "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
-    libraryDependencies ++= Seq(
-      "mysql" % "mysql-connector-java" % "6.0.6",
-      "oracle" % "ojdbc6" % "11.2.0.3",
-      "com.microsoft.sqlserver" % "mssql-jdbc" % "6.2.2.jre8",
-      "org.yaml" % "snakeyaml" % "1.5",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
-      "com.typesafe" % "config" % "1.3.1",
-      // https://github.com/iheartradio/ficus
-      "com.iheart" %% "ficus" % "1.4.3",
-      // https://github.com/scallop/scallop
-      "org.rogach" %% "scallop" % "3.1.1",
-      "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-      "com.whisk" %% "docker-testkit-scalatest" % "0.9.5" % "test",
-      "com.whisk" %% "docker-testkit-impl-spotify" % "0.9.5" % "test"
-    ),
-    test in assembly := {}
+lazy val commonSettings = Seq(
+  scalacOptions ++= compilerOptions,
+  resolvers ++= Seq(
+    "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+    Resolver.sonatypeRepo("releases"),
+    Resolver.sonatypeRepo("snapshots")
+  )
+)
+
+lazy val scalafmtSettings =
+  Seq(
+    scalafmtOnCompile := true,
+    scalafmtTestOnCompile := true,
+    scalafmtVersion := "1.2.0"
+  )
+
+lazy val assemblySettings = Seq(
+  assemblyJarName in assembly := name.value + ".jar",
+  assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+    case _                             => MergeStrategy.first
+  }
+)
+
+lazy val dependencies =
+  new {
+
+    // Common
+    val logbackVersion      = "1.2.3"
+    val scalaLoggingVersion = "3.7.2"
+    val typesafeConfVersion = "1.3.1"
+
+    // JDBC
+    val mysqlVersion     = "6.0.6"
+    val oracleVersion    = "11.2.0.3"
+    val microsoftVersion = "6.2.2.jre8"
+
+    // CLI
+    val scallopVersion = "3.1.1"
+    val ficusVersion   = "1.4.3"
+    val yamlVersion    = "1.5"
+
+    // Testing
+    val scalaTestVersion     = "3.0.4"
+    val dockerTestKitVersion = "0.9.5"
+
+    // Common depends
+    val logback        = "ch.qos.logback"             % "logback-classic" % logbackVersion
+    val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"  % scalaLoggingVersion
+    val typesafeConfig = "com.typesafe"               % "config"          % typesafeConfVersion
+
+    // JDBC depends
+    val mysql     = "mysql"                   % "mysql-connector-java" % mysqlVersion
+    val oracle    = "oracle"                  % "ojdbc6"               % oracleVersion
+    val microsoft = "com.microsoft.sqlserver" % "mssql-jdbc"           % microsoftVersion
+
+    // CLI parsing depends
+    val scallop = "org.rogach" %% "scallop"  % scallopVersion
+    val ficus   = "com.iheart" %% "ficus"    % ficusVersion
+    val yaml    = "org.yaml"   % "snakeyaml" % yamlVersion
+
+    // Testing depends
+    val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
+    val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
+    val spotifyDockerTest = "com.whisk"     %% "docker-testkit-impl-spotify" % dockerTestKitVersion % "test"
+
+    val common   = Seq(logback, scalaLogging, typesafeConfig, scalaTest)
+    val database = Seq(mysql, oracle, microsoft)
+    val cli      = Seq(scallop, ficus)
+    val all      = common ++ database ++ cli ++ Seq(yaml, scalaDockerTest, spotifyDockerTest)
+  }
+
+lazy val settings = commonSettings ++ scalafmtSettings
+
+lazy val integrationTests = config("it") extend Test
+
+lazy val pipeforge = project
+  .in(file("."))
+  .settings(
+    name := "pipeforge",
+    settings ++ Defaults.itSettings,
+    assemblySettings,
+    mainClass in Compile := Some("io.phdata.pipeforge.PipewrenchConfigBuilder"),
+    libraryDependencies ++= dependencies.all
+  )
+  .dependsOn(
+    common,
+    `jdbc-metadata`,
+    pipewrench
+  )
+  .aggregate(
+    common,
+    `jdbc-metadata`,
+    pipewrench
+  )
+
+lazy val common = project
+  .settings(
+    name := "common",
+    settings,
+    libraryDependencies ++= dependencies.common ++ Seq(
+      dependencies.yaml
+    )
+  )
+
+lazy val `jdbc-metadata` = project
+  .settings(
+    name := "jdbc-metadata",
+    settings,
+    libraryDependencies ++= dependencies.common ++ dependencies.database
+  )
+  .dependsOn(
+    common
+  )
+
+lazy val pipewrench = project
+  .settings(
+    name := "pipewrench",
+    settings,
+    libraryDependencies ++= dependencies.common
+  )
+  .dependsOn(
+    common
   )
 
 enablePlugins(JavaAppPackaging)

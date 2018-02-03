@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.common
+package io.phdata.pipewrench.util
 
 import org.scalatest.FunSuite
 

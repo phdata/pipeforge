@@ -37,6 +37,7 @@ lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+    "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
   )
@@ -63,7 +64,6 @@ lazy val dependencies =
     // Common
     val logbackVersion      = "1.2.3"
     val scalaLoggingVersion = "3.7.2"
-    val typesafeConfVersion = "1.3.1"
 
     // JDBC
     val mysqlVersion     = "6.0.6"
@@ -71,18 +71,18 @@ lazy val dependencies =
     val microsoftVersion = "6.2.2.jre8"
 
     // CLI
-    val scallopVersion = "3.1.1"
-    val ficusVersion   = "1.4.3"
-    val yamlVersion    = "1.5"
+    val scallopVersion      = "3.1.1"
+    val ficusVersion        = "1.4.3"
+    val scalaYamlVersion    = "0.4.0"
+    val typesafeConfVersion = "1.3.1"
 
     // Testing
     val scalaTestVersion     = "3.0.4"
     val dockerTestKitVersion = "0.9.5"
 
     // Common depends
-    val logback        = "ch.qos.logback"             % "logback-classic" % logbackVersion
-    val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"  % scalaLoggingVersion
-    val typesafeConfig = "com.typesafe"               % "config"          % typesafeConfVersion
+    val logback      = "ch.qos.logback"             % "logback-classic" % logbackVersion
+    val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging"  % scalaLoggingVersion
 
     // JDBC depends
     val mysql     = "mysql"                   % "mysql-connector-java" % mysqlVersion
@@ -90,19 +90,20 @@ lazy val dependencies =
     val microsoft = "com.microsoft.sqlserver" % "mssql-jdbc"           % microsoftVersion
 
     // CLI parsing depends
-    val scallop = "org.rogach" %% "scallop"  % scallopVersion
-    val ficus   = "com.iheart" %% "ficus"    % ficusVersion
-    val yaml    = "org.yaml"   % "snakeyaml" % yamlVersion
+    val scallop        = "org.rogach"    %% "scallop"      % scallopVersion
+    val ficus          = "com.iheart"    %% "ficus"        % ficusVersion
+    val scalaYaml      = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
+    val typesafeConfig = "com.typesafe"  % "config"        % typesafeConfVersion
 
     // Testing depends
     val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
     val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
     val spotifyDockerTest = "com.whisk"     %% "docker-testkit-impl-spotify" % dockerTestKitVersion % "test"
 
-    val common   = Seq(logback, scalaLogging, typesafeConfig, scalaTest)
+    val common   = Seq(logback, scalaLogging, scalaTest)
     val database = Seq(mysql, oracle, microsoft)
-    val cli      = Seq(scallop, ficus)
-    val all      = common ++ database ++ cli ++ Seq(yaml, scalaDockerTest, spotifyDockerTest)
+    val cli      = Seq(typesafeConfig, scallop, ficus, scalaYaml)
+    val all      = common ++ database ++ cli ++ Seq(scalaDockerTest, spotifyDockerTest)
   }
 
 lazy val settings = commonSettings ++ scalafmtSettings
@@ -135,9 +136,7 @@ lazy val common = project
   .settings(
     name := "common",
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(
-      dependencies.yaml
-    )
+    libraryDependencies ++= dependencies.common
   )
 
 lazy val `jdbc-metadata` = project
@@ -154,7 +153,9 @@ lazy val pipewrench = project
   .settings(
     name := "pipewrench",
     settings,
-    libraryDependencies ++= dependencies.common
+    libraryDependencies ++= dependencies.common ++ Seq(
+      dependencies.scalaYaml
+    )
   )
   .dependsOn(
     common

@@ -20,13 +20,13 @@ import java.io.File
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.common.{ Table, YamlWrapper }
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
+import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.pipewrench.TableBuilder
+import io.phdata.pipewrench.util.YamlWrapper
 import org.rogach.scallop.ScallopConf
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 /**
  * Pipewrench config builder application connects to a source database and parses table definitions

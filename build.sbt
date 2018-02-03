@@ -111,9 +111,11 @@ lazy val integrationTests = config("it") extend Test
 
 lazy val pipeforge = project
   .in(file("."))
+  .configs(integrationTests)
+  .settings(Defaults.itSettings: _*)
   .settings(
     name := "pipeforge",
-    settings ++ Defaults.itSettings,
+    settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.PipewrenchConfigBuilder"),
     libraryDependencies ++= dependencies.all

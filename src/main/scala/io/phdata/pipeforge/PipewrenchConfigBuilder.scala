@@ -1,5 +1,3 @@
-package io.phdata.pipeforge
-
 /*
  * Copyright 2018 phData Inc.
  *
@@ -16,15 +14,20 @@ package io.phdata.pipeforge
  * limitations under the License.
  */
 
+package io.phdata.pipeforge
+
 import java.io.File
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
+import io.phdata.pipeforge.config.EnvironmentYaml
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
 import io.phdata.pipewrench.TableBuilder
 import io.phdata.pipewrench.util.YamlWrapper
 import org.rogach.scallop.ScallopConf
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.EnumerationReader._
 
 import scala.util.{ Failure, Success }
 
@@ -38,10 +41,17 @@ object PipewrenchConfigBuilder extends LazyLogging {
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
 
-    // Read and parse database-configuration file
-    val sourceDbConf = DatabaseConf.parse(cliArgs.databaseConf(), cliArgs.databasePassword())
+    val inputPath = cliArgs.databaseConf()
+    val dbPass    = cliArgs.databasePassword()
+
+    val databaseConf = if (inputPath.endsWith(".yml")) {
+      EnvironmentYaml.getDatabaseConf(inputPath, dbPass)
+    } else {
+      parse(inputPath, dbPass)
+    }
+
     // Try to parse database metadata
-    DatabaseMetadataParser.parse(sourceDbConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
+    DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
       case Success(databaseMetadata) =>
         // Read in additional table metadata
         val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
@@ -77,31 +87,24 @@ object PipewrenchConfigBuilder extends LazyLogging {
   }
 
   /**
-   * Parses configuration file into DatabaseConf object
+   * Converts database configuration file into DatabaseConf object
+   * @param path Database configuration file path
+   * @param password Database user password
+   * @return DatabaseConf
    */
-  object DatabaseConf {
-    import net.ceedubs.ficus.Ficus._
-    import net.ceedubs.ficus.readers.EnumerationReader._
+  @deprecated(".conf file extensions will be phased out in initial release", "0.1-SNAPSHOT")
+  def parse(path: String, password: String) = {
+    val file          = new File(path)
+    val configFactory = ConfigFactory.parseFile(file)
 
-    /**z
-     * Converts database configuration file into DatabaseConf object
-     * @param path Database configuration file path
-     * @param password Database user password
-     * @return DatabaseConf
-     */
-    def parse(path: String, password: String) = {
-      val file          = new File(path)
-      val configFactory = ConfigFactory.parseFile(file)
-
-      new DatabaseConf(
-        databaseType = configFactory.as[DatabaseType.Value]("database-type"),
-        schema = configFactory.as[String]("schema"),
-        jdbcUrl = configFactory.as[String]("jdbc-url"),
-        username = configFactory.as[String]("username"),
-        password = password,
-        objectType = configFactory.as[ObjectType.Value]("object-type"),
-        tables = configFactory.as[Option[Set[String]]]("tables")
-      )
-    }
+    new DatabaseConf(
+      databaseType = configFactory.as[DatabaseType.Value]("database-type"),
+      schema = configFactory.as[String]("schema"),
+      jdbcUrl = configFactory.as[String]("jdbc-url"),
+      username = configFactory.as[String]("username"),
+      password = password,
+      objectType = configFactory.as[ObjectType.Value]("object-type"),
+      tables = configFactory.as[Option[Set[String]]]("tables")
+    )
   }
 }

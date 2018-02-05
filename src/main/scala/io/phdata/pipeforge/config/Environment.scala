@@ -64,8 +64,8 @@ object EnvironmentYaml extends DefaultYamlProtocol {
    * @param path
    * @return
    */
-  private def parseFile(path: String): Environment = {
-    val file = Source.fromFile(path).getLines.mkString
+  def parseFile(path: String): Environment = {
+    val file = Source.fromFile(path).getLines.mkString("\n")
     file.parseYaml.convertTo[Environment]
   }
 

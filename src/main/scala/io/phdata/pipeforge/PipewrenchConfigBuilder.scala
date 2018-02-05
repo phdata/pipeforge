@@ -92,7 +92,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
    * @param password Database user password
    * @return DatabaseConf
    */
-  @deprecated(".conf file extensions will be phased out in initial release", "0.1-SNAPSHOT")
+  @deprecated(".conf file extensions will be phased out in initial release", "0.1")
   def parse(path: String, password: String) = {
     val file          = new File(path)
     val configFactory = ConfigFactory.parseFile(file)

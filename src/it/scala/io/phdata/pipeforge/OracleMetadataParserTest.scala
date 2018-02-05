@@ -19,9 +19,9 @@ package io.phdata.pipeforge
 import java.sql.{JDBCType, ResultSet}
 
 import com.whisk.docker.{DockerContainer, DockerReadyChecker}
-import io.phdata.pipeforge.common.{Column, Table}
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, OracleMetadataParser}
 import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
+import io.phdata.pipeforge.jdbc.domain.{Column, Table}
 
 import scala.util.{Failure, Success}
 

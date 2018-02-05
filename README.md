@@ -4,13 +4,14 @@
 Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 
 ## CLI Arguments
-- -s | --database-configuration: Path to source database configuration file
-- -p | --database-password: Source database user password
-- -m | --table-metadata: Yaml file containing additional metadata that should be applied to each table
-- -o | --output-path: Output path where the tables.yml file should be written
-- -c | --skip-whitelist-check: Optional. Pipeforge checks table names by default to make sure they exist in the source schema. Use the -c option to skip the check.
+- `-s, --database-configuration`: Path to source database configuration file
+- `-p, --database-password`: Source database user password
+- `-m, --table-metadata`: Yaml file containing additional metadata that should be applied to each table
+- `-o, --output-path`: Output path where the tables.yml file should be written
+- `-c, --skip-whitelist-check`: Optional. Pipeforge checks table names by default to make sure they exist in the source schema. Use the -c option to skip the check.
 
 ### Source Database Configuration File
+#### .conf File
 ```hocon
 database-type="mysql" // REQUIRED Source database type valid options are mssql, mysql, and oracle
 jdbc-url="jdbc:mysql://localhost:3306/employees" // REQUIRED JDBC connection url
@@ -18,6 +19,18 @@ schema="employees" // REQUIRED Schema or database name to read tables or views f
 username="employee" // REQUIRED Source database username
 object-type="table" // REQUIRED Determines whether to parse tables or views valid options are table or view
 tables=["table1", "table2"] // OPTIONAL Table whitelist, only these tables will be parsed
+```
+
+#### .yml File
+```yaml
+databaseType: "mysql"
+jdbcUrl: "jdbc:mysql://localhost:3306/employees"
+schema: "employees"
+username: "employee"
+objectType: "table"
+tables:
+  - "table1"
+  - "table2"
 ```
 
 ### Table Metadata File
@@ -40,7 +53,7 @@ Creates a jar with the required dependencies ([sbt-assembly](https://github.com/
 2. Change directory to `$INSTALL_LOCATION`
 3. Execute 
 ```
-java -cp pipforge-<version>.jar io.phdata.jdbc.PipewrenchConfigBuilder \
+java -cp pipforge-<version>.jar io.phdata.pipeforge.PipewrenchConfigBuilder \
     -s <database configuration file> \
     -p <database password> \
     -m <table metadata> \

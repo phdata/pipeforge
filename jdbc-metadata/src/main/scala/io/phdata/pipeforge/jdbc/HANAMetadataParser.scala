@@ -1,0 +1,63 @@
+/*
+ * Copyright 2018 phData Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.phdata.pipeforge.jdbc
+
+import java.sql.Connection
+
+import io.phdata.pipeforge.jdbc.domain.Column
+
+/**
+ * HANA metadata parser implementation
+ * @param _connection
+ */
+class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser {
+
+  def connection = _connection
+
+  override def singleRecordQuery(schema: String, table: String) =
+    s"""
+       |SELECT *
+       |FROM "$schema"."$table"
+       |LIMIT 1
+     """.stripMargin
+
+  override def listTablesStatement(schema: String) =
+    s"""
+       |SELECT TABLE_NAME
+       |FROM INFORMATION_SCHEMA.TABLES
+       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_TYPE = 'BASE TABLE'
+     """.stripMargin
+
+  override def listViewsStatement(schema: String): String =
+    s"""
+       |SELECT TABLE_NAME
+       |FROM INFORMATION_SCHEMA.VIEWS
+       |WHERE TABLE_SCHEMA = '$schema'
+     """.stripMargin
+
+  override def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
+    //val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
+    logger.debug("Gathering primary keys from JDBC metadata")
+    //val pks = results(rs) { record =>
+    //  record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
+    //}.toMap
+
+    //mapPrimaryKeyToColumn(pks, columns)
+    Set()
+
+  }
+}

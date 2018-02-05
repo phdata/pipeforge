@@ -122,21 +122,12 @@ lazy val pipeforge = project
     libraryDependencies ++= dependencies.all
   )
   .dependsOn(
-    common,
     `jdbc-metadata`,
     pipewrench
   )
   .aggregate(
-    common,
     `jdbc-metadata`,
     pipewrench
-  )
-
-lazy val common = project
-  .settings(
-    name := "common",
-    settings,
-    libraryDependencies ++= dependencies.common
   )
 
 lazy val `jdbc-metadata` = project
@@ -144,9 +135,6 @@ lazy val `jdbc-metadata` = project
     name := "jdbc-metadata",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.database
-  )
-  .dependsOn(
-    common
   )
 
 lazy val pipewrench = project
@@ -158,7 +146,7 @@ lazy val pipewrench = project
     )
   )
   .dependsOn(
-    common
+    `jdbc-metadata`
   )
 
 enablePlugins(JavaAppPackaging)

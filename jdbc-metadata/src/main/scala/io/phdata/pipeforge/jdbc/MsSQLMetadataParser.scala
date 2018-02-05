@@ -18,7 +18,7 @@ package io.phdata.pipeforge.jdbc
 
 import java.sql.Connection
 
-import io.phdata.pipeforge.common.Column
+import io.phdata.pipeforge.jdbc.domain.Column
 
 /**
  * Microsoft SQL Server metadata parser implementation

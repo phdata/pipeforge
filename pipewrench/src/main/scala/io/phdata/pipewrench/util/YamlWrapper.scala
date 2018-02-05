@@ -16,10 +16,10 @@
 
 package io.phdata.pipewrench.util
 
-import java.io.{FileWriter, StringWriter}
+import java.io.{ FileWriter, StringWriter }
 import java.util
 
-import org.yaml.snakeyaml.{DumperOptions, Yaml}
+import org.yaml.snakeyaml.{ DumperOptions, Yaml }
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

@@ -19,7 +19,7 @@ package io.phdata.pipewrench
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.common.Table
+import io.phdata.pipeforge.jdbc.domain.Table
 
 /**
  * Builds Pipewrench Table definitions

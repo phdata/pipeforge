@@ -18,7 +18,7 @@ package io.phdata.pipewrench
 
 import java.sql.JDBCType
 
-import io.phdata.pipeforge.common.Column
+import io.phdata.pipeforge.jdbc.domain.Column
 import org.scalatest.FunSuite
 
 /**

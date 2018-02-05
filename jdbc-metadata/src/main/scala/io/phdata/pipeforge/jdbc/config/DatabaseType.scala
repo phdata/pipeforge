@@ -21,9 +21,10 @@ package io.phdata.pipeforge.jdbc.config
  */
 object DatabaseType extends Enumeration {
 
-  val MYSQL  = Value("mysql")
-  val ORACLE = Value("oracle")
-  val MSSQL  = Value("mssql")
-  val HANA   = Value("hana")
+  val MYSQL    = Value("mysql")
+  val ORACLE   = Value("oracle")
+  val MSSQL    = Value("mssql")
+  val HANA     = Value("hana")
+  val TERADATA = Value("teradata")
 
 }

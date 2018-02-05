@@ -71,7 +71,8 @@ trait DatabaseMetadataParser extends LazyLogging {
         val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         Success(mapMetaDataToColumn(metaData, rsMetadata))
       case None =>
-        Failure(new Exception(s"$table does not contain any records, cannot provide column definitions"))
+        Failure(
+          new Exception(s"$table does not contain any records, cannot provide column definitions"))
     }
   }
 
@@ -106,7 +107,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param tableWhiteList Optional user supplied table whitelisting
    * @return A Set of tables
    */
-  def checkWhiteListedTables(sourceTables: Set[String], tableWhiteList: Option[Set[String]]): Try[Set[String]] =
+  def checkWhiteListedTables(sourceTables: Set[String],
+                             tableWhiteList: Option[Set[String]]): Try[Set[String]] =
     tableWhiteList match {
       case Some(whiteList) =>
         logger.debug("Checking user supplied white list against source system: {}", whiteList)
@@ -159,7 +161,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param rsMetadata
    * @return A set of column definitions
    */
-  def mapMetaDataToColumn(metaData: ResultSetMetaData, rsMetadata: ResultSetMetaData): Set[Column] = {
+  def mapMetaDataToColumn(metaData: ResultSetMetaData,
+                          rsMetadata: ResultSetMetaData): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
     (1 to metaData.getColumnCount).map { i =>
@@ -219,12 +222,17 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @tparam T The output
    * @return
    */
-  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) =
-    new Iterator[T] {
+  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
+    val iterator = new Iterator[T] {
       def hasNext = resultSet.next()
 
       def next() = f(resultSet)
     }
+
+    val result = iterator.toList
+    resultSet.close()
+    result
+  }
 }
 
 /**
@@ -269,6 +277,12 @@ object DatabaseMetadataParser extends LazyLogging {
                                  configuration.schema,
                                  configuration.tables,
                                  skipWhiteListCheck)
+          case DatabaseType.TERADATA =>
+            new TeradataMetadataParser(connection)
+              .getTablesMetadata(configuration.objectType,
+                                 configuration.schema,
+                                 configuration.tables,
+                                 skipWhiteListCheck)
           case _ =>
             Failure(
               new Exception(
@@ -288,7 +302,9 @@ object DatabaseMetadataParser extends LazyLogging {
    */
   def getConnection(configuration: DatabaseConf) = {
     logger.debug("Connecting to database: {}", configuration)
-    Try(DriverManager.getConnection(configuration.jdbcUrl, configuration.username, configuration.password))
+    Try(
+      DriverManager
+        .getConnection(configuration.jdbcUrl, configuration.username, configuration.password))
   }
 
 }

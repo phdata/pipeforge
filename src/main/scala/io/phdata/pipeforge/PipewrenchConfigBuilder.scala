@@ -56,7 +56,8 @@ object PipewrenchConfigBuilder extends LazyLogging {
         // Read in additional table metadata
         val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
         // Build Pipewrench tables definition
-        val generatedConfig = Map("tables" -> TableBuilder.buildTablesSection(databaseMetadata, tableMetadata))
+        val generatedConfig = Map(
+          "tables" -> TableBuilder.buildTablesSection(databaseMetadata, tableMetadata))
         // Write Pipewrench tables files
         YamlWrapper.write(generatedConfig, cliArgs.outputPath())
       case Failure(e) =>

@@ -17,7 +17,7 @@
 import sbt.Keys.{ test, _ }
 import sbt._
 
-name := "pipforge"
+name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
 

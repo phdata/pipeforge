@@ -71,10 +71,8 @@ lazy val dependencies =
     val microsoftVersion = "6.2.2.jre8"
 
     // CLI
-    val scallopVersion      = "3.1.1"
-    val ficusVersion        = "1.4.3"
-    val scalaYamlVersion    = "0.4.0"
-    val typesafeConfVersion = "1.3.1"
+    val scallopVersion   = "3.1.1"
+    val scalaYamlVersion = "0.4.0"
 
     // Testing
     val scalaTestVersion     = "3.0.4"
@@ -90,11 +88,8 @@ lazy val dependencies =
     val microsoft = "com.microsoft.sqlserver" % "mssql-jdbc"           % microsoftVersion
 
     // CLI parsing depends
-    val scallop        = "org.rogach"    %% "scallop"      % scallopVersion
-    val ficus          = "com.iheart"    %% "ficus"        % ficusVersion
-    val scalaYaml      = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
-    val typesafeConfig = "com.typesafe"  % "config"        % typesafeConfVersion
-
+    val scallop   = "org.rogach"    %% "scallop"      % scallopVersion
+    val scalaYaml = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
     // Testing depends
     val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
     val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
@@ -102,7 +97,7 @@ lazy val dependencies =
 
     val common   = Seq(logback, scalaLogging, scalaTest)
     val database = Seq(mysql, oracle, microsoft)
-    val cli      = Seq(typesafeConfig, scallop, ficus, scalaYaml)
+    val cli      = Seq(scallop, scalaYaml)
     val all      = common ++ database ++ cli ++ Seq(scalaDockerTest, spotifyDockerTest)
   }
 

@@ -19,8 +19,7 @@ package io.phdata.pipeforge
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.config.EnvironmentYaml
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipewrench.TableBuilder
-import io.phdata.pipewrench.util.YamlWrapper
+import io.phdata.pipewrench.Pipewrench
 import org.rogach.scallop.ScallopConf
 
 import scala.util.{ Failure, Success }
@@ -34,21 +33,13 @@ object PipewrenchConfigBuilder extends LazyLogging {
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
-
-    val databaseConf = EnvironmentYaml.getDatabaseConf(cliArgs.databaseConf(), cliArgs.databasePassword())
+    val databaseConf =
+      EnvironmentYaml.getDatabaseConf(cliArgs.databaseConf(), cliArgs.databasePassword())
 
     // Try to parse database metadata
     DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
-      case Success(databaseMetadata) =>
-        // Read in additional table metadata
-        val tableMetadata = YamlWrapper.read(cliArgs.tableMetadata())
-        // Build Pipewrench tables definition
-        val generatedConfig = Map(
-          "tables" -> TableBuilder.buildTablesSection(databaseMetadata, tableMetadata))
-        // Write Pipewrench tables files
-        YamlWrapper.write(generatedConfig, cliArgs.outputPath())
-      case Failure(e) =>
-        logger.error("Error gathering metadata from source", e)
+      case Success(databaseMetadata) => Pipewrench.buildYaml(databaseMetadata, cliArgs.outputPath())
+      case Failure(e)                => logger.error("Error gathering metadata from source", e)
     }
   }
 

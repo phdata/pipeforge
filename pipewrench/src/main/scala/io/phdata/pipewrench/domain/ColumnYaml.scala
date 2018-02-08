@@ -14,29 +14,10 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.util
+package io.phdata.pipewrench.domain
 
-import org.scalatest.FunSuite
-
-/**
- * YamlWrapper unit tests
- */
-class YamlWrapperTest extends FunSuite {
-
-  test("write yaml") {
-    val list = Seq("item1", "item2", "item3")
-    val data = Map("tables" -> list)
-
-    YamlWrapper.write(data, "target/test-write.yml")
-  }
-
-  test("read yaml") {
-    val data = Map("key" -> "value",
-                   "list" ->
-                   Seq(Map("one" -> "two"), Map("three" -> "four")))
-
-    YamlWrapper.write(data, "target/test.yml")
-    val str = YamlWrapper.read("target/test.yml")
-    assert(str != null)
-  }
-}
+case class ColumnYaml(name: String,
+                      dataType: String,
+                      comment: String = "",
+                      scale: Option[Int] = None,
+                      precision: Option[Int] = None)

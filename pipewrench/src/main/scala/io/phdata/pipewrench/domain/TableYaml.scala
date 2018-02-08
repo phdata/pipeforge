@@ -16,16 +16,9 @@
 
 package io.phdata.pipewrench.domain
 
-import net.jcazevedo.moultingyaml.DefaultYamlProtocol
-
 case class TableYaml(id: String,
                      source: Map[String, String],
                      destination: Map[String, String],
                      split_by_column: String,
                      primary_keys: Seq[String],
                      columns: Seq[ColumnYaml])
-
-object TableYamlProtocol extends DefaultYamlProtocol {
-  implicit def columnFormat = yamlFormat5(ColumnYaml)
-  implicit def tableFormat  = yamlFormat6(TableYaml)
-}

@@ -20,15 +20,15 @@ import java.io.FileWriter
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
-import io.phdata.pipewrench.domain.{ ColumnYaml, DataType, TableYaml }
-import io.phdata.pipewrench.domain.TableYamlProtocol._
+import io.phdata.pipeforge.jdbc.domain.{Column, Table}
+import io.phdata.pipewrench.domain.{ColumnYaml, DataType, PipewrenchConfigYaml, TableYaml}
+import io.phdata.pipewrench.domain.PipewrenchConfigYamlProtocol._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 import net.jcazevedo.moultingyaml._
 
 object Pipewrench extends LazyLogging with DefaultYamlProtocol {
 
-  def buildYaml(tables: Set[Table]) = buildTables(tables).toYaml
+  def buildYaml(tables: Set[Table]) = buildIngestConfig(tables).toYaml
 
   def buildYaml(tables: Set[Table], outputPath: String): Unit = {
     val yaml = buildYaml(tables)
@@ -39,9 +39,11 @@ object Pipewrench extends LazyLogging with DefaultYamlProtocol {
   private def writeYamlFile(yaml: YamlValue, path: String): Unit = {
     val fw = new FileWriter(path)
     logger.debug(s"Writing file: $path")
-    fw.write(yaml.toString)
+    fw.write(yaml.prettyPrint)
     fw.close()
   }
+
+  private def buildIngestConfig(tables: Set[Table]): PipewrenchConfigYaml = PipewrenchConfigYaml(buildTables(tables))
 
   private def buildTables(tables: Set[Table]): Seq[TableYaml] =
     tables.toList

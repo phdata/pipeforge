@@ -58,7 +58,6 @@ object PipewrenchConfigBuilder extends LazyLogging {
   private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
     lazy val databaseConf       = opt[String]("database-configuration", 's', required = true)
     lazy val databasePassword   = opt[String]("database-password", 'p', required = true)
-    lazy val tableMetadata      = opt[String]("table-metadata", 'm', required = true)
     lazy val outputPath         = opt[String]("output-path", 'o', required = true)
     lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
 

@@ -20,18 +20,29 @@ import java.io.FileWriter
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.jdbc.domain.{Column, Table}
-import io.phdata.pipewrench.domain.{ColumnYaml, DataType, PipewrenchConfigYaml, TableYaml}
+import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
+import io.phdata.pipewrench.domain._
 import io.phdata.pipewrench.domain.PipewrenchConfigYamlProtocol._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 import net.jcazevedo.moultingyaml._
 
 object Pipewrench extends LazyLogging with DefaultYamlProtocol {
 
-  def buildYaml(tables: Set[Table]) = buildIngestConfig(tables).toYaml
+  def buildYaml(tables: Set[Table], metadata: Option[TableMetadataYaml] = None) =
+    buildIngestConfig(tables, metadata).toYaml
 
-  def buildYaml(tables: Set[Table], outputPath: String): Unit = {
-    val yaml = buildYaml(tables)
+  def buildYaml(tables: Set[Table],
+                outputPath: String,
+                tablesMetadataPath: Option[String]): Unit = {
+    val yaml = tablesMetadataPath match {
+      case Some(path) =>
+        val metadata = TableMetadataYamlProtocol.parseTablesMetadata(path)
+        buildYaml(tables, Some(metadata))
+      case None =>
+        None
+        buildYaml(tables)
+    }
+
     logger.debug(s"Parsed tables yml: $yaml")
     writeYamlFile(yaml, outputPath)
   }
@@ -43,9 +54,12 @@ object Pipewrench extends LazyLogging with DefaultYamlProtocol {
     fw.close()
   }
 
-  private def buildIngestConfig(tables: Set[Table]): PipewrenchConfigYaml = PipewrenchConfigYaml(buildTables(tables))
+  private def buildIngestConfig(tables: Set[Table],
+                                metadata: Option[TableMetadataYaml] = None): PipewrenchConfigYaml =
+    PipewrenchConfigYaml(buildTables(tables, metadata))
 
-  private def buildTables(tables: Set[Table]): Seq[TableYaml] =
+  private def buildTables(tables: Set[Table],
+                          metadata: Option[TableMetadataYaml] = None): Seq[TableYaml] =
     tables.toList
       .sortBy(_.name)
       .map { table =>
@@ -58,7 +72,11 @@ object Pipewrench extends LazyLogging with DefaultYamlProtocol {
           Map("name" -> table.name),
           getSplitByColumn(table),
           table.primaryKeys.toList.sortBy(_.index).map(_.name),
-          buildColumns(allColumns)
+          buildColumns(allColumns),
+          metadata match {
+            case Some(m) => Some(m.metadata)
+            case None    => None
+          }
         )
       }
 

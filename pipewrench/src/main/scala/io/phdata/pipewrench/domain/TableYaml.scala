@@ -21,4 +21,5 @@ case class TableYaml(id: String,
                      destination: Map[String, String],
                      split_by_column: String,
                      primary_keys: Seq[String],
-                     columns: Seq[ColumnYaml])
+                     columns: Seq[ColumnYaml],
+                     metadata: Option[Map[String, String]] = None)

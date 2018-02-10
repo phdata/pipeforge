@@ -38,8 +38,11 @@ object PipewrenchConfigBuilder extends LazyLogging {
 
     // Try to parse database metadata
     DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
-      case Success(databaseMetadata) => Pipewrench.buildYaml(databaseMetadata, cliArgs.outputPath())
-      case Failure(e)                => logger.error("Error gathering metadata from source", e)
+      case Success(databaseMetadata) =>
+        Pipewrench.buildYaml(databaseMetadata,
+                             cliArgs.outputPath(),
+                             cliArgs.tablesMetadata.toOption)
+      case Failure(e) => logger.error("Error gathering metadata from source", e)
     }
   }
 
@@ -59,6 +62,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
     lazy val databaseConf       = opt[String]("database-configuration", 's', required = true)
     lazy val databasePassword   = opt[String]("database-password", 'p', required = true)
     lazy val outputPath         = opt[String]("output-path", 'o', required = true)
+    lazy val tablesMetadata     = opt[String]("tables-metadata", 'm', required = false)
     lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
 
     verify()

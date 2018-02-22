@@ -27,14 +27,13 @@ import net.jcazevedo.moultingyaml._
 
 object Pipewrench extends LazyLogging {
 
-  def buildYaml(tables: Set[Table], metadata: Option[TableMetadataYaml] = None) =
+  def buildYaml(tables: Set[Table], metadata: TableMetadataYaml) =
     buildIngestConfig(tables, metadata).toYaml
 
   def buildYaml(tables: Set[Table],
                 outputPath: String,
-                metadata: Option[TableMetadataYaml]): Unit = {
+                metadata: TableMetadataYaml): Unit = {
     val yaml = buildYaml(tables, metadata)
-
     logger.debug(s"Parsed tables yml: $yaml")
     writeYamlFile(yaml, outputPath)
   }
@@ -47,11 +46,11 @@ object Pipewrench extends LazyLogging {
   }
 
   private def buildIngestConfig(tables: Set[Table],
-                                metadata: Option[TableMetadataYaml] = None): PipewrenchConfigYaml =
+                                metadata: TableMetadataYaml): PipewrenchConfigYaml =
     PipewrenchConfigYaml(buildTables(tables, metadata))
 
   private def buildTables(tables: Set[Table],
-                          metadata: Option[TableMetadataYaml] = None): Seq[TableYaml] =
+                          metadata: TableMetadataYaml): Seq[TableYaml] =
     tables.toList
       .sortBy(_.name)
       .map { table =>
@@ -65,10 +64,10 @@ object Pipewrench extends LazyLogging {
           getSplitByColumn(table),
           table.primaryKeys.toList.sortBy(_.index).map(_.name),
           buildColumns(allColumns),
-          metadata match {
-            case Some(m) => Some(m.metadata)
-            case None    => None
-          }
+          metadata.META_SOURCE,
+          metadata.META_SECURITY_CLASSIFICATION,
+          metadata.META_LOAD_FREQUENCY,
+          metadata.META_CONTACT_INFO
         )
       }
 

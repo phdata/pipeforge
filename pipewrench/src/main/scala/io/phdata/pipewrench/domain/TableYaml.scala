@@ -22,4 +22,7 @@ case class TableYaml(id: String,
                      split_by_column: String,
                      primary_keys: Seq[String],
                      columns: Seq[ColumnYaml],
-                     metadata: Option[Map[String, String]] = None)
+                     META_SOURCE: String,
+                     META_SECURITY_CLASSIFICATION: String,
+                     META_LOAD_FREQUENCY: String,
+                     META_CONTACT_INFO: String)

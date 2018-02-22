@@ -20,9 +20,10 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.config.EnvironmentYaml
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
 import io.phdata.pipewrench.Pipewrench
+import io.phdata.pipewrench.domain.TableMetadataYamlProtocol
 import org.rogach.scallop.ScallopConf
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 /**
  * Pipewrench config builder application connects to a source database and parses table definitions
@@ -36,15 +37,22 @@ object PipewrenchConfigBuilder extends LazyLogging {
     val databaseConf =
       EnvironmentYaml.getDatabaseConf(cliArgs.databaseConf(), cliArgs.databasePassword())
 
+    // Parse additional metadata config
+    val metadata = cliArgs.tablesMetadata.toOption match {
+      case Some(path) => Some(TableMetadataYamlProtocol.parseTablesMetadata(path))
+      case None => None
+    }
+
     // Try to parse database metadata
     DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
-      case Success(databaseMetadata) =>
-        Pipewrench.buildYaml(databaseMetadata,
+      case Success(tablesMetadata) =>
+        Pipewrench.buildYaml(tablesMetadata,
                              cliArgs.outputPath(),
-                             cliArgs.tablesMetadata.toOption)
+                             metadata)
       case Failure(e) => logger.error("Error gathering metadata from source", e)
     }
   }
+
 
   /**
    * CLI parameter parser

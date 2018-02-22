@@ -23,25 +23,17 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
 import io.phdata.pipewrench.domain._
 import io.phdata.pipewrench.domain.PipewrenchConfigYamlProtocol._
-import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 import net.jcazevedo.moultingyaml._
 
-object Pipewrench extends LazyLogging with DefaultYamlProtocol {
+object Pipewrench extends LazyLogging {
 
   def buildYaml(tables: Set[Table], metadata: Option[TableMetadataYaml] = None) =
     buildIngestConfig(tables, metadata).toYaml
 
   def buildYaml(tables: Set[Table],
                 outputPath: String,
-                tablesMetadataPath: Option[String]): Unit = {
-    val yaml = tablesMetadataPath match {
-      case Some(path) =>
-        val metadata = TableMetadataYamlProtocol.parseTablesMetadata(path)
-        buildYaml(tables, Some(metadata))
-      case None =>
-        None
-        buildYaml(tables)
-    }
+                metadata: Option[TableMetadataYaml]): Unit = {
+    val yaml = buildYaml(tables, metadata)
 
     logger.debug(s"Parsed tables yml: $yaml")
     writeYamlFile(yaml, outputPath)

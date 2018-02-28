@@ -64,10 +64,7 @@ object Pipewrench extends LazyLogging {
           getSplitByColumn(table),
           table.primaryKeys.toList.sortBy(_.index).map(_.name),
           buildColumns(allColumns),
-          metadata.META_SOURCE,
-          metadata.META_SECURITY_CLASSIFICATION,
-          metadata.META_LOAD_FREQUENCY,
-          metadata.META_CONTACT_INFO
+          metadata.metadata,
         )
       }
 

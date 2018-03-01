@@ -14,38 +14,18 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench
+package io.phdata.pipewrench.domain
 
 import java.sql.JDBCType
 
-import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.domain.Column
 
-/**
- * Builds Pipewrench column definitions
- */
-object ColumnBuilder extends LazyLogging {
-
-  def buildColumns(columns: Set[Column]): Seq[Map[String, Any]] = {
-    logger.debug(s"Building Columns: {}", columns)
-    columns.toList
-      .sortBy(_.index)
-      .map(buildColumn)
-  }
-
-  def buildColumn(column: Column): Map[String, Any] = {
-    val dataType = mapDataType(column)
-    val map =
-      Map("name" -> column.name, "datatype" -> dataType, "comment" -> "")
-
-    logger.debug(s"Column definition: $column, mapped dataType: $dataType")
-    if (dataType == DataType.DECIMAL.toString) {
-      logger.trace("Found decimal value: {}", column)
-      map + ("scale" -> column.scale) + ("precision" -> column.precision)
-    } else {
-      map
-    }
-  }
+object DataType extends Enumeration {
+  val BOOLEAN = Value("BOOLEAN")
+  val DECIMAL = Value("DECIMAL")
+  val BIG_INT = Value("BIGINT")
+  val INTEGER = Value("INTEGER")
+  val SHORT   = Value("SHORT")
 
   def mapDataType(column: Column): String =
     column match {
@@ -57,12 +37,3 @@ object ColumnBuilder extends LazyLogging {
       case _                                                           => column.dataType.toString
     }
 }
-
-object DataType extends Enumeration {
-  val BOOLEAN = Value("BOOLEAN")
-  val DECIMAL = Value("DECIMAL")
-  val BIG_INT = Value("BIGINT")
-  val INTEGER = Value("INTEGER")
-  val SHORT   = Value("SHORT")
-}
-// map column java for numeric types

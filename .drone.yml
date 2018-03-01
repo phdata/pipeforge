@@ -2,8 +2,9 @@ pipeline:
   build:
     image: ngrossmann/sbt-centos
     pull: true
+    secrets: [ ARTIFACTORY_API_KEY, ARTIFACTORY_USER ]
     commands:
       - sbt test
       - sbt assembly
-      #- sbt publish
-      #- sbt rpm:publish
+      - sbt publish
+      - sbt rpm:publish

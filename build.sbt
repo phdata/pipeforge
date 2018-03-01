@@ -90,6 +90,7 @@ lazy val dependencies =
     // CLI parsing depends
     val scallop   = "org.rogach"    %% "scallop"      % scallopVersion
     val scalaYaml = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
+
     // Testing depends
     val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
     val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
@@ -111,6 +112,7 @@ lazy val pipeforge = project
   .settings(Defaults.itSettings: _*)
   .settings(
     name := "pipeforge",
+    version := "0.1",
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.PipewrenchConfigBuilder"),
@@ -128,6 +130,7 @@ lazy val pipeforge = project
 lazy val `jdbc-metadata` = project
   .settings(
     name := "jdbc-metadata",
+    version := "0.1",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.database
   )
@@ -135,6 +138,7 @@ lazy val `jdbc-metadata` = project
 lazy val pipewrench = project
   .settings(
     name := "pipewrench",
+    version := "0.1",
     settings,
     libraryDependencies ++= dependencies.common ++ Seq(
       dependencies.scalaYaml

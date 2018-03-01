@@ -30,9 +30,7 @@ object Pipewrench extends LazyLogging {
   def buildYaml(tables: Set[Table], metadata: TableMetadataYaml) =
     buildIngestConfig(tables, metadata).toYaml
 
-  def buildYaml(tables: Set[Table],
-                outputPath: String,
-                metadata: TableMetadataYaml): Unit = {
+  def buildYaml(tables: Set[Table], outputPath: String, metadata: TableMetadataYaml): Unit = {
     val yaml = buildYaml(tables, metadata)
     logger.debug(s"Parsed tables yml: $yaml")
     writeYamlFile(yaml, outputPath)
@@ -49,8 +47,7 @@ object Pipewrench extends LazyLogging {
                                 metadata: TableMetadataYaml): PipewrenchConfigYaml =
     PipewrenchConfigYaml(buildTables(tables, metadata))
 
-  private def buildTables(tables: Set[Table],
-                          metadata: TableMetadataYaml): Seq[TableYaml] =
+  private def buildTables(tables: Set[Table], metadata: TableMetadataYaml): Seq[TableYaml] =
     tables.toList
       .sortBy(_.name)
       .map { table =>

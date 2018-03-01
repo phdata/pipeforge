@@ -1,6 +1,5 @@
----
 metadata:
-  META_SOURCE: Employee Database
-  META_SECURITY_CLASSIFICATION: INTERNAL
-  META_LOAD_FREQUENCY: Daily
-  META_CONTACT_INFO: developer@phdata.io
+  SOURCE: Employee Database
+  SECURITY_CLASSIFICATION: INTERNAL
+  LOAD_FREQUENCY: Daily
+  CONTACT_INFO: developer@phdata.io

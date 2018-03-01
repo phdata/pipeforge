@@ -23,7 +23,7 @@ import io.phdata.pipewrench.Pipewrench
 import io.phdata.pipewrench.domain.TableMetadataYamlProtocol
 import org.rogach.scallop.ScallopConf
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 /**
  * Pipewrench config builder application connects to a source database and parses table definitions
@@ -43,13 +43,10 @@ object PipewrenchConfigBuilder extends LazyLogging {
     // Try to parse database metadata
     DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
       case Success(tablesMetadata) =>
-        Pipewrench.buildYaml(tablesMetadata,
-                             cliArgs.outputPath(),
-                             metadata)
+        Pipewrench.buildYaml(tablesMetadata, cliArgs.outputPath(), metadata)
       case Failure(e) => logger.error("Error gathering metadata from source", e)
     }
   }
-
 
   /**
    * CLI parameter parser

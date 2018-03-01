@@ -1,0 +1,9 @@
+pipeline:
+  build:
+    image: ngrossmann/sbt-centos
+    pull: true
+    commands:
+      - sbt test
+      - sbt assembly
+      #- sbt publish
+      #- sbt rpm:publish

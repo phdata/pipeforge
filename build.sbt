@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import sbt.Keys.{ test, _ }
 import sbt._
 
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
+
+//lazy val artifactoryApiKey = sys.env("ARTIFACTORY_API_KEY")
+//lazy val artifactoryUser   = sys.env("ARTIFACTORY_USER")
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -40,7 +41,16 @@ lazy val commonSettings = Seq(
     "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
-  )
+  ) //,
+//  publishTo := Some(if (version.value.endsWith("SNAPSHOT")) {
+//    "Artifactory Realm" at "https://cglcloud.jfrog.io/cglcloud/cargill_sbt_local;build.timestamp=" + new java.util.Date().getTime
+//  } else {
+//    "Artifactory Realm" at "https://cglcloud.jfrog.io/cglcloud/cargill_sbt_local"
+//  }),
+//  credentials += Credentials("Artifactory Realm",
+//                             "cglcloud.jfrog.io",
+//                             artifactoryUser,
+//                             artifactoryApiKey)
 )
 
 lazy val scalafmtSettings =
@@ -116,7 +126,9 @@ lazy val pipeforge = project
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.PipewrenchConfigBuilder"),
-    libraryDependencies ++= dependencies.all
+    libraryDependencies ++= dependencies.all,
+    rpmLicense := Some("License: GPLv2"),
+    rpmVendor := "phData"
   )
   .dependsOn(
     `jdbc-metadata`,
@@ -148,4 +160,4 @@ lazy val pipewrench = project
     `jdbc-metadata`
   )
 
-enablePlugins(JavaAppPackaging)
+enablePlugins(JavaServerAppPackaging, UniversalDeployPlugin, RpmPlugin, RpmDeployPlugin)

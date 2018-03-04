@@ -27,9 +27,8 @@ class RestApi(http: HttpExt, configuration: Config, pipeforgeController: Pipewre
       pipeforgeController.route
     }
 
-  val port = configuration.getInt("rest.port")
 
-  def start(): Future[Unit] = {
+  def start(port: Int): Future[Unit] = {
     http.bindAndHandle(route, "0.0.0.0", port = port) map {
       binding =>
         logger.info(s"Pipeforge Rest interface bound to ${binding.localAddress}")

@@ -42,7 +42,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
         pipewrenchCmd(conf, cliArgs.pipewrench.databasePassword(), cliArgs.pipewrench.outputPath(), cliArgs.pipewrench.tablesMetadata(), cliArgs.pipewrench.skipcheckWhitelist.toOption)
       case None =>
         logger.info("rest-api")
-        RestApi.start()
+        RestApi.start(cliArgs.restApi.port())
     }
 
   }
@@ -76,7 +76,7 @@ object PipewrenchConfigBuilder extends LazyLogging {
    */
   private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
     val restApi = new Subcommand("rest-api") {
-
+      lazy val port = opt[Int]("port", 'p', required = true)
     }
     addSubcommand(restApi)
     val pipewrench = new Subcommand("pipewrench") {

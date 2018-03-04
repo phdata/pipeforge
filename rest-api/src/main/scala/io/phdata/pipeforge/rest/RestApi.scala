@@ -8,13 +8,13 @@ import scala.concurrent.duration.Duration
 
 object RestApi extends LazyLogging {
 
-  def start(): Unit = {
+  def start(port: Int): Unit = {
     val app = new AppModule with ExecutionContextModule with ConfigurationModule with ServiceModule with AkkaModule with HttpModule with RestModule
 
     import app.executionContext
     Await.ready(
       for {
-        _ <- app.restApi.start()
+        _ <- app.restApi.start(port)
       } yield Unit, Duration.Inf
     )
   }

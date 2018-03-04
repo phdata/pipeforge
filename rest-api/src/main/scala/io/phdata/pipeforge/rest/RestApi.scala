@@ -6,13 +6,12 @@ import io.phdata.pipeforge.rest.module._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-object Main extends LazyLogging {
+object RestApi extends LazyLogging {
 
-  val app = new AppModule with ExecutionContextModule with ConfigurationModule with AkkaModule with HttpModule with RestModule
+  def start(): Unit = {
+    val app = new AppModule with ExecutionContextModule with ConfigurationModule with ServiceModule with AkkaModule with HttpModule with RestModule
 
-  import app.executionContext
-
-  def main(args: Array[String]): Unit = {
+    import app.executionContext
     Await.ready(
       for {
         _ <- app.restApi.start()

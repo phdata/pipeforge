@@ -128,11 +128,13 @@ lazy val pipeforge = project
   )
   .dependsOn(
     `jdbc-metadata`,
-    pipewrench
+    pipewrench,
+    `rest-api`
   )
   .aggregate(
     `jdbc-metadata`,
-    pipewrench
+    pipewrench,
+    `rest-api`
   )
 
 lazy val `jdbc-metadata` = project
@@ -162,6 +164,9 @@ lazy val `rest-api` = project
     version := "0.1-SNAPSHOT",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.rest
+  )
+  .dependsOn(
+    pipewrench
   )
 
 enablePlugins(JavaAppPackaging)

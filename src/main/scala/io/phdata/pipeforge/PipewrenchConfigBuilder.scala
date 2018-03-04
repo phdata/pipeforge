@@ -19,11 +19,12 @@ package io.phdata.pipeforge
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.config.EnvironmentYaml
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
+import io.phdata.pipeforge.rest.RestApi
 import io.phdata.pipewrench.Pipewrench
 import io.phdata.pipewrench.domain.TableMetadataYamlProtocol
-import org.rogach.scallop.ScallopConf
+import org.rogach.scallop.{ScallopConf, Subcommand}
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 /**
  * Pipewrench config builder application connects to a source database and parses table definitions
@@ -34,16 +35,29 @@ object PipewrenchConfigBuilder extends LazyLogging {
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
+
+    cliArgs.pipewrench.databaseConf.toOption match {
+      case Some(conf) =>
+        logger.info("pipewrench")
+        pipewrenchCmd(conf, cliArgs.pipewrench.databasePassword(), cliArgs.pipewrench.outputPath(), cliArgs.pipewrench.tablesMetadata(), cliArgs.pipewrench.skipcheckWhitelist.toOption)
+      case None =>
+        logger.info("rest-api")
+        RestApi.start()
+    }
+
+  }
+
+  def pipewrenchCmd(conf: String, password: String, outputPath: String, tablesMetadataPath: String, skipWhiteList: Option[Boolean] = None): Unit = {
     val databaseConf =
-      EnvironmentYaml.getDatabaseConf(cliArgs.databaseConf(), cliArgs.databasePassword())
+      EnvironmentYaml.getDatabaseConf(conf, password)
 
     // Parse additional table metadata config
-    val metadata = TableMetadataYamlProtocol.parseTablesMetadata(cliArgs.tablesMetadata())
+    val metadata = TableMetadataYamlProtocol.parseTablesMetadata(tablesMetadataPath)
 
     // Try to parse database metadata
-    DatabaseMetadataParser.parse(databaseConf, cliArgs.skipcheckWhitelist.getOrElse(false)) match {
-      case Success(tablesMetadata) =>
-        Pipewrench.buildYaml(tablesMetadata, cliArgs.outputPath(), metadata)
+    DatabaseMetadataParser.parse(databaseConf, skipWhiteList.getOrElse(false)) match {
+      case Success(tables) =>
+        Pipewrench.buildConfig(tables, outputPath, metadata)
       case Failure(e) => logger.error("Error gathering metadata from source", e)
     }
   }
@@ -61,12 +75,25 @@ object PipewrenchConfigBuilder extends LazyLogging {
    * @param args
    */
   private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
-    lazy val databaseConf       = opt[String]("database-configuration", 's', required = true)
-    lazy val databasePassword   = opt[String]("database-password", 'p', required = true)
-    lazy val outputPath         = opt[String]("output-path", 'o', required = true)
-    lazy val tablesMetadata     = opt[String]("tables-metadata", 'm', required = true)
-    lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
+    val restApi = new Subcommand("rest-api") {
+
+    }
+    addSubcommand(restApi)
+    val pipewrench = new Subcommand("pipewrench") {
+
+      lazy val databaseConf       = opt[String]("database-configuration", 's', required = true)
+      lazy val databasePassword   = opt[String]("database-password", 'p', required = true)
+      lazy val outputPath         = opt[String]("output-path", 'o', required = true)
+      lazy val tablesMetadata     = opt[String]("tables-metadata", 'm', required = true)
+      lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
+
+      //pipewrenchCmd(databaseConf(), databasePassword(), outputPath(), tablesMetadata(), skipcheckWhitelist.toOption)
+
+
+    }
+    addSubcommand(pipewrench)
 
     verify()
+
   }
 }

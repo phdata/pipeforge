@@ -27,11 +27,11 @@ import net.jcazevedo.moultingyaml._
 
 object Pipewrench extends LazyLogging {
 
-  def buildYaml(tables: Set[Table], metadata: TableMetadataYaml) =
-    buildIngestConfig(tables, metadata).toYaml
+  def buildConfig(tables: Set[Table], metadata: TableMetadataYaml) =
+    buildIngestConfig(tables, metadata)
 
-  def buildYaml(tables: Set[Table], outputPath: String, metadata: TableMetadataYaml): Unit = {
-    val yaml = buildYaml(tables, metadata)
+  def buildConfig(tables: Set[Table], outputPath: String, metadata: TableMetadataYaml): Unit = {
+    val yaml = buildConfig(tables, metadata).toYaml
     logger.debug(s"Parsed tables yml: $yaml")
     writeYamlFile(yaml, outputPath)
   }

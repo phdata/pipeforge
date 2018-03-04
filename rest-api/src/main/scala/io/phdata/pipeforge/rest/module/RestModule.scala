@@ -6,21 +6,21 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.controller.PipeforgeController
+import io.phdata.pipeforge.rest.controller.PipewrenchController
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait RestModule {
-  this: AkkaModule with ExecutionContextModule with HttpModule with ConfigurationModule =>
+  this: AkkaModule with ExecutionContextModule with ServiceModule with HttpModule with ConfigurationModule =>
 
-  val pipeforgeController = new PipeforgeController()
+  val pipeforgeController = new PipewrenchController(pipewrenchService)
 
   val restApi = new RestApi(http, configuration, pipeforgeController)
 
 }
 
-class RestApi(http: HttpExt, configuration: Config, pipeforgeController: PipeforgeController) (implicit actorSystem: ActorSystem, materializer: Materializer, executionContext: ExecutionContext) extends LazyLogging {
+class RestApi(http: HttpExt, configuration: Config, pipeforgeController: PipewrenchController)(implicit actorSystem: ActorSystem, materializer: Materializer, executionContext: ExecutionContext) extends LazyLogging {
 
   val route: Route =
     cors() {

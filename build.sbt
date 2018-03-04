@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import sbt.Keys.{ test, _ }
 import sbt._
 
 name := "pipeforge"
@@ -74,6 +72,10 @@ lazy val dependencies =
     val scallopVersion   = "3.1.1"
     val scalaYamlVersion = "0.4.0"
 
+    // Rest
+    val akkaHttpVersion = "10.0.11"
+    val akkaCorsVersion = "0.2.2"
+
     // Testing
     val scalaTestVersion     = "3.0.4"
     val dockerTestKitVersion = "0.9.5"
@@ -91,6 +93,11 @@ lazy val dependencies =
     val scallop   = "org.rogach"    %% "scallop"      % scallopVersion
     val scalaYaml = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
 
+    // Rest depends
+    val akkaHttp          = "com.typesafe.akka" %% "akka-http"            % akkaHttpVersion
+    val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion
+    val akkaCors          = "ch.megard"         %% "akka-http-cors"       % akkaCorsVersion
+
     // Testing depends
     val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
     val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
@@ -99,6 +106,7 @@ lazy val dependencies =
     val common   = Seq(logback, scalaLogging, scalaTest)
     val database = Seq(mysql, oracle, microsoft)
     val cli      = Seq(scallop, scalaYaml)
+    val rest     = Seq(akkaHttp, akkaHttpSprayJson, akkaCors)
     val all      = common ++ database ++ cli ++ Seq(scalaDockerTest, spotifyDockerTest)
   }
 
@@ -146,6 +154,14 @@ lazy val pipewrench = project
   )
   .dependsOn(
     `jdbc-metadata`
+  )
+
+lazy val `rest-api` = project
+  .settings(
+    name := "rest-api",
+    version := "0.1-SNAPSHOT",
+    settings,
+    libraryDependencies ++= dependencies.common ++ dependencies.rest
   )
 
 enablePlugins(JavaAppPackaging)

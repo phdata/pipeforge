@@ -123,7 +123,7 @@ lazy val pipeforge = project
     version := "0.1",
     settings,
     assemblySettings,
-    mainClass in Compile := Some("io.phdata.pipeforge.PipewrenchConfigBuilder"),
+    mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
     libraryDependencies ++= dependencies.all
   )
   .dependsOn(

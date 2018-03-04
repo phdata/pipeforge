@@ -3,6 +3,8 @@ jdbcUrl: "test_jdbc_url"
 schema: "test_schema"
 username: "test_username"
 objectType: "table"
+metadata:
+  key1: val1
 tables:
   - "test_table1"
   - "test_table2"

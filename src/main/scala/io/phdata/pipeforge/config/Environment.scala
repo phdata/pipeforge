@@ -16,11 +16,6 @@
 
 package io.phdata.pipeforge.config
 
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import net.jcazevedo.moultingyaml._
-
-import scala.io.Source
-
 /**
  * Case class defining environment.yml file
  */
@@ -29,44 +24,5 @@ case class Environment(databaseType: String,
                        jdbcUrl: String,
                        username: String,
                        objectType: String,
+                       metadata: Map[String, String],
                        tables: Option[Seq[String]] = None)
-
-object EnvironmentYaml extends DefaultYamlProtocol {
-
-  implicit def environmentFormat = yamlFormat6(Environment)
-
-  /**
-   * Converts an Environment object to DatabaseConf object
-   * @param path
-   * @param password
-   * @return
-   */
-  def getDatabaseConf(path: String, password: String): DatabaseConf = {
-    val environment = parseFile(path)
-    val tables = environment.tables match {
-      case Some(t) => Some(t.toSet)
-      case None    => None
-    }
-
-    new DatabaseConf(
-      databaseType = DatabaseType.withName(environment.databaseType),
-      schema = environment.schema,
-      jdbcUrl = environment.jdbcUrl,
-      username = environment.username,
-      password = password,
-      objectType = ObjectType.withName(environment.objectType),
-      tables = tables
-    )
-  }
-
-  /**
-   * Parses input file into Environment object
-   * @param path
-   * @return
-   */
-  def parseFile(path: String): Environment = {
-    val file = Source.fromFile(path).getLines.mkString("\n")
-    file.parseYaml.convertTo[Environment]
-  }
-
-}

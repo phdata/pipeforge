@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.jdbc.domain
 
 import java.sql.JDBCType
-
-import io.phdata.pipeforge.jdbc.domain.Column
 
 object DataType extends Enumeration {
   val BOOLEAN = Value("BOOLEAN")

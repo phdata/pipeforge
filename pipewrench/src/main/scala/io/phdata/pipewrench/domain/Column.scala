@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.module
+package io.phdata.pipewrench.domain
 
-trait AppModule {
-
-  def restApi: RestApi
-
-}
+case class Column(name: String,
+                  datatype: String,
+                  comment: String = "",
+                  scale: Option[Int] = None,
+                  precision: Option[Int] = None)

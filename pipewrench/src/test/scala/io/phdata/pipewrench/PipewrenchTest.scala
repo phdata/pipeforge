@@ -32,7 +32,7 @@ class PipewrenchTest extends FunSuite {
     val col4  = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
     val col5  = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
     val table = Table("tbl1", Set(col1, col2, col3), Set(col1, col2, col3, col4, col5))
-    assertResult("col3")(Pipewrench.getSplitByColumn(table))
+    assertResult("col3")(PipewrenchImpl.getSplitByColumn(table))
   }
 
   test("pick the first PK if there's no numeric PK") {
@@ -42,7 +42,7 @@ class PipewrenchTest extends FunSuite {
     val col4  = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
     val col5  = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
     val table = Table("tbl1", Set(col1, col2, col3), Set(col1, col2, col3, col4, col5))
-    assertResult("col1")(Pipewrench.getSplitByColumn(table))
+    assertResult("col1")(PipewrenchImpl.getSplitByColumn(table))
   }
 
   test("pick the first numeric col if there's no PK") {
@@ -52,7 +52,7 @@ class PipewrenchTest extends FunSuite {
     val col4  = Column("col4", JDBCType.VARCHAR, nullable = true, 0, 10, 4)
     val col5  = Column("col5", JDBCType.NUMERIC, nullable = true, 0, 10, 4)
     val table = Table("tbl1", Set(), Set(col1, col2, col3, col4, col5))
-    assertResult("col5")(Pipewrench.getSplitByColumn(table))
+    assertResult("col5")(PipewrenchImpl.getSplitByColumn(table))
   }
 
 }

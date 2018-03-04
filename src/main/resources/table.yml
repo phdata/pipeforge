@@ -1,0 +1,156 @@
+tables:
+- source:
+    name: departments
+  primary_keys:
+  - dept_no
+  split_by_column: dept_no
+  id: departments
+  columns:
+  - name: dept_no
+    datatype: CHAR
+    comment: ''
+  - name: dept_name
+    datatype: VARCHAR
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: departments
+- source:
+    name: dept_emp
+  primary_keys:
+  - emp_no
+  - dept_no
+  split_by_column: emp_no
+  id: dept_emp
+  columns:
+  - name: emp_no
+    datatype: INTEGER
+    comment: ''
+  - name: dept_no
+    datatype: CHAR
+    comment: ''
+  - name: from_date
+    datatype: DATE
+    comment: ''
+  - name: to_date
+    datatype: DATE
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: dept_emp
+- source:
+    name: dept_manager
+  primary_keys:
+  - emp_no
+  - dept_no
+  split_by_column: emp_no
+  id: dept_manager
+  columns:
+  - name: emp_no
+    datatype: INTEGER
+    comment: ''
+  - name: dept_no
+    datatype: CHAR
+    comment: ''
+  - name: from_date
+    datatype: DATE
+    comment: ''
+  - name: to_date
+    datatype: DATE
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: dept_manager
+- source:
+    name: employees
+  primary_keys:
+  - emp_no
+  split_by_column: emp_no
+  id: employees
+  columns:
+  - name: emp_no
+    datatype: INTEGER
+    comment: ''
+  - name: birth_date
+    datatype: DATE
+    comment: ''
+  - name: first_name
+    datatype: VARCHAR
+    comment: ''
+  - name: last_name
+    datatype: VARCHAR
+    comment: ''
+  - name: gender
+    datatype: CHAR
+    comment: ''
+  - name: hire_date
+    datatype: DATE
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: employees
+- source:
+    name: salaries
+  primary_keys:
+  - emp_no
+  - from_date
+  split_by_column: emp_no
+  id: salaries
+  columns:
+  - name: emp_no
+    datatype: INTEGER
+    comment: ''
+  - name: salary
+    datatype: INTEGER
+    comment: ''
+  - name: from_date
+    datatype: DATE
+    comment: ''
+  - name: to_date
+    datatype: DATE
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: salaries
+- source:
+    name: titles
+  primary_keys:
+  - emp_no
+  - title
+  - from_date
+  split_by_column: emp_no
+  id: titles
+  columns:
+  - name: emp_no
+    datatype: INTEGER
+    comment: ''
+  - name: title
+    datatype: VARCHAR
+    comment: ''
+  - name: from_date
+    datatype: DATE
+    comment: ''
+  - name: to_date
+    datatype: DATE
+    comment: ''
+  metadata:
+    LOAD_FREQUENCY: Daily
+    CONTACT: developer@phdata.io
+    SOURCE: employee database
+  destination:
+    name: titles

@@ -20,58 +20,76 @@ import java.io.FileWriter
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
-import io.phdata.pipewrench.domain._
-import io.phdata.pipewrench.domain.PipewrenchConfigYamlProtocol._
+import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
+import io.phdata.pipeforge.jdbc.config.DatabaseConf
+import io.phdata.pipeforge.jdbc.domain.{ DataType, Column => DbColumn, Table => DbTable }
+import io.phdata.pipewrench.domain.{ Column, PipewrenchConfig, Table, YamlProtocol }
 import net.jcazevedo.moultingyaml._
 
-object Pipewrench extends LazyLogging {
+import scala.util.{ Failure, Success, Try }
 
-  def buildConfig(tables: Set[Table], metadata: TableMetadataYaml) =
-    buildIngestConfig(tables, metadata)
+trait Pipewrench {
 
-  def buildConfig(tables: Set[Table], outputPath: String, metadata: TableMetadataYaml): Unit = {
-    val yaml = buildConfig(tables, metadata).toYaml
-    logger.debug(s"Parsed tables yml: $yaml")
-    writeYamlFile(yaml, outputPath)
-  }
+  def buildConfig(databaseConf: DatabaseConf,
+                  tableMetadata: Map[String, String]): Try[PipewrenchConfig]
 
-  private def writeYamlFile(yaml: YamlValue, path: String): Unit = {
+  def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit
+
+  def yamlStr(pipewrenchConfig: PipewrenchConfig): String
+
+}
+
+object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
+
+  override def buildConfig(databaseConf: DatabaseConf,
+                           tableMetadata: Map[String, String]): Try[PipewrenchConfig] =
+    DatabaseMetadataParser.parse(databaseConf) match {
+      case Success(tables) =>
+        Try(buildIngestConfig(tables, tableMetadata))
+      case Failure(ex) =>
+        logger.error("Failed to prase metadata config", ex)
+        Failure(ex)
+    }
+
+  override def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit = {
     val fw = new FileWriter(path)
     logger.debug(s"Writing file: $path")
-    fw.write(yaml.prettyPrint)
+    fw.write(pipewrenchConfig.toYaml.prettyPrint)
     fw.close()
   }
 
-  private def buildIngestConfig(tables: Set[Table],
-                                metadata: TableMetadataYaml): PipewrenchConfigYaml =
-    PipewrenchConfigYaml(buildTables(tables, metadata))
+  override def yamlStr(pipewrenchConfig: PipewrenchConfig): String =
+    pipewrenchConfig.toYaml.prettyPrint
 
-  private def buildTables(tables: Set[Table], metadata: TableMetadataYaml): Seq[TableYaml] =
+  private def buildIngestConfig(tables: Set[DbTable],
+                                tableMetadata: Map[String, String]): PipewrenchConfig =
+    PipewrenchConfig(buildTables(tables, tableMetadata))
+
+  private def buildTables(tables: Set[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
       .sortBy(_.name)
       .map { table =>
         logger.debug(s"Table definition: $table")
         val allColumns = table.primaryKeys ++ table.columns
 
-        TableYaml(
+        Table(
           table.name,
           Map("name" -> table.name),
           Map("name" -> table.name),
           getSplitByColumn(table),
           table.primaryKeys.toList.sortBy(_.index).map(_.name),
           buildColumns(allColumns),
-          metadata.metadata,
+          tableMetadata,
         )
       }
 
-  private def buildColumns(columns: Set[Column]): Seq[ColumnYaml] =
+  private def buildColumns(columns: Set[DbColumn]): Seq[Column] =
     columns.toList
       .sortBy(_.index)
       .map { column =>
         val dataType = DataType.mapDataType(column)
         logger.debug(s"Column definition: $column, mapped dataType: $dataType")
-        val columnYaml = ColumnYaml(column.name, dataType)
+        val columnYaml = Column(column.name, dataType)
         if (dataType == DataType.DECIMAL.toString) {
           logger.trace("Found decimal value: {}", column)
           columnYaml.copy(scale = Some(column.scale), precision = Some(column.precision))
@@ -80,7 +98,7 @@ object Pipewrench extends LazyLogging {
         }
       }
 
-  def getSplitByColumn(table: Table) = {
+  def getSplitByColumn(table: DbTable) = {
     val jdbc_numerics = List(JDBCType.BIGINT,
                              JDBCType.REAL,
                              JDBCType.DECIMAL,

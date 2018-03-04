@@ -16,8 +16,4 @@
 
 package io.phdata.pipewrench.domain
 
-case class ColumnYaml(name: String,
-                      datatype: String,
-                      comment: String = "",
-                      scale: Option[Int] = None,
-                      precision: Option[Int] = None)
+case class PipewrenchConfig(tables: Seq[Table])

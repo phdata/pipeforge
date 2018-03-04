@@ -16,10 +16,10 @@
 
 package io.phdata.pipewrench.domain
 
-case class TableYaml(id: String,
-                     source: Map[String, String],
-                     destination: Map[String, String],
-                     split_by_column: String,
-                     primary_keys: Seq[String],
-                     columns: Seq[ColumnYaml],
-                     metadata: Map[String, String])
+case class Table(id: String,
+                 source: Map[String, String],
+                 destination: Map[String, String],
+                 split_by_column: String,
+                 primary_keys: Seq[String],
+                 columns: Seq[Column],
+                 metadata: Map[String, String])

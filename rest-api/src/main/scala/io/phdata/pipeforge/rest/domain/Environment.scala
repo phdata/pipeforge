@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.module
+package io.phdata.pipeforge.rest.domain
 
-trait AppModule {
-
-  def restApi: RestApi
-
-}
+case class Environment(databaseType: String,
+                       schema: String,
+                       jdbcUrl: String,
+                       username: String,
+                       password: String,
+                       objectType: String,
+                       metadata: Map[String, String],
+                       tables: Option[Seq[String]] = None)

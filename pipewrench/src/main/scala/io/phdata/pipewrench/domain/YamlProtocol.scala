@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.module
+package io.phdata.pipewrench.domain
 
-trait AppModule {
+import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 
-  def restApi: RestApi
-
+trait YamlProtocol extends DefaultYamlProtocol {
+  implicit def columnFormat           = yamlFormat5(Column)
+  implicit def tableFormat            = yamlFormat7(Table)
+  implicit def pipewrenchConfigFormat = yamlFormat1(PipewrenchConfig)
 }

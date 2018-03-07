@@ -57,13 +57,6 @@ trait DockerTestRunner extends FunSuite with DockerKit with BeforeAndAfterAll wi
 
   abstract override def dockerContainers: List[DockerContainer] = CONTAINER :: super.dockerContainers
 
-  protected def getResults[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
-    }
-  }
 }
 
 /**

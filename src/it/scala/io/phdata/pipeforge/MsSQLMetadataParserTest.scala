@@ -93,7 +93,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("parse tables metadata") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Seq(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -114,7 +114,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("parse views metadata") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Seq(VIEW))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -134,7 +134,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("skip tables with no records") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(NO_RECORDS_TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Seq(NO_RECORDS_TABLE))) match {
       case Success(definitions) =>
         assert(definitions.isEmpty)
       case Failure(ex) =>

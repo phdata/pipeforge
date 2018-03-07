@@ -6,6 +6,7 @@ import io.phdata.pipeforge.rest.domain.Environment
 import io.phdata.pipeforge.rest.module.ConfigurationModule
 import io.phdata.pipewrench.PipewrenchImpl
 import io.phdata.pipewrench.domain.PipewrenchConfig
+import io.phdata.pipeforge.rest.domain.Implicits._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -21,11 +22,15 @@ trait PipewrenchService {
 }
 
 class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
-    extends PipewrenchService with ConfigurationModule with LazyLogging {
+    extends PipewrenchService
+    with ConfigurationModule
+    with LazyLogging {
 
   override def buildConfig(databaseConf: DatabaseConf,
                            environment: Environment): Try[PipewrenchConfig] =
-    PipewrenchImpl.buildConfig(databaseConf, environment.metadata)
+    PipewrenchImpl.buildConfig(databaseConf,
+                               environment.metadata,
+                               environment.toPipewrenchEnvironment)
 
   override def yaml(pipewrenchConfig: PipewrenchConfig): String =
     PipewrenchImpl.yamlStr(pipewrenchConfig)

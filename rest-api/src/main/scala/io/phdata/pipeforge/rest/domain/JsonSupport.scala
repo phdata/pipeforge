@@ -22,26 +22,9 @@ import io.phdata.pipewrench.domain.{ Column, PipewrenchConfig, Table }
 import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-  implicit val environmentFormat = jsonFormat8(Environment)
+  implicit val environmentFormat = jsonFormat13(Environment)
 
   implicit def columnFormat           = jsonFormat5(Column)
   implicit def tableFormat            = jsonFormat7(Table)
-  implicit def pipewrenchConfigFormat = jsonFormat1(PipewrenchConfig)
-
-  def getDatabaseConf(environment: Environment): DatabaseConf = {
-    val tables = environment.tables match {
-      case Some(t) => Some(t.toSet)
-      case None    => None
-    }
-
-    new DatabaseConf(
-      databaseType = DatabaseType.withName(environment.databaseType),
-      schema = environment.schema,
-      jdbcUrl = environment.jdbcUrl,
-      username = environment.username,
-      password = environment.password,
-      objectType = ObjectType.withName(environment.objectType),
-      tables = tables
-    )
-  }
+  implicit def pipewrenchConfigFormat = jsonFormat9(PipewrenchConfig)
 }

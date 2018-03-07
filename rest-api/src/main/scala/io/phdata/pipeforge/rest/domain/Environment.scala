@@ -16,11 +16,16 @@
 
 package io.phdata.pipeforge.rest.domain
 
-case class Environment(databaseType: String,
+case class Environment(name: String,
+                       group: String,
+                       databaseType: String,
                        schema: String,
                        jdbcUrl: String,
                        username: String,
-                       password: String,
                        objectType: String,
                        metadata: Map[String, String],
+                       hdfsPath: String,
+                       hadoopUser: String,
+                       passwordFile: String,
+                       destinationDatabase: String,
                        tables: Option[Seq[String]] = None)

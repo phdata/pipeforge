@@ -18,12 +18,13 @@ package io.phdata.pipeforge.rest.controller
 
 import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.domain.{Environment, JsonSupport}
+import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport }
+import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipeforge.rest.service.PipewrenchService
 import io.phdata.pipewrench.domain.PipewrenchConfig
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
@@ -54,8 +55,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
       put {
         parameter('type.?) { responseTypeOpt =>
           entity(as[Environment]) { environment =>
-            val dbConf = getDatabaseConf(environment)
-            pipewrenchService.buildConfig(dbConf, environment) match {
+            pipewrenchService.buildConfig(environment.toDatabaseConfig(""), environment) match {
               case Success(config) =>
                 responseTypeOpt.getOrElse("json").toUpperCase() match {
                   case "JSON" =>

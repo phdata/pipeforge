@@ -16,4 +16,12 @@
 
 package io.phdata.pipewrench.domain
 
-case class PipewrenchConfig(tables: Seq[Table])
+case class PipewrenchConfig(name: String,
+                            user_name: String = "{{ source_db_user_name }}",
+                            type_mapping: String = "type-mapping.yml",
+                            sqoop_password_file: String = "{{ password_file }}",
+                            connection_manager: String,
+                            sqoop_job_name_suffix: String,
+                            source_database: Map[String, String],
+                            staging_database: Map[String, String],
+                            tables: Seq[Table])

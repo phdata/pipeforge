@@ -86,8 +86,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
-                        tableWhiteList: Option[Set[String]],
-                        skipWhiteListCheck: Boolean = false): Try[Set[Table]] =
+                        tableWhiteList: Option[Seq[String]],
+                        skipWhiteListCheck: Boolean = false): Try[Seq[Table]] =
     // Query database for a list of tables or views
     if (skipWhiteListCheck) {
       tableWhiteList match {
@@ -108,12 +108,12 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param tableWhiteList Optional user supplied table whitelisting
    * @return A Set of tables
    */
-  def checkWhiteListedTables(sourceTables: Set[String],
-                             tableWhiteList: Option[Set[String]]): Try[Set[String]] =
+  def checkWhiteListedTables(sourceTables: Seq[String],
+                             tableWhiteList: Option[Seq[String]]): Try[Seq[String]] =
     tableWhiteList match {
       case Some(whiteList) =>
         logger.debug("Checking user supplied white list against source system: {}", whiteList)
-        if (whiteList.subsetOf(sourceTables)) {
+        if (whiteList.toSet(sourceTables)) {
           Success(whiteList)
         } else {
           Failure(new Exception(
@@ -202,13 +202,13 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param schema Schema or database name
    * @return A Set of tables or views
    */
-  def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
+  def listTables(objectType: ObjectType.Value, schema: String): Seq[String] = {
     val stmt: Statement = newStatement
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    newStatement.executeQuery(query).toStream.map(_.getString(1)).toSet
+    newStatement.executeQuery(query).toStream.map(_.getString(1))
   }
 
   /**
@@ -228,7 +228,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @param configuration Database configuration
    * @return Set of table definitions
    */
-  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[Set[Table]] = {
+  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[Seq[Table]] = {
     logger.info("Extracting metadata information from database: {}", configuration)
 
     // Establish connection to database

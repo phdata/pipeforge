@@ -19,7 +19,11 @@ package io.phdata.pipewrench.domain
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 
 trait YamlProtocol extends DefaultYamlProtocol {
+
+  implicit def environmentFormat = yamlFormat7(Environment)
+
   implicit def columnFormat           = yamlFormat5(Column)
   implicit def tableFormat            = yamlFormat7(Table)
-  implicit def pipewrenchConfigFormat = yamlFormat1(PipewrenchConfig)
+  implicit def pipewrenchConfigFormat = yamlFormat9(PipewrenchConfig)
+
 }

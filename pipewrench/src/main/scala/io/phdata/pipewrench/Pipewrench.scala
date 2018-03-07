@@ -23,7 +23,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
 import io.phdata.pipeforge.jdbc.config.DatabaseConf
 import io.phdata.pipeforge.jdbc.domain.{ DataType, Column => DbColumn, Table => DbTable }
-import io.phdata.pipewrench.domain.{ Column, PipewrenchConfig, Table, YamlProtocol }
+import io.phdata.pipewrench.domain._
 import net.jcazevedo.moultingyaml._
 
 import scala.util.{ Failure, Success, Try }
@@ -31,7 +31,8 @@ import scala.util.{ Failure, Success, Try }
 trait Pipewrench {
 
   def buildConfig(databaseConf: DatabaseConf,
-                  tableMetadata: Map[String, String]): Try[PipewrenchConfig]
+                  tableMetadata: Map[String, String],
+                  environment: Environment): Try[PipewrenchConfig]
 
   def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit
 
@@ -44,10 +45,25 @@ trait Pipewrench {
 object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
 
   override def buildConfig(databaseConf: DatabaseConf,
-                           tableMetadata: Map[String, String]): Try[PipewrenchConfig] =
+                           tableMetadata: Map[String, String],
+                           environment: Environment): Try[PipewrenchConfig] =
     DatabaseMetadataParser.parse(databaseConf) match {
-      case Success(tables) =>
-        Try(buildIngestConfig(tables, tableMetadata))
+      case Success(tables: Seq[DbTable]) =>
+        Try(
+          PipewrenchConfig(
+            environment.name,
+            databaseConf.username,
+            sqoop_password_file = environment.password_file,
+            connection_manager = "",
+            sqoop_job_name_suffix = environment.name,
+            source_database = Map("name" -> databaseConf.schema),
+            staging_database = Map(
+              "path" -> environment.hdfs_basedir,
+              "name" -> environment.destination_database
+            ),
+            tables = buildTables(tables, tableMetadata)
+          )
+        )
       case Failure(ex) =>
         logger.error("Failed to prase metadata config", ex)
         Failure(ex)
@@ -66,12 +82,7 @@ object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
   override def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig =
     pipewrenchConfig.parseYaml.convertTo[PipewrenchConfig]
 
-
-  private def buildIngestConfig(tables: Set[DbTable],
-                                tableMetadata: Map[String, String]): PipewrenchConfig =
-    PipewrenchConfig(buildTables(tables, tableMetadata))
-
-  private def buildTables(tables: Set[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
+  private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
       .sortBy(_.name)
       .map { table =>

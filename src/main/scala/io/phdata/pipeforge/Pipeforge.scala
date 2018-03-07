@@ -17,8 +17,9 @@
 package io.phdata.pipeforge
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.config.YamlProtocol
 import io.phdata.pipeforge.rest.RestApi
+import io.phdata.pipeforge.rest.domain.YamlProtocol
+import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipewrench.PipewrenchImpl
 import org.rogach.scallop.{ ScallopConf, Subcommand }
 
@@ -37,15 +38,19 @@ object Pipeforge extends YamlProtocol with LazyLogging {
     cliArgs.pipewrench.databaseConf.toOption match {
       case Some(conf) =>
         val environment = parseFile(cliArgs.pipewrench.databaseConf())
-        // Parse database config
-        val databaseConf = getDatabaseConf(environment, cliArgs.pipewrench.databasePassword())
 
-        PipewrenchImpl.buildConfig(databaseConf, environment.metadata) match {
+        val pipewrenchConfigTry = PipewrenchImpl.buildConfig(
+          environment.toDatabaseConfig(cliArgs.pipewrench.databasePassword()),
+          environment.metadata,
+          environment.toPipewrenchEnvironment)
+
+        pipewrenchConfigTry match {
           case Success(pipewrenchConfig) =>
             PipewrenchImpl.writeYamlFile(pipewrenchConfig, cliArgs.pipewrench.outputPath())
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }
+
       case None =>
         RestApi.start(cliArgs.restApi.port())
     }

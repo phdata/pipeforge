@@ -38,15 +38,18 @@ object Pipeforge extends YamlProtocol with LazyLogging {
     cliArgs.pipewrench.databaseConf.toOption match {
       case Some(conf) =>
         val environment = parseFile(cliArgs.pipewrench.databaseConf())
+        val pipewrenchEnv = environment.toPipewrenchEnvironment
 
         val pipewrenchConfigTry = PipewrenchImpl.buildConfig(
           environment.toDatabaseConfig(cliArgs.pipewrench.databasePassword()),
           environment.metadata,
-          environment.toPipewrenchEnvironment)
+          pipewrenchEnv)
 
         pipewrenchConfigTry match {
           case Success(pipewrenchConfig) =>
-            PipewrenchImpl.writeYamlFile(pipewrenchConfig, cliArgs.pipewrench.outputPath())
+            val path = cliArgs.pipewrench.outputPath()
+            PipewrenchImpl.writeYamlFile(pipewrenchConfig, s"$path/tables.yml")
+            PipewrenchImpl.writeYamlFile(pipewrenchEnv, s"$path/env.yml")
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }

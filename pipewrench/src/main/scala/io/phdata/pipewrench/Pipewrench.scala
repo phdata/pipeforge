@@ -36,6 +36,8 @@ trait Pipewrench {
 
   def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit
 
+  def writeYamlFile(environment: Environment, path: String): Unit
+
   def yamlStr(pipewrenchConfig: PipewrenchConfig): String
 
   def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig
@@ -65,22 +67,28 @@ object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
           )
         )
       case Failure(ex) =>
-        logger.error("Failed to prase metadata config", ex)
+        logger.error("Failed to parse metadata config", ex)
         Failure(ex)
     }
 
-  override def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit = {
-    val fw = new FileWriter(path)
-    logger.debug(s"Writing file: $path")
-    fw.write(pipewrenchConfig.toYaml.prettyPrint)
-    fw.close()
-  }
+  override def writeYamlFile(environment: Environment, path: String): Unit =
+    writeYamlFile(environment.toYaml, path)
+
+  override def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit =
+    writeYamlFile(pipewrenchConfig.toYaml, path)
 
   override def yamlStr(pipewrenchConfig: PipewrenchConfig): String =
     pipewrenchConfig.toYaml.prettyPrint
 
   override def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig =
     pipewrenchConfig.parseYaml.convertTo[PipewrenchConfig]
+
+  private def writeYamlFile(yaml: YamlValue, path: String): Unit = {
+    val fw = new FileWriter(path)
+    logger.debug(s"Writing file: $path")
+    fw.write(yaml.prettyPrint)
+    fw.close()
+  }
 
   private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
@@ -131,4 +139,5 @@ object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
       .get
       .name
   }
+
 }

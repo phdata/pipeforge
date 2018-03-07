@@ -86,8 +86,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
-                        tableWhiteList: Option[Seq[String]],
-                        skipWhiteListCheck: Boolean = false): Try[Seq[Table]] =
+                        tableWhiteList: Option[List[String]],
+                        skipWhiteListCheck: Boolean = false): Try[List[Table]] =
     // Query database for a list of tables or views
     if (skipWhiteListCheck) {
       tableWhiteList match {
@@ -108,8 +108,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param tableWhiteList Optional user supplied table whitelisting
    * @return A Set of tables
    */
-  def checkWhiteListedTables(sourceTables: Seq[String],
-                             tableWhiteList: Option[Seq[String]]): Try[Seq[String]] =
+  def checkWhiteListedTables(sourceTables: List[String],
+                             tableWhiteList: Option[List[String]]): Try[List[String]] =
     tableWhiteList match {
       case Some(whiteList) =>
         logger.debug("Checking user supplied white list against source system: {}", whiteList)
@@ -202,13 +202,13 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param schema Schema or database name
    * @return A Set of tables or views
    */
-  def listTables(objectType: ObjectType.Value, schema: String): Seq[String] = {
+  def listTables(objectType: ObjectType.Value, schema: String): List[String] = {
     val stmt: Statement = newStatement
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    newStatement.executeQuery(query).toStream.map(_.getString(1))
+    newStatement.executeQuery(query).toStream.map(_.getString(1)).toList
   }
 
   /**
@@ -228,7 +228,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @param configuration Database configuration
    * @return Set of table definitions
    */
-  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[Seq[Table]] = {
+  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[List[Table]] = {
     logger.info("Extracting metadata information from database: {}", configuration)
 
     // Establish connection to database

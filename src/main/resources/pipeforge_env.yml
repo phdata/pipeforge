@@ -1,0 +1,15 @@
+name: dev.employee
+group: edh_dev_employee
+databaseType: mysql
+schema: employees
+jdbcUrl: "jdbc:mysql://localhost:3306/employees"
+username: employee
+objectType: table
+metadata:
+  SOURCE: employee database
+  LOAD_FREQUENCY: Daily
+  CONTACT: developer@phdata.io
+hdfsPath: "hdfs://ns/user/developer/db"
+hadoopUser: ps_dev_employee
+passwordFile: hdfs://user/developer/.employee_db_password
+destinationDatabase: dev_employees

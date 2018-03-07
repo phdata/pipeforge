@@ -28,4 +28,4 @@ case class Environment(name: String,
                        hadoopUser: String,
                        passwordFile: String,
                        destinationDatabase: String,
-                       tables: Option[Seq[String]] = None)
+                       tables: Option[List[String]] = None)

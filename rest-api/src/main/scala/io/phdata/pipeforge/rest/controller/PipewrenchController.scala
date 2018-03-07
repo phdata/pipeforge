@@ -20,6 +20,7 @@ import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
 import io.phdata.pipeforge.rest.domain.{Environment, JsonSupport}
 import io.phdata.pipeforge.rest.service.PipewrenchService
+import io.phdata.pipewrench.domain.PipewrenchConfig
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -36,6 +37,22 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
       } ~
       post {
         parameter('type.?) { responseTypeOpt =>
+          responseTypeOpt.getOrElse("json").toUpperCase match {
+            case "JSON" =>
+              entity(as[PipewrenchConfig]) { pipewrenchConfig =>
+                logger.info(pipewrenchConfig.toString)
+                complete("Success")
+              }
+            case "YAML" =>
+              entity(as[String]) { pipewrenchConfigStr =>
+                val pipewrenchConfig = pipewrenchService.parseStr(pipewrenchConfigStr)
+                complete(pipewrenchConfig)
+              }
+          }
+        }
+      } ~
+      put {
+        parameter('type.?) { responseTypeOpt =>
           entity(as[Environment]) { environment =>
             val dbConf = getDatabaseConf(environment)
             pipewrenchService.buildConfig(dbConf, environment) match {
@@ -47,10 +64,9 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                     complete(pipewrenchService.yaml(config))
                 }
               case Failure(ex) => failWith(ex)
-              }
             }
           }
         }
       }
-
+    }
 }

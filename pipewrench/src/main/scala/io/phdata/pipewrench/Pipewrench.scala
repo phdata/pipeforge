@@ -37,6 +37,8 @@ trait Pipewrench {
 
   def yamlStr(pipewrenchConfig: PipewrenchConfig): String
 
+  def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig
+
 }
 
 object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
@@ -60,6 +62,10 @@ object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
 
   override def yamlStr(pipewrenchConfig: PipewrenchConfig): String =
     pipewrenchConfig.toYaml.prettyPrint
+
+  override def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig =
+    pipewrenchConfig.parseYaml.convertTo[PipewrenchConfig]
+
 
   private def buildIngestConfig(tables: Set[DbTable],
                                 tableMetadata: Map[String, String]): PipewrenchConfig =

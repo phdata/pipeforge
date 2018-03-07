@@ -1,3 +1,14 @@
+name: dev.employee
+connection_manager: ''
+sqoop_password_file: hdfs://user/developer/.employee_db_password
+source_database:
+  name: employees
+staging_database:
+  path: hdfs://ns/user/developer/db
+  name: dev_employees
+sqoop_job_name_suffix: dev.employee
+type_mapping: type-mapping.yml
+user_name: employee
 tables:
 - source:
     name: departments

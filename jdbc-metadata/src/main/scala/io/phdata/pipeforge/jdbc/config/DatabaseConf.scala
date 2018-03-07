@@ -33,4 +33,4 @@ case class DatabaseConf(databaseType: DatabaseType.Value,
                         username: String,
                         password: String,
                         objectType: ObjectType.Value,
-                        tables: Option[Seq[String]] = None)
+                        tables: Option[List[String]] = None)

@@ -79,7 +79,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Seq(TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -95,7 +95,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
 
   test("parse views metadata") {
     val parser = new OracleMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Seq(VIEW))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(List(VIEW))) match {
       case Success(definitions) =>
         val expected = Set(
           Table(

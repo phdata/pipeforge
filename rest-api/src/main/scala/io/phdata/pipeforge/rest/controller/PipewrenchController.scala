@@ -46,9 +46,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                   case "YAML" =>
                     complete(pipewrenchService.yaml(config))
                 }
-
-              case Failure(ex) =>
-
+              case Failure(ex) => failWith(ex)
               }
             }
           }

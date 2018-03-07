@@ -22,6 +22,7 @@ import com.whisk.docker.{DockerContainer, DockerReadyChecker}
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, MsSQLMetadataParser, MySQLMetadataParser}
 import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.pipeforge.jdbc.domain.{Column, Table}
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{Failure, Success}
 
@@ -80,8 +81,8 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   }
   test("run query against database") {
     val stmt = CONNECTION.createStatement()
-    val rs: ResultSet = stmt.executeQuery("SELECT table_name FROM information_schema.tables")
-    val results = getResults(rs)(x => x.getString(1)).toList
+    val results = stmt.executeQuery("SELECT table_name FROM information_schema.tables").toStream
+      .map(_.getString(1)).toList
     assertResult(64)(results.length)
   }
 

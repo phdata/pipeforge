@@ -22,6 +22,7 @@ import com.whisk.docker.DockerContainer
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, MsSQLMetadataParser}
 import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.pipeforge.jdbc.domain.{Column, Table}
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{Failure, Success}
 
@@ -86,8 +87,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("run query against database") {
     val stmt = CONNECTION.createStatement()
-    val rs: ResultSet = stmt.executeQuery("SELECT * FROM sys.tables")
-    val results = getResults(rs)(x => x.getString(1)).toList
+    val results = stmt.executeQuery("SELECT * FROM sys.tables").toStream.map(_.getString(1)).toList
     assertResult(7)(results.length)
   }
 

@@ -21,6 +21,7 @@ import java.sql._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
 import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -66,7 +67,7 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
+    newStatement.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
       case Some(metaData) =>
         val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         Success(mapMetaDataToColumn(metaData, rsMetadata))
@@ -146,11 +147,12 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return Primary key definitions
    */
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
-    val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     logger.debug("Gathering primary keys from JDBC metadata")
-    val pks = results(rs) { record =>
-      record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
-    }.toMap
+    val pks = metadata
+      .getPrimaryKeys(schema, schema, table)
+      .toStream
+      .map(record => record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ"))
+      .toMap
 
     mapPrimaryKeyToColumn(pks, columns)
   }
@@ -206,7 +208,7 @@ trait DatabaseMetadataParser extends LazyLogging {
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    results(stmt.executeQuery(query))(_.getString(1)).toSet
+    newStatement.executeQuery(query).toStream.map(_.getString(1)).toSet
   }
 
   /**
@@ -214,25 +216,6 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return
    */
   def newStatement = connection.createStatement()
-
-  /**
-   * Helper for iterating through a result set
-   * @param resultSet The result set to iterate over
-   * @param f the function to call on the result set
-   * @tparam T The output
-   * @return
-   */
-  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    val iterator = new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
-    }
-
-    val result = iterator.toList
-    resultSet.close()
-    result
-  }
 }
 
 /**

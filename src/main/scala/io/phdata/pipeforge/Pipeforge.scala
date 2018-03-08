@@ -21,6 +21,7 @@ import io.phdata.pipeforge.rest.RestApi
 import io.phdata.pipeforge.rest.domain.YamlSupport
 import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipewrench.PipewrenchImpl
+import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import org.rogach.scallop.{ ScallopConf, Subcommand }
 
 import scala.util.{ Failure, Success }
@@ -29,7 +30,7 @@ import scala.util.{ Failure, Success }
  * Pipeforge application connects to a source database and parses table definitions
  * using JDBC metadata.
  */
-object Pipeforge extends YamlSupport with LazyLogging {
+object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging {
 
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
@@ -48,8 +49,8 @@ object Pipeforge extends YamlSupport with LazyLogging {
         pipewrenchConfigTry match {
           case Success(pipewrenchConfig) =>
             val path = cliArgs.pipewrench.outputPath()
-            PipewrenchImpl.writeYamlFile(pipewrenchConfig, s"$path/tables.yml")
-            PipewrenchImpl.writeYamlFile(pipewrenchEnv, s"$path/env.yml")
+            pipewrenchConfig.writeYamlFile(s"$path/tables.yml")
+            pipewrenchEnv.writeYamlFile(s"$path/env.yml")
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }

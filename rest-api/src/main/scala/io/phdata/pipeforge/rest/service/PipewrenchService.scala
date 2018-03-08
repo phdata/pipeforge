@@ -20,14 +20,14 @@ import java.io.File
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.config.DatabaseConf
-import io.phdata.pipeforge.rest.domain.{ Environment, Status }
+import io.phdata.pipeforge.rest.domain.{Environment, Status}
 import io.phdata.pipeforge.rest.module.ConfigurationModule
 import io.phdata.pipewrench.PipewrenchImpl
-import io.phdata.pipewrench.domain.Configuration
+import io.phdata.pipewrench.domain.{Configuration, YamlSupport}
 import io.phdata.pipeforge.rest.domain.Implicits._
 
 import scala.concurrent.ExecutionContext
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 trait PipewrenchService {
 
@@ -44,6 +44,7 @@ trait PipewrenchService {
 class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
     extends PipewrenchService
     with ConfigurationModule
+    with YamlSupport
     with LazyLogging {
 
   import sys.process._
@@ -58,28 +59,21 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
     status(Try {
       createIngestDirIfNotExist(configuration.group, configuration.name)
 
-      PipewrenchImpl.writeYamlFile(
-        configuration,
-        s"${pipewrenchProjectDir(configuration.group, configuration.name)}/tables.yml")
+      configuration.writeYamlFile(tableFilePath(configuration.name, configuration.group))
     })
 
   override def saveEnvironment(environment: Environment): Status =
     status(Try {
       createIngestDirIfNotExist(environment.group, environment.name)
-
-      PipewrenchImpl.writeYamlFile(
-        environment.toPipewrenchEnvironment,
-        s"${pipewrenchProjectDir(environment.group, environment.name)}/env.yml")
+      environment.toPipewrenchEnvironment.writeYamlFile(envFilePath(environment.group, environment.name))
     })
 
   override def executePipewrenchMerge(group: String, name: String, template: String): Status =
     status(Try {
       val dir = pipewrenchProjectDir(group, name)
-      s"pipewrench-merge --env $dir/env.yml --conf=$dir/tables.yml --pipeline-templates=$pipewrenchTemplateDir/$template" !!
-
-      s"cp -R output $dir" !
-
-      s"rm -rf output" !
+      val cmd = s"$pipewrenchConfigDir/generate-scripts.sh -e ${envFilePath(group, name)} -c ${tableFilePath(group, name)} -t $pipewrenchTemplateDir/$template -d ${pipewrenchProjectDir(group, name)}"
+      logger.debug(s"CMD: $cmd")
+      cmd !!
     })
 
   private def status(proc: Try[Unit]): Status =

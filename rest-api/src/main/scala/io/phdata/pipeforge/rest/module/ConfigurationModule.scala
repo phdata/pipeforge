@@ -16,7 +16,7 @@
 
 package io.phdata.pipeforge.rest.module
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 
 trait ConfigurationModule {
 
@@ -25,13 +25,7 @@ trait ConfigurationModule {
   val pipewrenchDir         = configuration.getString("pipewrench.directory.output")
   val pipewrenchTemplateDir = configuration.getString("pipewrench.directory.template")
 
-  val pipewrenchConfigDir = if (pipewrenchDir.startsWith("/")) {
-    pipewrenchDir
-  } else {
-    s"${configuration.getString("user.home")}/$pipewrenchDir"
-  }
-
-  def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchConfigDir/$group/$name"
+  def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchDir/$group/$name"
 
   def tableFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/tables.yml"
   def envFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/env.yml"

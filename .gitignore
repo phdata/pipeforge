@@ -1,5 +1,5 @@
 .idea
 target
-project/target
 tables.yml
-.DS_store
+pipewrench_config
+**/out

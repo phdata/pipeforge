@@ -229,7 +229,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @return Set of table definitions
    */
   def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[List[Table]] = {
-    logger.info("Extracting metadata information from database: {}", configuration)
+    logger.info("Extracting metadata information from database: {}", configuration.copy(password = "******"))
 
     // Establish connection to database
     getConnection(configuration) match {
@@ -284,7 +284,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @return
    */
   def getConnection(configuration: DatabaseConf) = {
-    logger.debug("Connecting to database: {}", configuration)
+    logger.debug("Connecting to database: {}", configuration.copy(password = "******"))
     Try(
       DriverManager
         .getConnection(configuration.jdbcUrl, configuration.username, configuration.password))

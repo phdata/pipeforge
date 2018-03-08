@@ -43,6 +43,7 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
                                   environment: Environment): Try[Configuration] =
     DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
+        logger.debug(s"Successfully parsed JDBC metadata: $tables")
         Try(
           Configuration(
             environment.name,

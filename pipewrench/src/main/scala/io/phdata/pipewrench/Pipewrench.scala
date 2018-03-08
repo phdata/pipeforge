@@ -34,10 +34,6 @@ trait Pipewrench {
                          tableMetadata: Map[String, String],
                          environment: Environment): Try[Configuration]
 
-  def writeYamlFile(pipewrenchConfig: Configuration, path: String): Unit
-
-  def writeYamlFile(environment: Environment, path: String): Unit
-
 }
 
 object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
@@ -67,19 +63,6 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
         logger.error("Failed to parse metadata config", ex)
         Failure(ex)
     }
-
-  override def writeYamlFile(environment: Environment, path: String): Unit =
-    writeYamlFile(environment.toYaml, path)
-
-  override def writeYamlFile(configuration: Configuration, path: String): Unit =
-    writeYamlFile(configuration.toYaml, path)
-
-  private def writeYamlFile(yaml: YamlValue, path: String): Unit = {
-    val fw = new FileWriter(path)
-    logger.debug(s"Writing file: $path")
-    fw.write(yaml.prettyPrint)
-    fw.close()
-  }
 
   private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList

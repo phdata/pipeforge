@@ -33,4 +33,7 @@ trait ConfigurationModule {
 
   def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchConfigDir/$group/$name"
 
+  def tableFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/tables.yml"
+  def envFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/env.yml"
+
 }

@@ -22,10 +22,11 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.controller.PipewrenchController
+import io.phdata.pipeforge.rest.controller.{PipeforgeController, PipewrenchController}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import akka.http.scaladsl.server.Directives._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 trait RestModule {
   this: AkkaModule
@@ -34,13 +35,14 @@ trait RestModule {
     with HttpModule
     with ConfigurationModule =>
 
-  val pipeforgeController = new PipewrenchController(pipewrenchService)
+  val pipeforgeController = new PipeforgeController(pipewrenchService)
+  val pipewrenchController = new PipewrenchController(pipewrenchService)
 
-  val restApi = new RestApi(http, configuration, pipeforgeController)
+  val restApi = new RestApi(http, configuration, pipeforgeController, pipewrenchController)
 
 }
 
-class RestApi(http: HttpExt, configuration: Config, pipeforgeController: PipewrenchController)(
+class RestApi(http: HttpExt, configuration: Config, pipeforgeController: PipeforgeController, pipewrenchController: PipewrenchController)(
     implicit actorSystem: ActorSystem,
     materializer: Materializer,
     executionContext: ExecutionContext)
@@ -48,7 +50,7 @@ class RestApi(http: HttpExt, configuration: Config, pipeforgeController: Pipewre
 
   val route: Route =
     cors() {
-      pipeforgeController.route
+      pipeforgeController.route ~ pipewrenchController.route
     }
 
   def start(port: Int): Future[Unit] =

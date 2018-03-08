@@ -27,49 +27,60 @@ import org.rogach.scallop.{ ScallopConf, Subcommand }
 import scala.util.{ Failure, Success }
 
 /**
- * Pipeforge application connects to a source database and parses table definitions
- * using JDBC metadata.
+ * The purpose of the Pipeforge application is build Pipewrench configuration files by parsing metadata
+ * from a source database.
  */
 object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging {
 
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
+    logger.info("Pipeforge Application")
 
-    cliArgs.pipewrench.databaseConf.toOption match {
-      case Some(conf) =>
+    args(0) match {
+      // Execute Pipewrench commands
+      case "pipewrench" =>
+        // Parse file into Environment
         val environment   = parseFile(cliArgs.pipewrench.databaseConf())
+        // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
-        val pipewrenchConfigTry = PipewrenchImpl.buildConfiguration(
+        logger.debug(s"Parsed environment: $environment")
+        logger.debug(s"Pipewrench environment: $pipewrenchEnv")
+
+        // Build Pipewrench Configuration
+        PipewrenchImpl.buildConfiguration(
           environment.toDatabaseConfig(cliArgs.pipewrench.databasePassword()),
           environment.metadata,
-          pipewrenchEnv)
-
-        pipewrenchConfigTry match {
-          case Success(pipewrenchConfig) =>
+          pipewrenchEnv) match {
+          case Success(configuration) =>
             val path = cliArgs.pipewrench.outputPath()
-            pipewrenchConfig.writeYamlFile(s"$path/tables.yml")
+            logger.debug(s"Pipewrench Configuraiton: $configuration")
+            configuration.writeYamlFile(s"$path/tables.yml")
             pipewrenchEnv.writeYamlFile(s"$path/env.yml")
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }
 
-      case None =>
-        RestApi.start(cliArgs.restApi.port())
+      // Start Pipeforge Rest service
+      case "rest-api" => RestApi.start(cliArgs.restApi.port())
     }
-
   }
 
   /**
-   * CLI parameter parser
+   * CLI parameter parser*
    *
-   * Args:
-   * database-configuration (s) Required - Path to the source database configuration file
-   * database-password (p) Required - The source database password
-   * table-metadata (m) Required - Path to the metadata yml file which will be used the enhance the tables.yml output
-   * output-path (o) - Output path for the file generated tables.yml file
-   * check-whitelist (c) - Output path for the file generated tables.yml file
+   * Subcommands:
+   *   - pipewrench: Connects to source database and writes parsed Pipewrench Configuration
+   *       Args:
+   *       database-configuration (s) Required - Path to the source database configuration file
+   *       database-password (p) Required - The source database password
+   *       output-path (o) - Output path for the file generated tables.yml file
+   *       check-whitelist (c) - Output path for the file generated tables.yml file
+   *
+   *  - rest-api: Exposes a rest
+   *      Args:
+   *        port (p) Required - Port to expose rest service on
    *
    * @param args
    */

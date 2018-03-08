@@ -22,8 +22,8 @@ trait YamlProtocol extends DefaultYamlProtocol {
 
   implicit def environmentFormat = yamlFormat7(Environment)
 
-  implicit def columnFormat           = yamlFormat5(Column)
-  implicit def tableFormat            = yamlFormat7(Table)
-  implicit def pipewrenchConfigFormat = yamlFormat9(PipewrenchConfig)
+  implicit def columnFormat        = yamlFormat5(Column)
+  implicit def tableFormat         = yamlFormat7(Table)
+  implicit def configurationFormat = yamlFormat10(Configuration)
 
 }

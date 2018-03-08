@@ -18,10 +18,11 @@ package io.phdata.pipeforge.rest.controller
 
 import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport }
+import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, YamlSupport }
 import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipeforge.rest.service.PipewrenchService
-import io.phdata.pipewrench.domain.PipewrenchConfig
+import io.phdata.pipewrench.domain.Configuration
+import net.jcazevedo.moultingyaml._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
@@ -29,44 +30,75 @@ import scala.util.{ Failure, Success }
 class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
     extends LazyLogging
+    with YamlSupport
     with JsonSupport {
 
   val route =
-    path("pipewrench") {
-      get {
-        complete(s"Pipewrench Rest Api")
-      } ~
-      post {
-        parameter('type.?) { responseTypeOpt =>
-          responseTypeOpt.getOrElse("json").toUpperCase match {
-            case "JSON" =>
-              entity(as[PipewrenchConfig]) { pipewrenchConfig =>
-                logger.info(pipewrenchConfig.toString)
-                complete("Success")
-              }
-            case "YAML" =>
-              entity(as[String]) { pipewrenchConfigStr =>
-                val pipewrenchConfig = pipewrenchService.parseStr(pipewrenchConfigStr)
-                complete(pipewrenchConfig)
-              }
-          }
-        }
-      } ~
-      put {
-        parameter('type.?) { responseTypeOpt =>
-          entity(as[Environment]) { environment =>
-            pipewrenchService.buildConfig(environment.toDatabaseConfig(""), environment) match {
-              case Success(config) =>
-                responseTypeOpt.getOrElse("json").toUpperCase() match {
-                  case "JSON" =>
-                    complete(config)
-                  case "YAML" =>
-                    complete(pipewrenchService.yaml(config))
-                }
-              case Failure(ex) => failWith(ex)
+  path("pipewrench") {
+    get {
+      complete(s"Pipewrench Rest Api")
+    } ~
+    post {
+      parameter('group, 'name, 'template) { (group, name, template) =>
+        complete(pipewrenchService.executePipewrenchMerge(group, name, template))
+      }
+    }
+  } ~
+  path("configuration") {
+    post {
+      parameter('type.?) { responseTypeOpt =>
+        responseTypeOpt.getOrElse("json").toUpperCase match {
+          case "JSON" =>
+            entity(as[Configuration]) { configuration =>
+              complete(pipewrenchService.saveConfiguration(configuration))
             }
-          }
+          case "YAML" =>
+            entity(as[String]) { yamlStr =>
+              val configuration = yamlStr.parseYaml.convertTo[Configuration]
+              complete(pipewrenchService.saveConfiguration(configuration))
+            }
+        }
+      }
+    } ~
+    put {
+      parameter('type.?, 'password) { (responseTypeOpt, password) =>
+        responseTypeOpt.getOrElse("json").toUpperCase() match {
+          case "JSON" =>
+            entity(as[Environment]) { environment =>
+              pipewrenchService.getConfiguration(environment.toDatabaseConfig(password),
+                                                 environment) match {
+                case Success(configuration) => complete(configuration)
+                case Failure(ex)            => failWith(ex)
+              }
+            }
+          case "YAML" =>
+            entity(as[String]) { yamlStr =>
+              val environment = yamlStr.parseYaml.convertTo[Environment]
+              pipewrenchService.getConfiguration(environment.toDatabaseConfig(password),
+                                                 environment) match {
+                case Success(configuration) => complete(configuration)
+                case Failure(ex)            => failWith(ex)
+              }
+            }
         }
       }
     }
+  } ~
+  path("environment") {
+    post {
+      parameter('type.?) { responseTypeOpt =>
+        responseTypeOpt.getOrElse("json").toUpperCase() match {
+          case "JSON" =>
+            entity(as[Environment]) { environment =>
+              complete(pipewrenchService.saveEnvironment(environment))
+            }
+          case "YAML" =>
+            entity(as[String]) { yamlStr =>
+              complete(pipewrenchService.saveEnvironment(yamlStr.parseYaml.convertTo[Environment]))
+            }
+        }
+      }
+    }
+  }
+
 }

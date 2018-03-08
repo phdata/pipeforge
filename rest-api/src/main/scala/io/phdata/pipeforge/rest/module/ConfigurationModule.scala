@@ -22,4 +22,15 @@ trait ConfigurationModule {
 
   val configuration: Config = ConfigFactory.load()
 
+  val pipewrenchDir         = configuration.getString("pipewrench.directory.output")
+  val pipewrenchTemplateDir = configuration.getString("pipewrench.directory.template")
+
+  val pipewrenchConfigDir = if (pipewrenchDir.startsWith("/")) {
+    pipewrenchDir
+  } else {
+    s"${configuration.getString("user.home")}/$pipewrenchDir"
+  }
+
+  def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchConfigDir/$group/$name"
+
 }

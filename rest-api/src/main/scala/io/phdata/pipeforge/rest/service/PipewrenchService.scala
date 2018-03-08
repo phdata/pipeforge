@@ -19,7 +19,6 @@ package io.phdata.pipeforge.rest.service
 import java.io.File
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.jdbc.config.DatabaseConf
 import io.phdata.pipeforge.rest.domain.{Environment, Status}
 import io.phdata.pipeforge.rest.module.ConfigurationModule
 import io.phdata.pipewrench.PipewrenchImpl
@@ -31,7 +30,7 @@ import scala.util.{Failure, Success, Try}
 
 trait PipewrenchService {
 
-  def getConfiguration(databaseConf: DatabaseConf, environment: Environment): Try[Configuration]
+  def getConfiguration(password: String, environment: Environment): Try[Configuration]
 
   def saveConfiguration(configuration: Configuration): Status
 
@@ -49,9 +48,9 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
 
   import sys.process._
 
-  override def getConfiguration(databaseConf: DatabaseConf,
+  override def getConfiguration(password: String,
                                 environment: Environment): Try[Configuration] =
-    PipewrenchImpl.buildConfiguration(databaseConf,
+    PipewrenchImpl.buildConfiguration(environment.toDatabaseConfig(password),
                                       environment.metadata,
                                       environment.toPipewrenchEnvironment)
 
@@ -59,7 +58,7 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
     status(Try {
       createIngestDirIfNotExist(configuration.group, configuration.name)
 
-      configuration.writeYamlFile(tableFilePath(configuration.name, configuration.group))
+      configuration.writeYamlFile(tableFilePath(configuration.group, configuration.name))
     })
 
   override def saveEnvironment(environment: Environment): Status =

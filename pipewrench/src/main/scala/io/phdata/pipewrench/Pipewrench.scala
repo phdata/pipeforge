@@ -30,30 +30,27 @@ import scala.util.{ Failure, Success, Try }
 
 trait Pipewrench {
 
-  def buildConfig(databaseConf: DatabaseConf,
-                  tableMetadata: Map[String, String],
-                  environment: Environment): Try[PipewrenchConfig]
+  def buildConfiguration(databaseConf: DatabaseConf,
+                         tableMetadata: Map[String, String],
+                         environment: Environment): Try[Configuration]
 
-  def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit
+  def writeYamlFile(pipewrenchConfig: Configuration, path: String): Unit
 
   def writeYamlFile(environment: Environment, path: String): Unit
-
-  def yamlStr(pipewrenchConfig: PipewrenchConfig): String
-
-  def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig
 
 }
 
 object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
 
-  override def buildConfig(databaseConf: DatabaseConf,
-                           tableMetadata: Map[String, String],
-                           environment: Environment): Try[PipewrenchConfig] =
+  override def buildConfiguration(databaseConf: DatabaseConf,
+                                  tableMetadata: Map[String, String],
+                                  environment: Environment): Try[Configuration] =
     DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
         Try(
-          PipewrenchConfig(
+          Configuration(
             environment.name,
+            environment.group,
             databaseConf.username,
             sqoop_password_file = environment.password_file,
             connection_manager = "",
@@ -74,14 +71,8 @@ object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
   override def writeYamlFile(environment: Environment, path: String): Unit =
     writeYamlFile(environment.toYaml, path)
 
-  override def writeYamlFile(pipewrenchConfig: PipewrenchConfig, path: String): Unit =
-    writeYamlFile(pipewrenchConfig.toYaml, path)
-
-  override def yamlStr(pipewrenchConfig: PipewrenchConfig): String =
-    pipewrenchConfig.toYaml.prettyPrint
-
-  override def parseYamlStr(pipewrenchConfig: String): PipewrenchConfig =
-    pipewrenchConfig.parseYaml.convertTo[PipewrenchConfig]
+  override def writeYamlFile(configuration: Configuration, path: String): Unit =
+    writeYamlFile(configuration.toYaml, path)
 
   private def writeYamlFile(yaml: YamlValue, path: String): Unit = {
     val fw = new FileWriter(path)

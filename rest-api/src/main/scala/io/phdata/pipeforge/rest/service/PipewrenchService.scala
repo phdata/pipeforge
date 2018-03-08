@@ -1,23 +1,27 @@
 package io.phdata.pipeforge.rest.service
 
+import java.io.File
+
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.config.DatabaseConf
-import io.phdata.pipeforge.rest.domain.Environment
+import io.phdata.pipeforge.rest.domain.{ Environment, Status }
 import io.phdata.pipeforge.rest.module.ConfigurationModule
 import io.phdata.pipewrench.PipewrenchImpl
-import io.phdata.pipewrench.domain.PipewrenchConfig
+import io.phdata.pipewrench.domain.Configuration
 import io.phdata.pipeforge.rest.domain.Implicits._
 
 import scala.concurrent.ExecutionContext
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 trait PipewrenchService {
 
-  def buildConfig(databaseConf: DatabaseConf, environment: Environment): Try[PipewrenchConfig]
+  def getConfiguration(databaseConf: DatabaseConf, environment: Environment): Try[Configuration]
 
-  def yaml(pipewrenchConfig: PipewrenchConfig): String
+  def saveConfiguration(configuration: Configuration): Status
 
-  def parseStr(pipewrenchConfig: String): PipewrenchConfig
+  def saveEnvironment(environment: Environment): Status
+
+  def executePipewrenchMerge(group: String, name: String, template: String): Status
 
 }
 
@@ -26,16 +30,53 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
     with ConfigurationModule
     with LazyLogging {
 
-  override def buildConfig(databaseConf: DatabaseConf,
-                           environment: Environment): Try[PipewrenchConfig] =
-    PipewrenchImpl.buildConfig(databaseConf,
-                               environment.metadata,
-                               environment.toPipewrenchEnvironment)
+  import sys.process._
 
-  override def yaml(pipewrenchConfig: PipewrenchConfig): String =
-    PipewrenchImpl.yamlStr(pipewrenchConfig)
+  override def getConfiguration(databaseConf: DatabaseConf,
+                                environment: Environment): Try[Configuration] =
+    PipewrenchImpl.buildConfiguration(databaseConf,
+                                      environment.metadata,
+                                      environment.toPipewrenchEnvironment)
 
-  override def parseStr(pipewrenchConfig: String): PipewrenchConfig =
-    PipewrenchImpl.parseYamlStr(pipewrenchConfig)
+  override def saveConfiguration(configuration: Configuration): Status =
+    status(Try {
+      createIngestDirIfNotExist(configuration.group, configuration.name)
+
+      PipewrenchImpl.writeYamlFile(
+        configuration,
+        s"${pipewrenchProjectDir(configuration.group, configuration.name)}/tables.yml")
+    })
+
+  override def saveEnvironment(environment: Environment): Status =
+    status(Try {
+      createIngestDirIfNotExist(environment.group, environment.name)
+
+      PipewrenchImpl.writeYamlFile(
+        environment.toPipewrenchEnvironment,
+        s"${pipewrenchProjectDir(environment.group, environment.name)}/env.yml")
+    })
+
+  override def executePipewrenchMerge(group: String, name: String, template: String): Status =
+    status(Try {
+      val dir = pipewrenchProjectDir(group, name)
+      s"pipewrench-merge --env $dir/env.yml --conf=$dir/tables.yml --pipeline-templates=$pipewrenchTemplateDir/$template" !!
+
+      s"cp -R output $dir" !
+
+      s"rm -rf output" !
+    })
+
+  private def status(proc: Try[Unit]): Status =
+    proc match {
+      case Success(_)  => Status("SUCCESS", "Everything is awesome!")
+      case Failure(ex) => Status("FAILURE", ex.getMessage)
+    }
+
+  private def createIngestDirIfNotExist(group: String, name: String): Unit = {
+    val dir = new File(pipewrenchProjectDir(group, name))
+    if (!dir.exists()) {
+      dir.mkdirs()
+    }
+  }
 
 }

@@ -18,7 +18,7 @@ package io.phdata.pipeforge
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.RestApi
-import io.phdata.pipeforge.rest.domain.YamlProtocol
+import io.phdata.pipeforge.rest.domain.YamlSupport
 import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipewrench.PipewrenchImpl
 import org.rogach.scallop.{ ScallopConf, Subcommand }
@@ -29,7 +29,7 @@ import scala.util.{ Failure, Success }
  * Pipeforge application connects to a source database and parses table definitions
  * using JDBC metadata.
  */
-object Pipeforge extends YamlProtocol with LazyLogging {
+object Pipeforge extends YamlSupport with LazyLogging {
 
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
@@ -37,10 +37,10 @@ object Pipeforge extends YamlProtocol with LazyLogging {
 
     cliArgs.pipewrench.databaseConf.toOption match {
       case Some(conf) =>
-        val environment = parseFile(cliArgs.pipewrench.databaseConf())
+        val environment   = parseFile(cliArgs.pipewrench.databaseConf())
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
-        val pipewrenchConfigTry = PipewrenchImpl.buildConfig(
+        val pipewrenchConfigTry = PipewrenchImpl.buildConfiguration(
           environment.toDatabaseConfig(cliArgs.pipewrench.databasePassword()),
           environment.metadata,
           pipewrenchEnv)

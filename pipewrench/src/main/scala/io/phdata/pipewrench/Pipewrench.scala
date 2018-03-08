@@ -40,7 +40,7 @@ trait Pipewrench {
 
 }
 
-object PipewrenchImpl extends Pipewrench with YamlProtocol with LazyLogging {
+object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
 
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],

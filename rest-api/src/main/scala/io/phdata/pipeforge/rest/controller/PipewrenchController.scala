@@ -22,6 +22,7 @@ import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, YamlSupport }
 import io.phdata.pipeforge.rest.domain.Implicits._
 import io.phdata.pipeforge.rest.service.PipewrenchService
 import io.phdata.pipewrench.domain.Configuration
+import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import net.jcazevedo.moultingyaml._
 
 import scala.concurrent.ExecutionContext
@@ -31,6 +32,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
     extends LazyLogging
     with YamlSupport
+    with PipewrenchYamlSupport
     with JsonSupport {
 
   val route =
@@ -76,7 +78,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
               val environment = yamlStr.parseYaml.convertTo[Environment]
               pipewrenchService.getConfiguration(environment.toDatabaseConfig(password),
                                                  environment) match {
-                case Success(configuration) => complete(configuration)
+                case Success(configuration) => complete(configuration.toYaml.prettyPrint)
                 case Failure(ex)            => failWith(ex)
               }
             }

@@ -28,8 +28,9 @@ trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
   implicit def pipewrenchEnvironmentFormat = yamlFormat7(Environment)
 
   implicit def pipewrenchColumnFormat        = yamlFormat5(Column)
-  implicit def pipewrenchTableFormat         = yamlFormat7(Table)
-  implicit def pipewrenchConfigurationFormat = yamlFormat10(Configuration)
+  implicit def pipewrenchKuduFormat          = yamlFormat2(Kudu)
+  implicit def pipewrenchTableFormat         = yamlFormat8(Table)
+  implicit def pipewrenchConfigurationFormat = yamlFormat11(Configuration)
 
   implicit class WriteEnvironmentYamlFile(environment: Environment) {
     def writeYamlFile(path: String): Unit = writeFile(environment.toYaml, path)

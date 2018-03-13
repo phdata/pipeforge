@@ -17,8 +17,7 @@
 package io.phdata.pipeforge.rest.domain
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipewrench.domain.{ Column, Configuration, Table }
+import io.phdata.pipewrench.domain.{Column, Configuration, Kudu, Table}
 import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
@@ -26,6 +25,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit def statusJsonFormat      = jsonFormat2(Status)
 
   implicit def columnJsonFormat        = jsonFormat5(Column)
-  implicit def tableJsonFormat         = jsonFormat7(Table)
-  implicit def configurationJsonFormat = jsonFormat10(Configuration)
+  implicit def kuduJsonFormat          = jsonFormat2(Kudu)
+  implicit def tableJsonFormat         = jsonFormat8(Table)
+  implicit def configurationJsonFormat = jsonFormat11(Configuration)
 }

@@ -47,7 +47,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
           complete(pipewrenchService.executePipewrenchMerge(group, name, template))
         }
       }
-    }
+    } ~
     path("pipewrench" / "configuration") {
       post {
         parameter('type.?) { responseTypeOpt =>

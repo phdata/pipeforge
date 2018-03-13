@@ -32,7 +32,8 @@ trait Pipewrench {
 
   def buildConfiguration(databaseConf: DatabaseConf,
                          tableMetadata: Map[String, String],
-                         environment: Environment): Try[Configuration]
+                         environment: Environment,
+                         impalaCmd: String = "impala-shell"): Try[Configuration]
 
 }
 
@@ -40,7 +41,8 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
 
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],
-                                  environment: Environment): Try[Configuration] =
+                                  environment: Environment,
+                                  impalaCmd: String): Try[Configuration] =
     DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
         logger.debug(s"Successfully parsed JDBC metadata: $tables")
@@ -52,11 +54,14 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
             sqoop_password_file = environment.password_file,
             connection_manager = "",
             sqoop_job_name_suffix = environment.name,
-            source_database = Map("name" -> databaseConf.schema),
+            source_database = Map(
+              "name" -> databaseConf.schema,
+              "cmd" -> databaseConf.databaseType.toString),
             staging_database = Map(
               "path" -> environment.hdfs_basedir,
               "name" -> environment.destination_database
             ),
+            impala_cmd = impalaCmd,
             tables = buildTables(tables, tableMetadata)
           )
         )
@@ -71,13 +76,14 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
       .map { table =>
         logger.debug(s"Table definition: $table")
         val allColumns = table.primaryKeys ++ table.columns
-
+        val pks = table.primaryKeys.toList.sortBy(_.index).map(_.name)
         Table(
           table.name,
           Map("name" -> table.name),
           Map("name" -> table.name),
           getSplitByColumn(table),
-          table.primaryKeys.toList.sortBy(_.index).map(_.name),
+          pks,
+          Kudu(pks, 2),
           buildColumns(allColumns),
           tableMetadata,
         )

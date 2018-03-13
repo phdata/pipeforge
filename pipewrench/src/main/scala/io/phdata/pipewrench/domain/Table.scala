@@ -21,5 +21,6 @@ case class Table(id: String,
                  destination: Map[String, String],
                  split_by_column: String,
                  primary_keys: Seq[String],
+                 kudu: Kudu,
                  columns: Seq[Column],
                  metadata: Map[String, String])

@@ -133,26 +133,7 @@
 								{
 									"name": "Save Pipewrench Enviornment - Yaml",
 									"request": {
-										"url": {
-											"raw": "localhost:9000/pipewrench/environment?type=yaml",
-											"host": [
-												"localhost"
-											],
-											"port": "9000",
-											"path": [
-												"pipewrench",
-												"environment"
-											],
-											"query": [
-												{
-													"key": "type",
-													"value": "yaml",
-													"equals": true,
-													"description": ""
-												}
-											],
-											"variable": []
-										},
+										"url": "localhost:9000/pipewrench/environment",
 										"method": "POST",
 										"header": [],
 										"body": {

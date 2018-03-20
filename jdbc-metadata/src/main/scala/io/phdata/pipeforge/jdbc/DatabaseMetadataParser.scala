@@ -21,6 +21,7 @@ import java.sql._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
 import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -66,7 +67,7 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    results(newStatement.executeQuery(query))(_.getMetaData).toList.headOption match {
+    newStatement.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
       case Some(metaData) =>
         val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         Success(mapMetaDataToColumn(metaData, rsMetadata))
@@ -85,8 +86,8 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
-                        tableWhiteList: Option[Set[String]],
-                        skipWhiteListCheck: Boolean = false): Try[Set[Table]] =
+                        tableWhiteList: Option[List[String]],
+                        skipWhiteListCheck: Boolean = false): Try[List[Table]] =
     // Query database for a list of tables or views
     if (skipWhiteListCheck) {
       tableWhiteList match {
@@ -107,12 +108,12 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param tableWhiteList Optional user supplied table whitelisting
    * @return A Set of tables
    */
-  def checkWhiteListedTables(sourceTables: Set[String],
-                             tableWhiteList: Option[Set[String]]): Try[Set[String]] =
+  def checkWhiteListedTables(sourceTables: List[String],
+                             tableWhiteList: Option[List[String]]): Try[List[String]] =
     tableWhiteList match {
       case Some(whiteList) =>
         logger.debug("Checking user supplied white list against source system: {}", whiteList)
-        if (whiteList.subsetOf(sourceTables)) {
+        if (whiteList.toSet(sourceTables)) {
           Success(whiteList)
         } else {
           Failure(new Exception(
@@ -146,11 +147,12 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return Primary key definitions
    */
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
-    val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
     logger.debug("Gathering primary keys from JDBC metadata")
-    val pks = results(rs) { record =>
-      record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
-    }.toMap
+    val pks = metadata
+      .getPrimaryKeys(schema, schema, table)
+      .toStream
+      .map(record => record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ"))
+      .toMap
 
     mapPrimaryKeyToColumn(pks, columns)
   }
@@ -200,13 +202,13 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param schema Schema or database name
    * @return A Set of tables or views
    */
-  def listTables(objectType: ObjectType.Value, schema: String): Set[String] = {
+  def listTables(objectType: ObjectType.Value, schema: String): List[String] = {
     val stmt: Statement = newStatement
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    results(stmt.executeQuery(query))(_.getString(1)).toSet
+    newStatement.executeQuery(query).toStream.map(_.getString(1)).toList
   }
 
   /**
@@ -214,25 +216,6 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return
    */
   def newStatement = connection.createStatement()
-
-  /**
-   * Helper for iterating through a result set
-   * @param resultSet The result set to iterate over
-   * @param f the function to call on the result set
-   * @tparam T The output
-   * @return
-   */
-  protected def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    val iterator = new Iterator[T] {
-      def hasNext = resultSet.next()
-
-      def next() = f(resultSet)
-    }
-
-    val result = iterator.toList
-    resultSet.close()
-    result
-  }
 }
 
 /**
@@ -245,8 +228,9 @@ object DatabaseMetadataParser extends LazyLogging {
    * @param configuration Database configuration
    * @return Set of table definitions
    */
-  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[Set[Table]] = {
-    logger.info("Extracting metadata information from database: {}", configuration)
+  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[List[Table]] = {
+    logger.info("Extracting metadata information from database: {}",
+                configuration.copy(password = "******"))
 
     // Establish connection to database
     getConnection(configuration) match {
@@ -301,7 +285,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @return
    */
   def getConnection(configuration: DatabaseConf) = {
-    logger.debug("Connecting to database: {}", configuration)
+    logger.debug("Connecting to database: {}", configuration.copy(password = "******"))
     Try(
       DriverManager
         .getConnection(configuration.jdbcUrl, configuration.username, configuration.password))

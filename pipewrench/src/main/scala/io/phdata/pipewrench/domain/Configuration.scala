@@ -16,10 +16,14 @@
 
 package io.phdata.pipewrench.domain
 
-case class TableYaml(id: String,
-                     source: Map[String, String],
-                     destination: Map[String, String],
-                     split_by_column: String,
-                     primary_keys: Seq[String],
-                     columns: Seq[ColumnYaml],
-                     metadata: Map[String, String])
+case class Configuration(name: String,
+                         group: String,
+                         user_name: String = "{{ source_db_user_name }}",
+                         type_mapping: String = "type-mapping.yml",
+                         sqoop_password_file: String = "{{ password_file }}",
+                         connection_manager: String,
+                         sqoop_job_name_suffix: String,
+                         source_database: Map[String, String],
+                         staging_database: Map[String, String],
+                         impala_cmd: String,
+                         tables: Seq[Table])

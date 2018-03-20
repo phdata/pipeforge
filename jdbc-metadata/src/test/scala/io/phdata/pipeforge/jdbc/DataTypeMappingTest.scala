@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.jdbc
 
 import java.sql.JDBCType
 
-import io.phdata.pipeforge.jdbc.domain.Column
+import io.phdata.pipeforge.jdbc.domain.{ Column, DataType }
 import org.scalatest.FunSuite
 
 /**

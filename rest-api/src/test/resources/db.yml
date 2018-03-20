@@ -1,0 +1,16 @@
+name: "test_name"
+group: "test_group"
+databaseType: "mysql"
+jdbcUrl: "test_jdbc_url"
+schema: "test_schema"
+username: "test_username"
+objectType: "table"
+metadata:
+  key1: val1
+hdfsPath: "test_hdfs_path"
+hadoopUser: "test_hadoop_user"
+passwordFile: "test_password_file"
+destinationDatabase: "test_destination_database"
+tables:
+  - "test_table1"
+  - "test_table2"

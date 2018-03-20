@@ -22,6 +22,7 @@ import com.whisk.docker.{DockerContainer, DockerReadyChecker}
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, OracleMetadataParser}
 import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.pipeforge.jdbc.domain.{Column, Table}
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{Failure, Success}
 
@@ -70,18 +71,15 @@ class OracleMetadataParserTest extends DockerTestRunner {
 
   test("run query against database") {
     val stmt = CONNECTION.createStatement()
-    val rs: ResultSet =
-      stmt.executeQuery(
-        "SELECT owner, table_name FROM ALL_TABLES where owner = 'HR'")
-    val results =
-      getResults(rs)(x => x.getString(1) + "." + x.getString(2)).toList
+    val results = stmt.executeQuery("SELECT owner, table_name FROM ALL_TABLES where owner = 'HR'").toStream
+      .map(x => x.getString(1) + "." + x.getString(2)).toList
     assertResult(7)(results.length)
 
   }
 
   test("parse tables metadata") {
     val parser = new OracleMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -97,7 +95,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
 
   test("parse views metadata") {
     val parser = new OracleMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(List(VIEW))) match {
       case Success(definitions) =>
         val expected = Set(
           Table(

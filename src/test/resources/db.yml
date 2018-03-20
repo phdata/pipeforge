@@ -1,8 +1,0 @@
-databaseType: "mysql"
-jdbcUrl: "test_jdbc_url"
-schema: "test_schema"
-username: "test_username"
-objectType: "table"
-tables:
-  - "test_table1"
-  - "test_table2"

@@ -19,6 +19,7 @@ package io.phdata.pipeforge.jdbc
 import java.sql.Connection
 
 import io.phdata.pipeforge.jdbc.domain.Column
+import io.phdata.pipeforge.jdbc.Implicits._
 
 /**
  * Microsoft SQL Server metadata parser implementation
@@ -65,9 +66,13 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        """.stripMargin
 
     logger.debug(s"Gathering primary keys for $schema.$table, query: {}", query)
-    val pks = results(newStatement.executeQuery(query)) { record =>
-      record.getString("COLUMN_NAME") -> record.getInt("ORDINAL_POSITION")
-    }.toMap
+    val pks = newStatement
+      .executeQuery(query)
+      .toStream
+      .map { record =>
+        record.getString("COLUMN_NAME") -> record.getInt("ORDINAL_POSITION")
+      }
+      .toMap
 
     mapPrimaryKeyToColumn(pks, columns)
   }

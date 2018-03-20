@@ -22,6 +22,7 @@ import com.whisk.docker.DockerContainer
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, MsSQLMetadataParser}
 import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
 import io.phdata.pipeforge.jdbc.domain.{Column, Table}
+import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{Failure, Success}
 
@@ -86,14 +87,13 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("run query against database") {
     val stmt = CONNECTION.createStatement()
-    val rs: ResultSet = stmt.executeQuery("SELECT * FROM sys.tables")
-    val results = getResults(rs)(x => x.getString(1)).toList
+    val results = stmt.executeQuery("SELECT * FROM sys.tables").toStream.map(_.getString(1)).toList
     assertResult(7)(results.length)
   }
 
   test("parse tables metadata") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(TABLE))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -114,7 +114,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("parse views metadata") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(Set(VIEW))) match {
+    parser.getTablesMetadata(ObjectType.VIEW, DATABASE, Some(List(VIEW))) match {
       case Success(definitions) =>
         assert(definitions.size == 1)
         val expected = Set(
@@ -134,7 +134,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
 
   test("skip tables with no records") {
     val parser = new MsSQLMetadataParser(CONNECTION)
-    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(Set(NO_RECORDS_TABLE))) match {
+    parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(NO_RECORDS_TABLE))) match {
       case Success(definitions) =>
         assert(definitions.isEmpty)
       case Failure(ex) =>

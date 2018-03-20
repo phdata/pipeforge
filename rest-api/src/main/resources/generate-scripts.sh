@@ -26,6 +26,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -p|--pipewrench-dir)
+    PIPEWRENCH_DIR="$2"
+    shift # past argument
+    shift # past value
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -33,6 +38,8 @@ case $key in
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
+
+source $PIPEWRENCH_DIR/venv/bin/activate
 
 cd $OUTPUT_DIR
 

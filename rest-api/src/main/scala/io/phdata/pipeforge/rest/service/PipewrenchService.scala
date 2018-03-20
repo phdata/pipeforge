@@ -19,14 +19,14 @@ package io.phdata.pipeforge.rest.service
 import java.io.File
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.domain.{Environment, Status}
+import io.phdata.pipeforge.rest.domain.{ Environment, Status }
 import io.phdata.pipeforge.rest.module.ConfigurationModule
 import io.phdata.pipewrench.PipewrenchImpl
-import io.phdata.pipewrench.domain.{Configuration, YamlSupport}
+import io.phdata.pipewrench.domain.{ Configuration, YamlSupport }
 import io.phdata.pipeforge.rest.domain.Implicits._
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait PipewrenchService {
 
@@ -48,8 +48,7 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
 
   import sys.process._
 
-  override def getConfiguration(password: String,
-                                environment: Environment): Try[Configuration] =
+  override def getConfiguration(password: String, environment: Environment): Try[Configuration] =
     PipewrenchImpl.buildConfiguration(environment.toDatabaseConfig(password),
                                       environment.metadata,
                                       environment.toPipewrenchEnvironment)
@@ -64,15 +63,17 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
   override def saveEnvironment(environment: Environment): Status =
     status(Try {
       createIngestDirIfNotExist(environment.group, environment.name)
-      environment.toPipewrenchEnvironment.writeYamlFile(envFilePath(environment.group, environment.name))
+      environment.toPipewrenchEnvironment.writeYamlFile(
+        envFilePath(environment.group, environment.name))
     })
 
   override def executePipewrenchMerge(group: String, name: String, template: String): Status =
     status(Try {
-      val dir = pipewrenchProjectDir(group, name)
+      val dir         = pipewrenchProjectDir(group, name)
       val templateDir = new File(s"$pipewrenchTemplatesDir/$template").getAbsolutePath
-      val projectDir = new File(pipewrenchProjectDir(group, name)).getAbsolutePath
-      val cmd = s"$pipewrenchDir/generate-scripts.sh -e env.yml -c tables.yml -t $templateDir -d $projectDir"
+      val projectDir  = new File(pipewrenchProjectDir(group, name)).getAbsolutePath
+      val cmd =
+        s"$baseDir/generate-scripts.sh -e env.yml -c tables.yml -t $templateDir -d $projectDir -p $pipewrenchDir"
       logger.debug(s"CMD: $cmd")
       cmd !!
     })

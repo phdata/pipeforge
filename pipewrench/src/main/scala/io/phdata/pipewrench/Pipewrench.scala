@@ -54,9 +54,8 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
             sqoop_password_file = environment.password_file,
             connection_manager = "",
             sqoop_job_name_suffix = environment.name,
-            source_database = Map(
-              "name" -> databaseConf.schema,
-              "cmd" -> databaseConf.databaseType.toString),
+            source_database =
+              Map("name" -> databaseConf.schema, "cmd" -> databaseConf.databaseType.toString),
             staging_database = Map(
               "path" -> environment.hdfs_basedir,
               "name" -> environment.destination_database
@@ -76,7 +75,7 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
       .map { table =>
         logger.debug(s"Table definition: $table")
         val allColumns = table.primaryKeys ++ table.columns
-        val pks = table.primaryKeys.toList.sortBy(_.index).map(_.name)
+        val pks        = table.primaryKeys.toList.sortBy(_.index).map(_.name)
         Table(
           table.name,
           Map("name" -> table.name),

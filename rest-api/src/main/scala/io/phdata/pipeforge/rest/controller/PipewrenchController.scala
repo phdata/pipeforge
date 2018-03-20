@@ -19,14 +19,14 @@ package io.phdata.pipeforge.rest.controller
 import akka.http.scaladsl.model.ContentTypes
 import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.domain.{Environment, JsonSupport, YamlSupport}
+import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, YamlSupport }
 import io.phdata.pipeforge.rest.service.PipewrenchService
 import io.phdata.pipewrench.domain.Configuration
-import io.phdata.pipewrench.domain.{YamlSupport => PipewrenchYamlSupport}
+import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import net.jcazevedo.moultingyaml._
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
@@ -98,7 +98,8 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
               }
             case _ =>
               entity(as[String]) { yamlStr =>
-                complete(pipewrenchService.saveEnvironment(yamlStr.parseYaml.convertTo[Environment]))
+                complete(
+                  pipewrenchService.saveEnvironment(yamlStr.parseYaml.convertTo[Environment]))
               }
           }
         }

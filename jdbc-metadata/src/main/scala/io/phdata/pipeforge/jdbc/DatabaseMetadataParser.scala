@@ -229,7 +229,8 @@ object DatabaseMetadataParser extends LazyLogging {
    * @return Set of table definitions
    */
   def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[List[Table]] = {
-    logger.info("Extracting metadata information from database: {}", configuration.copy(password = "******"))
+    logger.info("Extracting metadata information from database: {}",
+                configuration.copy(password = "******"))
 
     // Establish connection to database
     getConnection(configuration) match {

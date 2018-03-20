@@ -41,7 +41,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
       // Execute Pipewrench commands
       case "pipewrench" =>
         // Parse file into Environment
-        val environment   = parseFile(cliArgs.pipewrench.databaseConf())
+        val environment = parseFile(cliArgs.pipewrench.databaseConf())
         // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 

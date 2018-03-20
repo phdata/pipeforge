@@ -17,7 +17,7 @@
 package io.phdata.pipeforge.rest.domain
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import io.phdata.pipewrench.domain.{Column, Configuration, Kudu, Table}
+import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {

@@ -1,5 +1,5 @@
 .idea
 target
 tables.yml
-pipewrench_config
+pipewrench_conf
 **/out

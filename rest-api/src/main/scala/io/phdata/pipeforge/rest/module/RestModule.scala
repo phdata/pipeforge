@@ -17,38 +17,42 @@
 package io.phdata.pipeforge.rest.module
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.{Http, HttpExt}
+import akka.http.scaladsl.{ Http, HttpExt }
 import akka.http.scaladsl.server.Route
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.{ ActorMaterializer, Materializer }
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.controller.{PipeforgeController, PipewrenchController}
+import io.phdata.pipeforge.rest.controller.{ PipeforgeController, PipewrenchController }
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.service.{PipewrenchService, PipewrenchServiceImpl}
+import io.phdata.pipeforge.rest.service.{ PipewrenchService, PipewrenchServiceImpl }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
 trait RestModule extends ConfigurationModule {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.global
-  implicit val actorSystem: ActorSystem   = ActorSystem()
-  implicit val materializer: Materializer = ActorMaterializer()
+  implicit val actorSystem: ActorSystem           = ActorSystem()
+  implicit val materializer: Materializer         = ActorMaterializer()
 
   val pipewrenchService: PipewrenchService = new PipewrenchServiceImpl()
-  val pipeforgeController = new PipeforgeController(pipewrenchService)
-  val pipewrenchController = new PipewrenchController(pipewrenchService)
+  val pipeforgeController                  = new PipeforgeController(pipewrenchService)
+  val pipewrenchController                 = new PipewrenchController(pipewrenchService)
 
   val http: HttpExt = Http()
-  val restApi = new RestApi(http, configuration, pipeforgeController, pipewrenchController)
-
+  val restApi       = new RestApi(http, configuration, pipeforgeController, pipewrenchController)
 
 }
 
-class RestApi(http: HttpExt, configuration: Config, pipeforgeController: PipeforgeController, pipewrenchController: PipewrenchController)
-             (implicit actorSystem: ActorSystem, materializer: Materializer, executionContext: ExecutionContext)
-    extends ConfigurationModule with LazyLogging {
+class RestApi(http: HttpExt,
+              configuration: Config,
+              pipeforgeController: PipeforgeController,
+              pipewrenchController: PipewrenchController)(implicit actorSystem: ActorSystem,
+                                                          materializer: Materializer,
+                                                          executionContext: ExecutionContext)
+    extends ConfigurationModule
+    with LazyLogging {
 
   val route: Route =
     cors() {
@@ -58,8 +62,10 @@ class RestApi(http: HttpExt, configuration: Config, pipeforgeController: Pipefor
   def installRequirements(): Try[Unit] = {
     import sys.process._
 
-    val cmd = s"pipewrench/src/main/resources/requirements.sh -d $baseDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf"
+    val cmd =
+      s"rest-api/src/main/resources/requirements.sh -d $baseDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir"
 
+    logger.info(s"Executing command: $cmd")
     Try(cmd !!)
   }
 

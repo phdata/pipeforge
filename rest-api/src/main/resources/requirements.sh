@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -36,14 +34,10 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+set -x
 if [ ! -d "$BASE_DIR" ]; then
     echo "Base directory: $BASE_DIR does not exist creating..."
     mkdir -p $BASE_DIR
-fi
-
-if [ ! -d "$PIPEWRENCH_DIR" ]; then
-    echo "Pipewrench repo does not exist in directory $PIPEWRENCH_DIR cloning from $GIT_REPO..."
-    git clone $GIT_REPO
 fi
 
 if [ ! -d "$INGEST_DIR" ]; then
@@ -51,10 +45,21 @@ if [ ! -d "$INGEST_DIR" ]; then
     mkdir -p $INGEST_DIR
 fi
 
-if [ ! -f "$BASE_DIR/generate-scripts.sh" ]; then
+if [ ! -f "generate-scripts.sh" ]; then
     echo "generate-scripts.sh not found in $BASE_DIR copying from pipeforge source..."
-    cp generate-scripts.sh $BASE_DIR
+    cp rest-api/src/main/resources/generate-scripts.sh $BASE_DIR
 fi
 
+cd $PIPEWRENCH_DIR
 
+if [ ! -d "pipewrench" ]; then
+    echo "Pipewrench repo does not exist in directory $PIPEWRENCH_DIR cloning from $GIT_REPO..."
+    git clone $GIT_REPO
+fi
 
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+    source venv/bin/activate
+    cd pipewrench
+    python setup.py install
+fi

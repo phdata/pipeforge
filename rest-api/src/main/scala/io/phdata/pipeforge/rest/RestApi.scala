@@ -16,20 +16,27 @@
 
 package io.phdata.pipeforge.rest
 
+import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.module._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.util.{ Failure, Success }
 
-object RestApi extends RestModule {
+object RestApi extends RestModule with LazyLogging {
 
-  def start(port: Int): Unit = {
+  def start(port: Int): Unit =
+    restApi.installRequirements() match {
+      case Success(_) =>
+        Await.ready(
+          for {
+            _ <- restApi.start(port)
+          } yield Unit,
+          Duration.Inf
+        )
+      case Failure(ex) =>
+        logger.error("Failed to install requirements", ex)
+        System.exit(1)
+    }
 
-    Await.ready(
-      for {
-        _ <- restApi.start(port)
-      } yield Unit,
-      Duration.Inf
-    )
-  }
 }

@@ -44,9 +44,9 @@ if [ ! -d "$INGEST_DIR" ]; then
     mkdir -p $INGEST_DIR
 fi
 
-if [ ! -f "generate-scripts.sh" ]; then
-    echo "generate-scripts.sh not found in $BASE_DIR copying from pipeforge source..."
-    cp rest-api/src/main/resources/generate-scripts.sh $BASE_DIR
+if [ ! -f "$BASE_DIR/generate-scripts.sh" ]; then
+    echo "conf/generate-scripts.sh not found in $BASE_DIR copying from pipeforge source..."
+    cp conf/generate-scripts.sh $BASE_DIR
 fi
 
 cd $PIPEWRENCH_DIR

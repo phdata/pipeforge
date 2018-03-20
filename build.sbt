@@ -170,4 +170,10 @@ lazy val `rest-api` = project
     pipewrench
   )
 
+mappings in Universal ++= {
+  ((sourceDirectory in Compile).value / "resources" * "*").get.map { f =>
+    f -> s"conf/${f.name}"
+  }
+}
+
 enablePlugins(JavaAppPackaging)

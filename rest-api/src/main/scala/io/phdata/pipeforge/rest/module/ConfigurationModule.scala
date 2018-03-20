@@ -22,10 +22,13 @@ trait ConfigurationModule {
 
   val configuration: Config = ConfigFactory.load()
 
-  val pipewrenchDir         = configuration.getString("pipewrench.directory.output")
-  val pipewrenchTemplateDir = configuration.getString("pipewrench.directory.template")
+  val pipewrenchGitUrl = configuration.getString("pipewrench.git.url")
+  val baseDir = configuration.getString("pipewrench.directory.base")
+  val pipewrenchDir = configuration.getString("pipewrench.directory.base")
+  val pipewrenchTemplatesDir = configuration.getString("pipewrench.directory.templates")
+  val pipewrenchIngestConf = configuration.getString("pipewrench.directory.ingest")
 
-  def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchDir/$group/$name"
+  def pipewrenchProjectDir(group: String, name: String) = s"$pipewrenchIngestConf/$group/$name"
 
   def tableFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/tables.yml"
   def envFilePath(group: String, name: String) = s"${pipewrenchProjectDir(group, name)}/env.yml"

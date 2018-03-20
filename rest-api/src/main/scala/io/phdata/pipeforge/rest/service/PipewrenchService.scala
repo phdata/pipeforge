@@ -70,7 +70,7 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
   override def executePipewrenchMerge(group: String, name: String, template: String): Status =
     status(Try {
       val dir = pipewrenchProjectDir(group, name)
-      val templateDir = new File(s"$pipewrenchTemplateDir/$template").getAbsolutePath
+      val templateDir = new File(s"$pipewrenchTemplatesDir/$template").getAbsolutePath
       val projectDir = new File(pipewrenchProjectDir(group, name)).getAbsolutePath
       val cmd = s"$pipewrenchDir/generate-scripts.sh -e env.yml -c tables.yml -t $templateDir -d $projectDir"
       logger.debug(s"CMD: $cmd")

@@ -9,7 +9,7 @@ Exposes services for interacting with Pipeforge through rest endpoints.
 [Pipewrench](http://github.com/Cargill/pipewrench) must be installed on the host running the rest service.
 
 ### Configuration
-Pipewrench Environment and Configuration files are written to a [configured](src/main/resources/application.conf) directory.  This directory should contain a copy of Pipewrench templates and the [generate-scripts.sh](src/main/resources/generate-scripts.sh) file.
+Pipewrench Environment and Configuration files are written to a [configured](../src/main/resources/application.conf) directory.  This directory should contain a copy of Pipewrench templates and the [generate-scripts.sh](src/main/resources/generate-scripts.sh) file.
 
 ## Endpoints
 [Postman File](src/main/resources/pipeforge-api.postman_collection.json)

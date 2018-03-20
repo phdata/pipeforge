@@ -34,7 +34,6 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-set -x
 if [ ! -d "$BASE_DIR" ]; then
     echo "Base directory: $BASE_DIR does not exist creating..."
     mkdir -p $BASE_DIR
@@ -58,8 +57,10 @@ if [ ! -d "pipewrench" ]; then
 fi
 
 if [ ! -d "venv" ]; then
+    echo "Creating python virtual environment for pipewrench in $PIPEWRENCH_DIR..."
     python3 -m venv venv
     source venv/bin/activate
     cd pipewrench
+    echo "Installing pipewrench dependencies..."
     python setup.py install
 fi

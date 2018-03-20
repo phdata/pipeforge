@@ -16,7 +16,6 @@
 
 package io.phdata.pipewrench
 
-import java.io.FileWriter
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
@@ -24,7 +23,6 @@ import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
 import io.phdata.pipeforge.jdbc.config.DatabaseConf
 import io.phdata.pipeforge.jdbc.domain.{ DataType, Column => DbColumn, Table => DbTable }
 import io.phdata.pipewrench.domain._
-import net.jcazevedo.moultingyaml._
 
 import scala.util.{ Failure, Success, Try }
 

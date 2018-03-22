@@ -38,7 +38,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def singleRecordQuery(schema: String, table: String) =
     s"""
        |SELECT TOP 1 *
-       |FROM $table
+       |FROM \"$table\"
      """.stripMargin
 
   override def listViewsStatement(schema: String) =

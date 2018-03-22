@@ -73,8 +73,8 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
    * Subcommands:
    *   - pipewrench: Connects to source database and writes parsed Pipewrench Configuration
    *       Args:
-   *       database-configuration (s) Required - Path to the source database configuration file
-   *       database-password (p) Required - The source database password
+   *       enviornment (e) Required - Path to the source database configuration file
+   *       password (p) Required - The source database password
    *       output-path (o) - Output path for the file generated tables.yml file
    *       check-whitelist (c) - Output path for the file generated tables.yml file
    *
@@ -84,7 +84,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
    *
    * @param args
    */
-  private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
+  class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
 
     val restApi = new Subcommand("rest-api") {
       descr("Start Pipeforge rest-api")

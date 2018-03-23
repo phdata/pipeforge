@@ -16,4 +16,4 @@
 
 package io.phdata.pipeforge.rest.domain
 
-case class Status(status: String, message: String)
+case class Status(status: String, message: String, stacktrace: Option[String] = None)

@@ -16,9 +16,8 @@
 
 package io.phdata.pipeforge.rest.controller
 
-import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, YamlSupport }
+import io.phdata.pipeforge.rest.domain.Environment
 import io.phdata.pipeforge.rest.service.PipewrenchService
 
 import scala.concurrent.ExecutionContext
@@ -26,34 +25,34 @@ import scala.util.{ Failure, Success }
 
 class PipeforgeController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
-    extends LazyLogging
-    with YamlSupport
-    with JsonSupport {
+    extends ControllerUtils {
 
   val basePath = "pipeforge"
 
   val route =
-    extractRequest { request =>
-      path(basePath) {
-        get {
-          complete("Pipeforge rest api")
-        } ~
-        post {
-          parameter('template) { template =>
-            entity(as[Environment]) { environment =>
-              Util.decodePassword(request) match {
-                case Success(password) =>
-                  pipewrenchService.getConfiguration(password, environment) match {
-                    case Success(configuration) =>
-                      pipewrenchService.saveEnvironment(environment)
-                      pipewrenchService.saveConfiguration(configuration)
-                      complete(
-                        pipewrenchService.executePipewrenchMerge(environment.group,
-                                                                 environment.name,
-                                                                 template))
-                    case Failure(ex) => failWith(ex)
-                  }
-                case Failure(ex) => failWith(ex)
+    handleExceptions(exceptionHandler) {
+      extractRequest { request =>
+        path(basePath) {
+          get {
+            complete("Pipeforge rest api")
+          } ~
+          post {
+            parameter('template) { template =>
+              entity(as[Environment]) { environment =>
+                decodePassword(request) match {
+                  case Success(password) =>
+                    pipewrenchService.getConfiguration(password, environment) match {
+                      case Success(configuration) =>
+                        pipewrenchService.saveEnvironment(environment)
+                        pipewrenchService.saveConfiguration(configuration)
+                        complete(
+                          pipewrenchService.executePipewrenchMerge(environment.group,
+                                                                   environment.name,
+                                                                   template))
+                      case Failure(ex) => failWith(ex)
+                    }
+                  case Failure(ex) => failWith(ex)
+                }
               }
             }
           }

@@ -22,7 +22,7 @@ import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit def environmentJsonFormat = jsonFormat13(Environment)
-  implicit def statusJsonFormat      = jsonFormat2(Status)
+  implicit def statusJsonFormat      = jsonFormat3(Status)
 
   implicit def columnJsonFormat        = jsonFormat5(Column)
   implicit def kuduJsonFormat          = jsonFormat2(Kudu)

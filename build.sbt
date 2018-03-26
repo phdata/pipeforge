@@ -185,3 +185,9 @@ lazy val `rest-api` = project
   )
 
 enablePlugins(JavaServerAppPackaging, UniversalDeployPlugin, RpmPlugin, RpmDeployPlugin)
+
+mappings in Universal ++= {
+  ((sourceDirectory in Compile).value / "resources" * "*").get.map { f =>
+    f -> s"conf/${f.name}"
+  }
+}

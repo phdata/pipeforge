@@ -23,6 +23,7 @@ trait ConfigurationModule {
   val configuration: Config = ConfigFactory.load()
 
   val pipewrenchGitUrl       = configuration.getString("pipewrench.git.url")
+  val installScript          = configuration.getString("pipewrench.scripts.install")
   val baseDir                = configuration.getString("pipewrench.directory.base")
   val pipewrenchDir          = configuration.getString("pipewrench.directory.pipewrench")
   val pipewrenchTemplatesDir = configuration.getString("pipewrench.directory.templates")

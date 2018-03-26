@@ -17,9 +17,8 @@
 package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.model.ContentTypes
-import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
-import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, YamlSupport }
+import io.phdata.pipeforge.rest.domain.Environment
 import io.phdata.pipeforge.rest.service.PipewrenchService
 import io.phdata.pipewrench.domain.Configuration
 import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
@@ -30,10 +29,8 @@ import scala.util.{ Failure, Success }
 
 class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
-    extends LazyLogging
-    with YamlSupport
-    with PipewrenchYamlSupport
-    with JsonSupport {
+    extends Controller
+    with PipewrenchYamlSupport {
 
   val basePath = "pipewrench"
 
@@ -66,14 +63,14 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
           }
         } ~
         put {
-          Util.decodePassword(request) match {
+          decodePassword(request) match {
             case Success(password) =>
               request.entity.contentType match {
                 case ContentTypes.`application/json` =>
                   entity(as[Environment]) { environment =>
                     pipewrenchService.getConfiguration(password, environment) match {
                       case Success(configuration) => complete(configuration)
-                      case Failure(ex)            => failWith(ex)
+                      case Failure(ex)            => ex
                     }
                   }
                 case _ =>
@@ -81,11 +78,11 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                     val environment = yamlStr.parseYaml.convertTo[Environment]
                     pipewrenchService.getConfiguration(password, environment) match {
                       case Success(configuration) => complete(configuration.toYaml.prettyPrint)
-                      case Failure(ex)            => failWith(ex)
+                      case Failure(ex)            => ex
                     }
                   }
               }
-            case Failure(ex) => failWith(ex)
+            case Failure(ex) => ex
           }
         }
       } ~

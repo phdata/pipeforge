@@ -62,7 +62,7 @@ class RestApi(http: HttpExt,
   def installRequirements(): Try[Unit] = {
     import sys.process._
     val cmd =
-      s"rest-api/src/main/resources/requirements.sh -d $baseDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir"
+      s"$installScript -d $baseDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir"
     logger.info(s"Checking installation requirements, executing: $cmd")
     Try(cmd !!)
   }

@@ -35,11 +35,13 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
-    logger.info("Pipeforge Application")
 
-    args(0) match {
-      // Execute Pipewrench commands
-      case "pipewrench" =>
+    cliArgs.subcommand match {
+      case Some(cliArgs.restApi) =>
+        logger.info("Starting Pipeforge rest api")
+        RestApi.start(cliArgs.restApi.port())
+      case Some(cliArgs.pipewrench) =>
+        logger.info("pipewrench called")
         // Parse file into Environment
         val environment = parseFile(cliArgs.pipewrench.databaseConf())
         // Build Pipewrench Environment from Pipeforge environment
@@ -61,9 +63,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }
-
-      // Start Pipeforge Rest service
-      case "rest-api" => RestApi.start(cliArgs.restApi.port())
+      case _ => // parsing failure
     }
   }
 
@@ -73,8 +73,8 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
    * Subcommands:
    *   - pipewrench: Connects to source database and writes parsed Pipewrench Configuration
    *       Args:
-   *       database-configuration (s) Required - Path to the source database configuration file
-   *       database-password (p) Required - The source database password
+   *       enviornment (e) Required - Path to the source database configuration file
+   *       password (p) Required - The source database password
    *       output-path (o) - Output path for the file generated tables.yml file
    *       check-whitelist (c) - Output path for the file generated tables.yml file
    *
@@ -84,19 +84,26 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
    *
    * @param args
    */
-  private class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
+  class CliArgsParser(args: Seq[String]) extends ScallopConf(args) {
 
     val restApi = new Subcommand("rest-api") {
-      lazy val port = opt[Int]("port", 'p', required = true)
+      descr("Start Pipeforge rest-api")
+      val port = opt[Int]("port", 'p', descr = "Port", required = true)
     }
     addSubcommand(restApi)
 
     val pipewrench = new Subcommand("pipewrench") {
-
-      lazy val databaseConf       = opt[String]("database-configuration", 's', required = true)
-      lazy val databasePassword   = opt[String]("database-password", 'p', required = true)
-      lazy val outputPath         = opt[String]("output-path", 'o', required = true)
-      lazy val skipcheckWhitelist = opt[Boolean]("skip-whitelist-check", 'c')
+      descr("Build pipewrench table.yml and environment.yml")
+      val databaseConf =
+        opt[String]("environment", 'e', descr = "environment.yml file", required = true)
+      val databasePassword =
+        opt[String]("password", 'p', descr = "database password", required = true)
+      val outputPath = opt[String]("output-path", 'o', descr = "output path", required = true)
+      val skipcheckWhitelist = opt[Boolean](
+        "override-whitelist-check",
+        'c',
+        descr = "Skips checking whitelisted tables against source database",
+        default = Some(true))
 
     }
     addSubcommand(pipewrench)
@@ -104,4 +111,5 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
     verify()
 
   }
+
 }

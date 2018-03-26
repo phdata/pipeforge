@@ -12,7 +12,7 @@ import io.phdata.pipeforge.rest.domain.{ JsonSupport, Status, YamlSupport }
 
 import scala.util.{ Failure, Success, Try }
 
-trait ControllerUtils extends LazyLogging with JsonSupport with YamlSupport {
+trait Controller extends LazyLogging with JsonSupport with YamlSupport {
 
   implicit def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case ex: Exception =>
@@ -20,9 +20,10 @@ trait ControllerUtils extends LazyLogging with JsonSupport with YamlSupport {
         logger.error(s"An Error occurred while processing the request", ex)
         val sw = new StringWriter
         ex.printStackTrace(new PrintWriter(sw))
-        val status =
-          Status(status = "FAILURE", message = ex.getMessage, stacktrace = Some(sw.toString))
-        complete(InternalServerError, status)
+
+        complete(
+          InternalServerError,
+          Status(status = "FAILURE", message = ex.getMessage, stacktrace = Some(sw.toString)))
       }
   }
 

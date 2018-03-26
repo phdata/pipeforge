@@ -16,7 +16,7 @@
 
 package io.phdata.pipeforge.rest.service
 
-import java.io.File
+import java.io.{ File, PrintWriter, StringWriter }
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.domain.{ Environment, Status }
@@ -80,8 +80,11 @@ class PipewrenchServiceImpl()(implicit executionContext: ExecutionContext)
 
   private def status(proc: Try[Unit]): Status =
     proc match {
-      case Success(_)  => Status("SUCCESS", "Everything is awesome!")
-      case Failure(ex) => Status("FAILURE", ex.getMessage)
+      case Success(_) => Status("SUCCESS", "Everything is awesome!")
+      case Failure(ex) =>
+        val sw = new StringWriter
+        ex.printStackTrace(new PrintWriter(sw))
+        Status("FAILURE", ex.getMessage, Some(sw.toString))
     }
 
   private def createIngestDirIfNotExist(group: String, name: String): Unit = {

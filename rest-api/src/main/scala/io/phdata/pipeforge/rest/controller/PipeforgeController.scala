@@ -25,7 +25,7 @@ import scala.util.{ Failure, Success }
 
 class PipeforgeController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
-    extends ControllerUtils {
+    extends Controller {
 
   val basePath = "pipeforge"
 
@@ -49,9 +49,9 @@ class PipeforgeController(pipewrenchService: PipewrenchService)(
                           pipewrenchService.executePipewrenchMerge(environment.group,
                                                                    environment.name,
                                                                    template))
-                      case Failure(ex) => failWith(ex)
+                      case Failure(ex) => ex
                     }
-                  case Failure(ex) => failWith(ex)
+                  case Failure(ex) => ex
                 }
               }
             }

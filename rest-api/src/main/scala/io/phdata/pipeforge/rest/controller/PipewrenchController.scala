@@ -29,7 +29,7 @@ import scala.util.{ Failure, Success }
 
 class PipewrenchController(pipewrenchService: PipewrenchService)(
     implicit executionContext: ExecutionContext)
-    extends ControllerUtils
+    extends Controller
     with PipewrenchYamlSupport {
 
   val basePath = "pipewrench"
@@ -70,7 +70,7 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                   entity(as[Environment]) { environment =>
                     pipewrenchService.getConfiguration(password, environment) match {
                       case Success(configuration) => complete(configuration)
-                      case Failure(ex)            => failWith(ex)
+                      case Failure(ex)            => ex
                     }
                   }
                 case _ =>
@@ -78,11 +78,11 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                     val environment = yamlStr.parseYaml.convertTo[Environment]
                     pipewrenchService.getConfiguration(password, environment) match {
                       case Success(configuration) => complete(configuration.toYaml.prettyPrint)
-                      case Failure(ex)            => failWith(ex)
+                      case Failure(ex)            => ex
                     }
                   }
               }
-            case Failure(ex) => failWith(ex)
+            case Failure(ex) => ex
           }
         }
       } ~

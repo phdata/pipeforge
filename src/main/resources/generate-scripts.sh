@@ -31,6 +31,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -v|--virtual-install)
+    VIRTUAL_INSTALL="$2"
+    shift # past argument
+    shift # past value
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -39,7 +44,10 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-source $PIPEWRENCH_DIR/venv/bin/activate
+if [ $VIRTUAL_INSTALL == "true" ]; then
+
+    source $PIPEWRENCH_DIR/venv/bin/activate
+fi
 
 cd $OUTPUT_DIR
 

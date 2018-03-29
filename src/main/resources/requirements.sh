@@ -26,6 +26,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -v|--virtual-install)
+    VIRTUAL_INSTALL="$2"
+    shift # past argument
+    shift # past value
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -49,18 +54,22 @@ if [ ! -f "$BASE_DIR/generate-scripts.sh" ]; then
     cp conf/generate-scripts.sh $BASE_DIR
 fi
 
-cd $PIPEWRENCH_DIR
+if [ $VIRTUAL_INSTALL == "true" ]; then
 
-if [ ! -d "pipewrench" ]; then
-    echo "Pipewrench repo does not exist in directory $PIPEWRENCH_DIR cloning from $GIT_REPO..."
-    git clone $GIT_REPO
-fi
+    cd $PIPEWRENCH_DIR
 
-if [ ! -d "venv" ]; then
-    echo "Creating python virtual environment for pipewrench in $PIPEWRENCH_DIR..."
-    python3 -m venv venv
-    source venv/bin/activate
-    cd pipewrench
-    echo "Installing pipewrench dependencies..."
-    python setup.py install
+    if [ ! -d "pipewrench" ]; then
+        echo "Pipewrench repo does not exist in directory $PIPEWRENCH_DIR cloning from $GIT_REPO..."
+        git clone $GIT_REPO
+    fi
+
+    if [ ! -d "venv" ]; then
+        echo "Creating python virtual environment for pipewrench in $PIPEWRENCH_DIR..."
+        python3 -m venv venv
+        source venv/bin/activate
+        cd pipewrench
+        echo "Installing pipewrench dependencies..."
+        python setup.py install
+    fi
+
 fi

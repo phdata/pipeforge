@@ -100,14 +100,17 @@ lazy val dependencies =
     val akkaCors          = "ch.megard"         %% "akka-http-cors"       % akkaCorsVersion
 
     // Testing depends
-    val scalaTest         = "org.scalatest" %% "scalatest"                   % scalaTestVersion     % "test"
-    val scalaDockerTest   = "com.whisk"     %% "docker-testkit-scalatest"    % dockerTestKitVersion % "test"
-    val spotifyDockerTest = "com.whisk"     %% "docker-testkit-impl-spotify" % dockerTestKitVersion % "test"
+    val scalaTest         = "org.scalatest"     %% "scalatest"                   % scalaTestVersion     % Test
+    val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
+    val spotifyDockerTest = "com.whisk"         %% "docker-testkit-impl-spotify" % dockerTestKitVersion % Test
+    val akkaHttpTestKit   = "com.typesafe.akka" %% "akka-http-testkit"           % akkaHttpVersion      % Test
+    val mockito           = "org.mockito"       % "mockito-core"                 % "2.+"                % Test
+    val scalaMock         = "org.scalamock"     %% "scalamock-scalatest-support" % "3.6.0"              % Test
 
-    val common   = Seq(logback, scalaLogging, scalaTest)
+    val common   = Seq(logback, scalaLogging, scalaTest, mockito, scalaMock)
     val database = Seq(mysql, oracle, microsoft)
     val cli      = Seq(scallop, scalaYaml)
-    val rest     = Seq(akkaHttp, akkaHttpSprayJson, akkaCors)
+    val rest     = Seq(akkaHttp, akkaHttpSprayJson, akkaCors, akkaHttpTestKit)
     val all      = common ++ database ++ cli ++ Seq(scalaDockerTest, spotifyDockerTest)
   }
 

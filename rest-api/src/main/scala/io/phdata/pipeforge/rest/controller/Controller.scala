@@ -4,7 +4,7 @@ import java.io.{ PrintWriter, StringWriter }
 import java.util.Base64
 
 import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.server.ExceptionHandler
+import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionHandler }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes._
 import com.typesafe.scalalogging.LazyLogging
@@ -21,11 +21,25 @@ trait Controller extends LazyLogging with JsonSupport with YamlSupport {
         val sw = new StringWriter
         ex.printStackTrace(new PrintWriter(sw))
 
+        println(sw.toString)
         complete(
           InternalServerError,
           Status(status = "FAILURE", message = ex.getMessage, stacktrace = Some(sw.toString)))
       }
   }
+
+  implicit def rejectionHandler: RejectionHandler =
+    RejectionHandler
+      .newBuilder()
+      .handleAll[MethodRejection] { rejections =>
+        val supportedOptions = rejections.map(_.supported.name())
+        complete(MethodNotAllowed,
+                 s"Method not supported, options include: ${supportedOptions.mkString(",")}")
+      }
+      .handleNotFound {
+        complete(NotFound, "The requested resource is not found")
+      }
+      .result()
 
   def decodePassword(request: HttpRequest): Try[String] =
     request.headers.find(_.is("password")) match {

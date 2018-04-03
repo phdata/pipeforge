@@ -16,7 +16,9 @@
 
 package io.phdata.pipeforge.rest.controller
 
+import akka.http.scaladsl.model.ContentTypes
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.unmarshalling.Unmarshaller.UnsupportedContentTypeException
 import io.phdata.pipeforge.rest.domain.Environment
 import io.phdata.pipeforge.rest.service.PipewrenchService
 
@@ -38,22 +40,28 @@ class PipeforgeController(pipewrenchService: PipewrenchService)(
           } ~
           post {
             parameter('template) { template =>
-              entity(as[Environment]) { environment =>
-                decodePassword(request) match {
-                  case Success(password) =>
-                    pipewrenchService.getConfiguration(password, environment) match {
-                      case Success(configuration) =>
-                        pipewrenchService.saveEnvironment(environment)
-                        pipewrenchService.saveConfiguration(configuration)
-                        complete(
-                          pipewrenchService.executePipewrenchMerge(environment.group,
-                                                                   environment.name,
-                                                                   template))
+              request.entity.contentType match {
+                case ContentTypes.`application/json` =>
+                  entity(as[Environment]) { environment =>
+                    decodePassword(request) match {
+                      case Success(password) =>
+                        pipewrenchService.getConfiguration(password, environment) match {
+                          case Success(configuration) =>
+                            pipewrenchService.saveEnvironment(environment)
+                            pipewrenchService.saveConfiguration(configuration)
+                            complete(
+                              pipewrenchService.executePipewrenchMerge(environment.group,
+                                                                       environment.name,
+                                                                       template))
+                          case Failure(ex) => ex
+                        }
                       case Failure(ex) => ex
                     }
-                  case Failure(ex) => ex
-                }
+                  }
+                case _ =>
+                  throw new UnsupportedContentTypeException(Set(ContentTypes.`application/json`))
               }
+
             }
           }
         }

@@ -8,11 +8,26 @@ import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionH
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes._
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.domain.{ JsonSupport, Status, YamlSupport }
+import io.phdata.pipeforge.rest.domain.{ Environment, YamlSupport }
+import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import spray.json.DefaultJsonProtocol
 
 import scala.util.{ Failure, Success, Try }
 
-trait Controller extends LazyLogging with JsonSupport with YamlSupport {
+case class ErrorMessage(message: String, stacktrace: Option[String] = None)
+
+trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+  implicit def environmentJsonFormat  = jsonFormat13(Environment.apply)
+  implicit def errorMessageJsonFormat = jsonFormat2(ErrorMessage)
+
+  implicit def columnJsonFormat        = jsonFormat5(Column)
+  implicit def kuduJsonFormat          = jsonFormat2(Kudu)
+  implicit def tableJsonFormat         = jsonFormat8(Table)
+  implicit def configurationJsonFormat = jsonFormat11(Configuration)
+}
+
+trait Handlers extends LazyLogging with JsonSupport with YamlSupport {
 
   implicit def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case ex: Exception =>
@@ -22,10 +37,9 @@ trait Controller extends LazyLogging with JsonSupport with YamlSupport {
         ex.printStackTrace(new PrintWriter(sw))
 
         println(sw.toString)
-        complete(
-          InternalServerError,
-          Status(status = "FAILURE", message = ex.getMessage, stacktrace = Some(sw.toString)))
+        complete(InternalServerError, ErrorMessage(ex.getMessage, Some(sw.toString)))
       }
+
   }
 
   implicit def rejectionHandler: RejectionHandler =

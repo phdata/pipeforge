@@ -16,11 +16,12 @@
 
 package io.phdata.pipewrench
 
+import java.io.File
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipeforge.jdbc.config.DatabaseConf
+import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType }
 import io.phdata.pipeforge.jdbc.domain.{ DataType, Column => DbColumn, Table => DbTable }
 import io.phdata.pipewrench.domain._
 
@@ -30,17 +31,29 @@ trait Pipewrench {
 
   def buildConfiguration(databaseConf: DatabaseConf,
                          tableMetadata: Map[String, String],
-                         environment: Environment,
-                         impalaCmd: String = "impala-shell"): Try[Configuration]
+                         environment: Environment): Try[Configuration]
+
+  def saveConfiguration(configuration: Configuration): Unit
+
+  def saveEnvironment(environment: Environment): Unit
+
+  def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit
+
+  def executePipewrenchMerge(directory: String, template: String): Unit
+
+  def install(): Unit
 
 }
 
-object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
+class PipewrenchService()
+    extends Pipewrench
+    with AppConfiguration
+    with YamlSupport
+    with LazyLogging {
 
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],
-                                  environment: Environment,
-                                  impalaCmd: String): Try[Configuration] =
+                                  environment: Environment): Try[Configuration] =
     DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
         logger.debug(s"Successfully parsed JDBC metadata: $tables")
@@ -50,7 +63,7 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
             environment.group,
             databaseConf.username,
             sqoop_password_file = environment.password_file,
-            connection_manager = "",
+            connection_manager = DatabaseType.getConnectionManager(databaseConf.databaseType),
             sqoop_job_name_suffix = environment.name,
             source_database =
               Map("name" -> databaseConf.schema, "cmd" -> databaseConf.databaseType.toString),
@@ -66,6 +79,37 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
         logger.error("Failed to parse metadata config", ex)
         Failure(ex)
     }
+
+  override def saveConfiguration(configuration: Configuration): Unit = {
+    val dir = projectDir(configuration.group, configuration.name)
+    checkIfDirExists(dir)
+    configuration.writeYamlFile(s"$dir/tables.yml")
+  }
+
+  override def saveEnvironment(environment: Environment): Unit = {
+    val dir = projectDir(environment.group, environment.name)
+    checkIfDirExists(dir)
+    environment.writeYamlFile(s"$dir/environment.yml")
+  }
+
+  override def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit =
+    executePipewrenchMerge(projectDir(configuration.group, configuration.name), template)
+
+  override def executePipewrenchMerge(directory: String, template: String): Unit = {
+    import sys.process._
+    val cmd =
+      s"$pipewrenchIngestConf/generate-scripts.sh -e environment.yml -c tables.yml -p $pipewrenchDir -t $pipewrenchTemplatesDir/$template -d $directory -v $virtualInstall"
+    logger.debug(s"Executing: $cmd")
+    cmd !!
+  }
+
+  override def install(): Unit = {
+    import sys.process._
+    val cmd =
+      s"$installScriptDir/requirements.sh -i $installScriptDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir -v $virtualInstall"
+    logger.info(s"Checking installation requirements, executing: $cmd")
+    cmd !!
+  }
 
   private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
@@ -118,4 +162,13 @@ object PipewrenchImpl extends Pipewrench with YamlSupport with LazyLogging {
       .name
   }
 
+  private def projectDir(group: String, name: String) = s"$pipewrenchIngestConf/$group/$name"
+  private def checkIfDirExists(path: String): Unit = {
+    logger.debug(s"Checking for directory: $path")
+    val dir = new File(path)
+    if (!dir.exists()) {
+      logger.debug(s"Creating directory: $path")
+      dir.mkdirs()
+    }
+  }
 }

@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "pipeforge-api",
-		"_postman_id": "e25b7a54-408b-4095-1a01-7d5af7f88d10",
+		"_postman_id": "148e2c38-c3a9-1c26-0550-500891183dd8",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -38,29 +38,9 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"dev.employee\",\n  \"group\": \"edh_dev_employee\",\n  \"databaseType\": \"mysql\",\n  \"schema\": \"employees\",\n  \"jdbcUrl\": \"jdbc:mysql://localhost:3306/employees\",\n  \"username\": \"employee\",\n  \"objectType\": \"table\",\n  \"metadata\": {\n    \"SOURCE\": \"employee database\",\n    \"LOAD_FREQUENCY\": \"Daily\",\n    \"CONTACT\": \"developer@phdata.io\"\n  },\n  \"hdfsPath\": \"hdfs://ns/user/developer/db\",\n  \"hadoopUser\": \"ps_dev_employee\",\n  \"passwordFile\": \"hdfs://user/developer/.employee_db_password\",\n  \"destinationDatabase\": \"dev_employees\"\n}"
+											"raw": "{\n  \"name\": \"dev\",\n  \"group\": \"edh_employee_db\",\n  \"databaseType\": \"mysql\",\n  \"schema\": \"employees\",\n  \"jdbcUrl\": \"jdbc:mysql://localhost:3306/employees\",\n  \"username\": \"employee\",\n  \"objectType\": \"table\",\n  \"metadata\": {\n    \"SOURCE\": \"employee database\",\n    \"LOAD_FREQUENCY\": \"Daily\",\n    \"CONTACT\": \"developer@phdata.io\"\n  },\n  \"hdfsPath\": \"hdfs://ns/user/developer/db\",\n  \"hadoopUser\": \"ps_dev_employee\",\n  \"passwordFile\": \"hdfs://user/developer/.employee_db_password\",\n  \"destinationDatabase\": \"dev_employees\"\n}"
 										},
 										"description": "PUT json message returns Pipewrench configuration as json"
-									},
-									"response": []
-								},
-								{
-									"name": "Save Pipewrench Configuration - Json",
-									"request": {
-										"url": "localhost:9000/pipewrench/configuration",
-										"method": "POST",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json",
-												"description": ""
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"name\": \"dev.employee\",\n    \"connection_manager\": \"\",\n    \"sqoop_password_file\": \"hdfs://user/developer/.employee_db_password\",\n    \"source_database\": {\n        \"name\": \"employees\",\n        \"cmd\": \"mysql\"\n    },\n    \"staging_database\": {\n        \"path\": \"hdfs://ns/user/developer/db\",\n        \"name\": \"dev_employees\"\n    },\n    \"impala_cmd\": \"impala-shell\",\n    \"sqoop_job_name_suffix\": \"dev.employee\",\n    \"type_mapping\": \"type-mapping.yml\",\n    \"user_name\": \"employee\",\n    \"tables\": [\n        {\n            \"source\": {\n                \"name\": \"departments\"\n            },\n            \"primary_keys\": [\n                \"dept_no\"\n            ],\n            \"split_by_column\": \"dept_no\",\n            \"id\": \"departments\",\n            \"columns\": [\n                {\n                    \"name\": \"dept_no\",\n                    \"datatype\": \"CHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"dept_name\",\n                    \"datatype\": \"VARCHAR\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"dept_no\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"departments\"\n            }\n        },\n        {\n            \"source\": {\n                \"name\": \"dept_emp\"\n            },\n            \"primary_keys\": [\n                \"emp_no\",\n                \"dept_no\"\n            ],\n            \"split_by_column\": \"emp_no\",\n            \"id\": \"dept_emp\",\n            \"columns\": [\n                {\n                    \"name\": \"emp_no\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"dept_no\",\n                    \"datatype\": \"CHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"from_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"to_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"emp_no\",\n                    \"dept_no\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"dept_emp\"\n            }\n        },\n        {\n            \"source\": {\n                \"name\": \"dept_manager\"\n            },\n            \"primary_keys\": [\n                \"emp_no\",\n                \"dept_no\"\n            ],\n            \"split_by_column\": \"emp_no\",\n            \"id\": \"dept_manager\",\n            \"columns\": [\n                {\n                    \"name\": \"emp_no\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"dept_no\",\n                    \"datatype\": \"CHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"from_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"to_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"emp_no\",\n                    \"dept_no\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"dept_manager\"\n            }\n        },\n        {\n            \"source\": {\n                \"name\": \"employees\"\n            },\n            \"primary_keys\": [\n                \"emp_no\"\n            ],\n            \"split_by_column\": \"emp_no\",\n            \"id\": \"employees\",\n            \"columns\": [\n                {\n                    \"name\": \"emp_no\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"birth_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"first_name\",\n                    \"datatype\": \"VARCHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"last_name\",\n                    \"datatype\": \"VARCHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"gender\",\n                    \"datatype\": \"CHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"hire_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"emp_no\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"employees\"\n            }\n        },\n        {\n            \"source\": {\n                \"name\": \"salaries\"\n            },\n            \"primary_keys\": [\n                \"emp_no\",\n                \"from_date\"\n            ],\n            \"split_by_column\": \"emp_no\",\n            \"id\": \"salaries\",\n            \"columns\": [\n                {\n                    \"name\": \"emp_no\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"salary\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"from_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"to_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"emp_no\",\n                    \"from_date\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"salaries\"\n            }\n        },\n        {\n            \"source\": {\n                \"name\": \"titles\"\n            },\n            \"primary_keys\": [\n                \"emp_no\",\n                \"title\",\n                \"from_date\"\n            ],\n            \"split_by_column\": \"emp_no\",\n            \"id\": \"titles\",\n            \"columns\": [\n                {\n                    \"name\": \"emp_no\",\n                    \"datatype\": \"INTEGER\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"title\",\n                    \"datatype\": \"VARCHAR\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"from_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                },\n                {\n                    \"name\": \"to_date\",\n                    \"datatype\": \"DATE\",\n                    \"comment\": \"\"\n                }\n            ],\n            \"metadata\": {\n                \"SOURCE\": \"employee database\",\n                \"LOAD_FREQUENCY\": \"Daily\",\n                \"CONTACT\": \"developer@phdata.io\"\n            },\n            \"kudu\": {\n                \"hash_by\": [\n                    \"emp_no\",\n                    \"title\",\n                    \"from_date\"\n                ],\n                \"num_partitions\": 2\n            },\n            \"destination\": {\n                \"name\": \"titles\"\n            }\n        }\n    ],\n    \"group\": \"edh_dev_employee\"\n}"
-										},
-										"description": "Write Pipewrench configuration file"
 									},
 									"response": []
 								},
@@ -71,11 +51,6 @@
 										"method": "PUT",
 										"header": [
 											{
-												"key": "Content-Type",
-												"value": "application/text",
-												"description": ""
-											},
-											{
 												"key": "password",
 												"value": "ZW1wbG95ZWU=",
 												"description": ""
@@ -83,23 +58,9 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "name: dev.employee\ngroup: edh_dev_employee\ndatabaseType: mysql\nschema: employees\njdbcUrl: \"jdbc:mysql://localhost:3306/employees\"\nusername: employee\nobjectType: table\nmetadata:\n  SOURCE: employee database\n  LOAD_FREQUENCY: Daily\n  CONTACT: developer@phdata.io\nhdfsPath: \"hdfs://ns/user/developer/db\"\nhadoopUser: ps_dev_employee\npasswordFile: hdfs://user/developer/.employee_db_password\ndestinationDatabase: dev_employees"
+											"raw": "name: dev\ngroup: edh_employee_db\ndatabaseType: mysql\nschema: employees\njdbcUrl: \"jdbc:mysql://localhost:3306/employees\"\nusername: employee\nobjectType: table\nmetadata:\n  SOURCE: employee database\n  LOAD_FREQUENCY: Daily\n  CONTACT: developer@phdata.io\nhdfsPath: \"hdfs://ns/user/developer/db\"\nhadoopUser: ps_dev_employee\npasswordFile: hdfs://user/developer/.employee_db_password\ndestinationDatabase: dev_employees"
 										},
 										"description": "Builds Pipewrench configuration to yaml"
-									},
-									"response": []
-								},
-								{
-									"name": "Save Pipewrench Configuration - Yaml",
-									"request": {
-										"url": "localhost:9000/pipewrench/configuration",
-										"method": "POST",
-										"header": [],
-										"body": {
-											"mode": "raw",
-											"raw": "name: dev.employee\nconnection_manager: ''\nsqoop_password_file: hdfs://user/developer/.employee_db_password\nsource_database:\n  name: employees\n  cmd: mysql\nstaging_database:\n  path: hdfs://ns/user/developer/db\n  name: dev_employees\nimpala_cmd: impala-shell\nsqoop_job_name_suffix: dev.employee\ntype_mapping: type-mapping.yml\nuser_name: employee\ntables:\n- source:\n    name: departments\n  primary_keys:\n  - dept_no\n  split_by_column: dept_no\n  id: departments\n  columns:\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: dept_name\n    datatype: VARCHAR\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: departments\n- source:\n    name: dept_emp\n  primary_keys:\n  - emp_no\n  - dept_no\n  split_by_column: emp_no\n  id: dept_emp\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: dept_emp\n- source:\n    name: dept_manager\n  primary_keys:\n  - emp_no\n  - dept_no\n  split_by_column: emp_no\n  id: dept_manager\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: dept_manager\n- source:\n    name: employees\n  primary_keys:\n  - emp_no\n  split_by_column: emp_no\n  id: employees\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: birth_date\n    datatype: DATE\n    comment: ''\n  - name: first_name\n    datatype: VARCHAR\n    comment: ''\n  - name: last_name\n    datatype: VARCHAR\n    comment: ''\n  - name: gender\n    datatype: CHAR\n    comment: ''\n  - name: hire_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    num_partitions: 2\n  destination:\n    name: employees\n- source:\n    name: salaries\n  primary_keys:\n  - emp_no\n  - from_date\n  split_by_column: emp_no\n  id: salaries\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: salary\n    datatype: INTEGER\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - from_date\n    num_partitions: 2\n  destination:\n    name: salaries\n- source:\n    name: titles\n  primary_keys:\n  - emp_no\n  - title\n  - from_date\n  split_by_column: emp_no\n  id: titles\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: title\n    datatype: VARCHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - title\n    - from_date\n    num_partitions: 2\n  destination:\n    name: titles\ngroup: edh_dev_employee"
-										},
-										"description": "Write Pipewrench configuration with yaml support"
 									},
 									"response": []
 								}
@@ -124,7 +85,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"dev.employee\",\n  \"group\": \"edh_dev_employee\",\n  \"databaseType\": \"mysql\",\n  \"schema\": \"employees\",\n  \"jdbcUrl\": \"jdbc:mysql://localhost:3306/employees\",\n  \"username\": \"employee\",\n  \"objectType\": \"table\",\n  \"metadata\": {\n    \"SOURCE\": \"employee database\",\n    \"LOAD_FREQUENCY\": \"Daily\",\n    \"CONTACT\": \"developer@phdata.io\"\n  },\n  \"hdfsPath\": \"hdfs://ns/user/developer/db\",\n  \"hadoopUser\": \"ps_dev_employee\",\n  \"passwordFile\": \"hdfs://user/developer/.employee_db_password\",\n  \"destinationDatabase\": \"dev_employees\"\n}"
+											"raw": "{\n  \"name\": \"dev\",\n  \"group\": \"edh_employee_db\",\n  \"databaseType\": \"mysql\",\n  \"schema\": \"employees\",\n  \"jdbcUrl\": \"jdbc:mysql://localhost:3306/employees\",\n  \"username\": \"employee\",\n  \"objectType\": \"table\",\n  \"metadata\": {\n    \"SOURCE\": \"employee database\",\n    \"LOAD_FREQUENCY\": \"Daily\",\n    \"CONTACT\": \"developer@phdata.io\"\n  },\n  \"hdfsPath\": \"hdfs://ns/user/developer/db\",\n  \"hadoopUser\": \"ps_dev_employee\",\n  \"passwordFile\": \"hdfs://user/developer/.employee_db_password\",\n  \"destinationDatabase\": \"dev_employees\"\n}"
 										},
 										"description": "Writes Pipewrench environment file"
 									},
@@ -138,7 +99,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "name: dev.employee\ngroup: edh_dev_employee\ndatabaseType: mysql\nschema: employees\njdbcUrl: \"jdbc:mysql://localhost:3306/employees\"\nusername: employee\nobjectType: table\nmetadata:\n  SOURCE: employee database\n  LOAD_FREQUENCY: Daily\n  CONTACT: developer@phdata.io\nhdfsPath: \"hdfs://ns/user/developer/db\"\nhadoopUser: ps_dev_employee\npasswordFile: hdfs://user/developer/.employee_db_password\ndestinationDatabase: dev_employees"
+											"raw": "name: dev\ngroup: edh_employee_db\ndatabaseType: mysql\nschema: employees\njdbcUrl: \"jdbc:mysql://localhost:3306/employees\"\nusername: employee\nobjectType: table\nmetadata:\n  SOURCE: employee database\n  LOAD_FREQUENCY: Daily\n  CONTACT: developer@phdata.io\nhdfsPath: \"hdfs://ns/user/developer/db\"\nhadoopUser: ps_dev_employee\npasswordFile: hdfs://user/developer/.employee_db_password\ndestinationDatabase: dev_employees"
 										},
 										"description": "Writes Pipewrench environment with yaml support"
 									},
@@ -151,7 +112,7 @@
 							"name": "Execute Pipewrench Merge",
 							"request": {
 								"url": {
-									"raw": "localhost:9000/pipewrench/merge?group=edh_dev_employee&name=dev.employee&template=sqoop-parquet-hdfs-impala",
+									"raw": "localhost:9000/pipewrench/merge?template=sqoop-parquet-hdfs-impala",
 									"host": [
 										"localhost"
 									],
@@ -161,18 +122,6 @@
 										"merge"
 									],
 									"query": [
-										{
-											"key": "group",
-											"value": "edh_dev_employee",
-											"equals": true,
-											"description": ""
-										},
-										{
-											"key": "name",
-											"value": "dev.employee",
-											"equals": true,
-											"description": ""
-										},
 										{
 											"key": "template",
 											"value": "sqoop-parquet-hdfs-impala",
@@ -186,7 +135,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": ""
+									"raw": "name: dev\nconnection_manager: org.apache.sqoop.manager.MySQLManager\nsqoop_password_file: hdfs://user/developer/.employee_db_password\nsource_database:\n  name: employees\n  cmd: mysql\nstaging_database:\n  path: hdfs://ns/user/developer/db\n  name: dev_employees\nimpala_cmd: 'impala -i <hosts> -k -ssl -f '\nsqoop_job_name_suffix: dev\ntype_mapping: type-mapping.yml\nuser_name: employee\ntables:\n- source:\n    name: departments\n  primary_keys:\n  - dept_no\n  split_by_column: dept_no\n  id: departments\n  columns:\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: dept_name\n    datatype: VARCHAR\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: departments\n- source:\n    name: dept_emp\n  primary_keys:\n  - emp_no\n  - dept_no\n  split_by_column: emp_no\n  id: dept_emp\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: dept_emp\n- source:\n    name: dept_manager\n  primary_keys:\n  - emp_no\n  - dept_no\n  split_by_column: emp_no\n  id: dept_manager\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: dept_no\n    datatype: CHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - dept_no\n    num_partitions: 2\n  destination:\n    name: dept_manager\n- source:\n    name: employees\n  primary_keys:\n  - emp_no\n  split_by_column: emp_no\n  id: employees\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: birth_date\n    datatype: DATE\n    comment: ''\n  - name: first_name\n    datatype: VARCHAR\n    comment: ''\n  - name: last_name\n    datatype: VARCHAR\n    comment: ''\n  - name: gender\n    datatype: CHAR\n    comment: ''\n  - name: hire_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    num_partitions: 2\n  destination:\n    name: employees\n- source:\n    name: salaries\n  primary_keys:\n  - emp_no\n  - from_date\n  split_by_column: emp_no\n  id: salaries\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: salary\n    datatype: INTEGER\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - from_date\n    num_partitions: 2\n  destination:\n    name: salaries\n- source:\n    name: titles\n  primary_keys:\n  - emp_no\n  - title\n  - from_date\n  split_by_column: emp_no\n  id: titles\n  columns:\n  - name: emp_no\n    datatype: INTEGER\n    comment: ''\n  - name: title\n    datatype: VARCHAR\n    comment: ''\n  - name: from_date\n    datatype: DATE\n    comment: ''\n  - name: to_date\n    datatype: DATE\n    comment: ''\n  metadata:\n    LOAD_FREQUENCY: Daily\n    CONTACT: developer@phdata.io\n    SOURCE: employee database\n  kudu:\n    hash_by:\n    - emp_no\n    - title\n    - from_date\n    num_partitions: 2\n  destination:\n    name: titles\ngroup: edh_employee_db\n"
 								},
 								"description": "Executes pipewrenge-merge and writes the output folder to the configured directory."
 							},
@@ -198,76 +147,8 @@
 								"url": "localhost:9000/pipewrench",
 								"method": "GET",
 								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": ""
-								},
+								"body": {},
 								"description": "Hello world endpoint"
-							},
-							"response": []
-						}
-					],
-					"_postman_isSubFolder": true
-				},
-				{
-					"name": "pipeforge",
-					"description": "",
-					"item": [
-						{
-							"name": "HelloWorld",
-							"request": {
-								"url": "localhost:9000/pipeforge",
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": ""
-								},
-								"description": "Hello world endpoint"
-							},
-							"response": []
-						},
-						{
-							"name": "Pipewrench Merge - Json",
-							"request": {
-								"url": {
-									"raw": "localhost:9000/pipeforge?password=employee&template=sqoop-parquet-hdfs-impala",
-									"host": [
-										"localhost"
-									],
-									"port": "9000",
-									"path": [
-										"pipeforge"
-									],
-									"query": [
-										{
-											"key": "password",
-											"value": "employee",
-											"equals": true,
-											"description": ""
-										},
-										{
-											"key": "template",
-											"value": "sqoop-parquet-hdfs-impala",
-											"equals": true,
-											"description": ""
-										}
-									],
-									"variable": []
-								},
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"description": ""
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"name\": \"dev.employee\",\n  \"group\": \"edh_dev_employee\",\n  \"databaseType\": \"mysql\",\n  \"schema\": \"employees\",\n  \"jdbcUrl\": \"jdbc:mysql://localhost:3306/employees\",\n  \"username\": \"employee\",\n  \"objectType\": \"table\",\n  \"metadata\": {\n    \"SOURCE\": \"employee database\",\n    \"LOAD_FREQUENCY\": \"Daily\",\n    \"CONTACT\": \"developer@phdata.io\"\n  },\n  \"hdfsPath\": \"hdfs://ns/user/developer/db\",\n  \"hadoopUser\": \"ps_dev_employee\",\n  \"passwordFile\": \"hdfs://user/developer/.employee_db_password\",\n  \"destinationDatabase\": \"dev_employees\"\n}"
-								},
-								"description": "PUT json message returns Pipewrench configuration as json"
 							},
 							"response": []
 						}

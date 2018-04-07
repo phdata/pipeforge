@@ -44,9 +44,10 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [ $VIRTUAL_INSTALL == "true" ]; then
+if [ "$VIRTUAL_INSTALL" == "true" ]; then
 
     source $PIPEWRENCH_DIR/venv/bin/activate
+
 fi
 
 cd $OUTPUT_DIR

@@ -14,18 +14,6 @@ Pipewrench Environment and Configuration files are written to a [configured](../
 ## Endpoints
 [Postman File](src/main/resources/pipeforge-api.postman_collection.json)
 
-### /pipeforge
-#### GET
-Basic text response endpoint.
-#### POST
-Executes all steps in producing Pipewrench environment, configuration and output files.
-##### Parameters
-- password: Database password
-##### Output
-- A tables.yml is written to `{pipewrench.directory.output}/{group}/{name}/tables.yml`
-- A env.yml is written to `{pipewrench.directory.output}/{group}/{name}/env.yml`
-- A pipewrench output directory is written to `{pipewrench.directory.output}/{group}/{name}/output`
-
 ### /pipewrench
 #### GET
 Basic text response endpoint.
@@ -34,19 +22,13 @@ Basic text response endpoint.
 #### POST
 Executes `pipewrench-merge`
 ##### Parameters
-- group: Name of the group specified in the Pipeforge environment file
-- name: Ingest name specified in the Pipeforge environment file
 - template: Pipewrench template to be used when executing the merge
+##### Body
+A complete [Pipewrench Configuration](../pipewrench/src/main/scala/io/phdata/pipewrench/domain/Configuration.scala)
 ##### Output
 - A pipewrench output directory is written to `{pipewrench.directory.output}/{group}/{name}/output`
 
 ### /pipewrench/configuration
-#### POST
-Saves a Pipewrench Configuration file to the configured directory.
-##### Body
-Pipewrench Configuration json document with column comments populated.  Output of PUT /pipewrench/configuration.
-##### Output
-- A tables.yml is written to `{pipewrench.directory.output}/{group}/{name}/tables.yml`
 #### PUT
 Produces a [Pipewrench Configuration](../pipewrench/src/main/scala/io/phdata/pipewrench/domain/Configuration.scala) from database metadata.
 ##### Body

@@ -1,5 +1,5 @@
-name: dev.employee # Unique name for data ingestion
-group: edh_dev_employee # Associated AD group for ingestion
+name: dev # Unique name for data ingestion
+group: edh_employee_db # Associated AD group for ingestion
 databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or teradata
 schema: employees # Database schema to ingest
 jdbcUrl: "jdbc:mysql://localhost:3306/employees" # JDBC Url for connecting to database

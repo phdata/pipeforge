@@ -1,8 +1,8 @@
 package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import io.phdata.pipeforge.rest.domain.{ Environment, JsonSupport, Status }
-import io.phdata.pipeforge.rest.service.PipewrenchService
+import io.phdata.pipeforge.rest.domain.Environment
+import io.phdata.pipewrench.Pipewrench
 import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{ Matchers, WordSpec }
@@ -14,9 +14,9 @@ trait ControllerSpec
     with MockFactory
     with JsonSupport {
 
-  lazy val mockPipewrenchService = mock[PipewrenchService]
+  lazy val pipewrenchService = mock[Pipewrench]
 
-  val mockConfiguration = Configuration(
+  val configuration = Configuration(
     name = "test.name",
     group = "test.group",
     user_name = "test.user_name",
@@ -50,7 +50,7 @@ trait ControllerSpec
     )
   )
 
-  val mockEnvironment = Environment(
+  val environment = Environment(
     name = "test.name",
     group = "test.group",
     databaseType = "mysql", //must match enum value
@@ -64,6 +64,4 @@ trait ControllerSpec
     passwordFile = "test.passwordFile",
     destinationDatabase = "test.destinationDatabase"
   )
-
-  val mockStatus = Status("SUCCESS", "SUCCESS")
 }

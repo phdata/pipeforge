@@ -16,10 +16,10 @@
 
 package io.phdata.pipeforge.rest.controller
 
-import akka.http.scaladsl.model.ContentTypes
+import akka.http.scaladsl.model.{ ContentTypes, StatusCodes }
 import akka.http.scaladsl.server.Directives._
 import io.phdata.pipeforge.rest.domain.Environment
-import io.phdata.pipeforge.rest.service.PipewrenchService
+import io.phdata.pipewrench.Pipewrench
 import io.phdata.pipewrench.domain.Configuration
 import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import net.jcazevedo.moultingyaml._
@@ -27,9 +27,9 @@ import net.jcazevedo.moultingyaml._
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
-class PipewrenchController(pipewrenchService: PipewrenchService)(
+class PipewrenchController(pipewrenchService: Pipewrench)(
     implicit executionContext: ExecutionContext)
-    extends Controller
+    extends Handlers
     with PipewrenchYamlSupport {
 
   val basePath = "pipewrench"
@@ -44,32 +44,31 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
         } ~
         path(basePath / "merge") {
           post {
-            parameter('group, 'name, 'template) { (group, name, template) =>
-              complete(pipewrenchService.executePipewrenchMerge(group, name, template))
+            parameter('template) { template =>
+              request.entity.contentType match {
+                case ContentTypes.`application/json` =>
+                  entity(as[Configuration]) { configuration =>
+                    merge(template, configuration)
+                    complete(StatusCodes.Created)
+                  }
+                case _ =>
+                  entity(as[String]) { yamlStr =>
+                    val configuration = yamlStr.parseYaml.convertTo[Configuration]
+                    merge(template, configuration)
+                    complete(StatusCodes.Created)
+                  }
+              }
             }
           }
         } ~
         path(basePath / "configuration") {
-          post {
-            request.entity.contentType match {
-              case ContentTypes.`application/json` =>
-                entity(as[Configuration]) { configuration =>
-                  complete(pipewrenchService.saveConfiguration(configuration))
-                }
-              case _ =>
-                entity(as[String]) { yamlStr =>
-                  val configuration = yamlStr.parseYaml.convertTo[Configuration]
-                  complete(pipewrenchService.saveConfiguration(configuration))
-                }
-            }
-          } ~
           put {
             decodePassword(request) match {
               case Success(password) =>
                 request.entity.contentType match {
                   case ContentTypes.`application/json` =>
                     entity(as[Environment]) { environment =>
-                      pipewrenchService.getConfiguration(password, environment) match {
+                      buildConfiguration(password, environment) match {
                         case Success(configuration) => complete(configuration)
                         case Failure(ex)            => ex
                       }
@@ -77,9 +76,11 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
                   case _ =>
                     entity(as[String]) { yamlStr =>
                       val environment = yamlStr.parseYaml.convertTo[Environment]
-                      pipewrenchService.getConfiguration(password, environment) match {
-                        case Success(configuration) => complete(configuration.toYaml.prettyPrint)
-                        case Failure(ex)            => ex
+                      buildConfiguration(password, environment) match {
+                        case Success(configuration) =>
+                          val yaml = configuration.toYaml.prettyPrint
+                          complete(yaml)
+                        case Failure(ex) => ex
                       }
                     }
                 }
@@ -92,16 +93,32 @@ class PipewrenchController(pipewrenchService: PipewrenchService)(
             request.entity.contentType match {
               case ContentTypes.`application/json` =>
                 entity(as[Environment]) { environment =>
-                  complete(pipewrenchService.saveEnvironment(environment))
+                  saveEnvironment(environment)
+                  complete(StatusCodes.Created)
                 }
               case _ =>
                 entity(as[String]) { yamlStr =>
-                  complete(
-                    pipewrenchService.saveEnvironment(yamlStr.parseYaml.convertTo[Environment]))
+                  val environment = yamlStr.parseYaml.convertTo[Environment]
+                  saveEnvironment(environment)
+                  complete(StatusCodes.Created)
                 }
             }
           }
         }
       }
     }
+
+  def merge(template: String, configuration: Configuration) = {
+    pipewrenchService.saveConfiguration(configuration)
+    pipewrenchService.executePipewrenchMergeApi(template, configuration)
+  }
+
+  def buildConfiguration(password: String, environment: Environment) =
+    pipewrenchService.buildConfiguration(databaseConf = environment.toDatabaseConfig(password),
+                                         tableMetadata = environment.metadata,
+                                         environment = environment.toPipewrenchEnvironment)
+
+  def saveEnvironment(environment: Environment) =
+    pipewrenchService.saveEnvironment(environment.toPipewrenchEnvironment)
+
 }

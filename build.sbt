@@ -37,8 +37,7 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
     "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
-    Resolver.sonatypeRepo("releases"),
-    Resolver.sonatypeRepo("snapshots")
+    Resolver.sonatypeRepo("releases")
   )
 )
 
@@ -60,58 +59,45 @@ lazy val assemblySettings = Seq(
 lazy val dependencies =
   new {
 
-    // Common
-    val logbackVersion      = "1.2.3"
-    val scalaLoggingVersion = "3.7.2"
-
-    // JDBC
-    val mysqlVersion     = "6.0.6"
-    val oracleVersion    = "11.2.0.3"
-    val microsoftVersion = "6.2.2.jre8"
-
-    // CLI
-    val scallopVersion   = "3.1.1"
-    val scalaYamlVersion = "0.4.0"
-
-    // Rest
-    val akkaHttpVersion = "10.0.11"
-    val akkaCorsVersion = "0.2.2"
-
-    // Testing
-    val scalaTestVersion     = "3.0.4"
+    val akkaHttpVersion      = "10.0.11"
     val dockerTestKitVersion = "0.9.5"
 
-    // Common depends
-    val logback      = "ch.qos.logback"             % "logback-classic" % logbackVersion
-    val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging"  % scalaLoggingVersion
+    val logback           = "ch.qos.logback"             % "logback-classic"       % "1.2.3"
+    val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"        % "3.7.2"
+    val typesafeConf      = "com.typesafe"               % "config"                % "1.3.0"
+    val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
+    val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
+    val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
+    val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
+    val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
+    val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
+    val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
+    val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.2.2"
 
-    // JDBC depends
-    val mysql     = "mysql"                   % "mysql-connector-java" % mysqlVersion
-    val oracle    = "oracle"                  % "ojdbc6"               % oracleVersion
-    val microsoft = "com.microsoft.sqlserver" % "mssql-jdbc"           % microsoftVersion
-
-    // CLI parsing depends
-    val scallop   = "org.rogach"    %% "scallop"      % scallopVersion
-    val scalaYaml = "net.jcazevedo" %% "moultingyaml" % scalaYamlVersion
-
-    // Rest depends
-    val akkaHttp          = "com.typesafe.akka" %% "akka-http"            % akkaHttpVersion
-    val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion
-    val akkaCors          = "ch.megard"         %% "akka-http-cors"       % akkaCorsVersion
-
-    // Testing depends
-    val scalaTest         = "org.scalatest"     %% "scalatest"                   % scalaTestVersion     % Test
+    val scalaTest         = "org.scalatest"     %% "scalatest"                   % "3.0.4"              % Test
     val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
     val spotifyDockerTest = "com.whisk"         %% "docker-testkit-impl-spotify" % dockerTestKitVersion % Test
     val akkaHttpTestKit   = "com.typesafe.akka" %% "akka-http-testkit"           % akkaHttpVersion      % Test
     val mockito           = "org.mockito"       % "mockito-core"                 % "2.+"                % Test
     val scalaMock         = "org.scalamock"     %% "scalamock-scalatest-support" % "3.6.0"              % Test
 
-    val common   = Seq(logback, scalaLogging, scalaTest, mockito, scalaMock)
-    val database = Seq(mysql, oracle, microsoft)
-    val cli      = Seq(scallop, scalaYaml)
-    val rest     = Seq(akkaHttp, akkaHttpSprayJson, akkaCors, akkaHttpTestKit)
-    val all      = common ++ database ++ cli ++ Seq(scalaDockerTest, spotifyDockerTest)
+    val common = Seq(scallop,
+                     scalaYaml,
+                     logback,
+                     scalaLogging,
+                     typesafeConf,
+                     scalaTest,
+                     mockito,
+                     scalaMock,
+                     scalaDockerTest,
+                     spotifyDockerTest)
+    val jdbc = Seq(mysql, oracle, mssql)
+    val rest = Seq(akkaHttp,
+                   akkaHttpSprayJson,
+                   akkaCors,
+                   akkaHttpTestKit,
+                   scalaDockerTest,
+                   spotifyDockerTest)
   }
 
 lazy val settings = commonSettings ++ scalafmtSettings
@@ -128,7 +114,7 @@ lazy val pipeforge = project
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
-    libraryDependencies ++= dependencies.all
+    libraryDependencies ++= dependencies.common
   )
   .dependsOn(
     `jdbc-metadata`,
@@ -146,7 +132,7 @@ lazy val `jdbc-metadata` = project
     name := "jdbc-metadata",
     version := "0.2-SNAPSHOT",
     settings,
-    libraryDependencies ++= dependencies.common ++ dependencies.database
+    libraryDependencies ++= dependencies.common ++ dependencies.jdbc
   )
 
 lazy val pipewrench = project
@@ -154,9 +140,7 @@ lazy val pipewrench = project
     name := "pipewrench",
     version := "0.2-SNAPSHOT",
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(
-      dependencies.scalaYaml
-    )
+    libraryDependencies ++= dependencies.common
   )
   .dependsOn(
     `jdbc-metadata`

@@ -23,7 +23,7 @@ import scala.io.Source
 
 trait YamlSupport extends DefaultYamlProtocol {
 
-  implicit def environmentYamlFormat = yamlFormat13(Environment)
+  implicit def environmentYamlFormat = yamlFormat13(Environment.apply)
 
   /**
    * Parses input file into Environment object

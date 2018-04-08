@@ -28,6 +28,10 @@ import io.phdata.pipewrench.PipewrenchService
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+/**
+ * Rest Module
+ * Configures necessary dependencies for Akka Http endpoints
+ */
 trait RestModule {
 
   def pipewrenchService: PipewrenchService = new PipewrenchService()
@@ -36,9 +40,9 @@ trait RestModule {
 
   implicit val actorSystem: ActorSystem   = ActorSystem()
   implicit val materializer: Materializer = ActorMaterializer()
-  implicit val executionContext: ExecutionContext =
-    actorSystem.dispatchers.lookup("actor-dispatcher")
+  implicit val executionContext: ExecutionContext = ExecutionContext.global
 
+  // Verify Pipewrench installation
   pipewrenchService.install()
   val pipewrenchController = new PipewrenchController(pipewrenchService)
 

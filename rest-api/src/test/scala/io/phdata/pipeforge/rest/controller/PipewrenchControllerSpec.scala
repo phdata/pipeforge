@@ -7,6 +7,9 @@ import io.phdata.pipewrench.domain.{ Configuration, YamlSupport => PipewrenchYam
 
 import scala.util.Success
 
+/**
+  * Pipewrench endpoint tests
+  */
 class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with PipewrenchYamlSupport {
 
   import spray.json._

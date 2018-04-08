@@ -12,7 +12,7 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 ### Configuration Files
 
 #### Source Environment `environment.yml`
-[Yaml Example](src/main/resources/env.yml)
+[Yaml Example](src/main/resources/environment.yml)
 ```yaml
 name: dev.employee # Unique name for data ingestion
 group: edh_dev_employee # Associated AD group for ingestion

@@ -39,10 +39,12 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
 
     cliArgs.subcommand match {
       case Some(cliArgs.restApi) =>
+        logger.info("Starting Pipeforge rest api")
         new RestApp(pipewrenchService).start(cliArgs.restApi.port())
       case Some(cliArgs.configuration) =>
         // Parse file into Environment
         val environment = parseFile(cliArgs.configuration.environment())
+        logger.info(s"Building Pipewrench configuration from environment: $environment")
         // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
@@ -59,7 +61,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
             logger.error("Failed to build Pipewrench Config", ex)
         }
       case Some(cliArgs.merge) =>
-        val pipewrenchService = new PipewrenchService()
+        logger.info("Running Pipewrench merge from command line")
         pipewrenchService.install()
         pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
                                                  cliArgs.merge.template())

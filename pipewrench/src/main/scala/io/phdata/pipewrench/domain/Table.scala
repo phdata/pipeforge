@@ -16,6 +16,17 @@
 
 package io.phdata.pipewrench.domain
 
+/**
+ * Table object
+ * @param id
+ * @param source
+ * @param destination
+ * @param split_by_column
+ * @param primary_keys
+ * @param kudu
+ * @param columns
+ * @param metadata
+ */
 case class Table(id: String,
                  source: Map[String, String],
                  destination: Map[String, String],

@@ -159,7 +159,7 @@ class PipewrenchService()
     import sys.process._
     val cmd =
       s"$pipewrenchIngestConf/generate-scripts.sh -e environment.yml -c tables.yml -p $pipewrenchDir -t $pipewrenchTemplatesDir/$template -d $directory -v $virtualInstall"
-    logger.debug(s"Executing cmd: $cmd")
+    logger.info(s"Executing cmd: $cmd")
     cmd !!
   }
 
@@ -170,7 +170,7 @@ class PipewrenchService()
     import sys.process._
     val cmd =
       s"$installScriptDir/requirements.sh -i $installScriptDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir -v $virtualInstall"
-    logger.debug(s"Checking installation requirements, executing: $cmd")
+    logger.info(s"Checking installation requirements, executing: $cmd")
     cmd !!
   }
 

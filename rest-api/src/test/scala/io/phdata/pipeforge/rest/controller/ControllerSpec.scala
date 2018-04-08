@@ -7,6 +7,9 @@ import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{ Matchers, WordSpec }
 
+/**
+  * Controller test spec
+  */
 trait ControllerSpec
     extends WordSpec
     with Matchers
@@ -14,8 +17,10 @@ trait ControllerSpec
     with MockFactory
     with JsonSupport {
 
+  // Mocked Pipewrench service
   lazy val pipewrenchService = mock[Pipewrench]
 
+  // Test configuration
   val configuration = Configuration(
     name = "test.name",
     group = "test.group",
@@ -50,6 +55,7 @@ trait ControllerSpec
     )
   )
 
+  // Test environment
   val environment = Environment(
     name = "test.name",
     group = "test.group",

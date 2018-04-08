@@ -19,6 +19,23 @@ package io.phdata.pipeforge.rest.domain
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
 import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
 
+/**
+ * Pipeforge main configuration object
+ *
+ * @param name Ingest name, must be unique to a given group
+ * @param group A grouping of common ingest configs
+ * @param databaseType String corresponding to a configured database type
+ * @param schema Database schema
+ * @param jdbcUrl Jdbc Url
+ * @param username Database Username
+ * @param objectType table or view
+ * @param metadata Metadata map to be added to Hadoop tblproperties
+ * @param hdfsPath HDFS storage path
+ * @param hadoopUser Hadoop user
+ * @param passwordFile Location of database password file
+ * @param destinationDatabase Hadoop database
+ * @param tables A whitelist of table names
+ */
 case class Environment(name: String,
                        group: String,
                        databaseType: String,
@@ -33,6 +50,9 @@ case class Environment(name: String,
                        destinationDatabase: String,
                        tables: Option[List[String]] = None)
 
+/**
+ * Helper object converting Pipeforge configs into Pipewrench ones
+ */
 object Environment {
   implicit class EnvironmentPipewrench(environment: Environment) {
     def toPipewrenchEnvironment: PipewrenchEnvironment =

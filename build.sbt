@@ -72,6 +72,7 @@ lazy val dependencies =
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
     val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
     val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
+    val akkaCluster       = "com.typesafe.akka"          %% "akka-cluster"         % "2.4.19"
     val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.2.2"
 
     val scalaTest         = "org.scalatest"     %% "scalatest"                   % "3.0.4"              % Test
@@ -94,6 +95,7 @@ lazy val dependencies =
     val jdbc = Seq(mysql, oracle, mssql)
     val rest = Seq(akkaHttp,
                    akkaHttpSprayJson,
+                   akkaCluster,
                    akkaCors,
                    akkaHttpTestKit,
                    scalaDockerTest,

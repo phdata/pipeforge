@@ -27,21 +27,42 @@ import net.jcazevedo.moultingyaml._
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
+/**
+ * Pipewrench controller exposes rest endpoints to allow users to:
+ *
+ * Build Pipewrench [[Configuration]] from JDBC meta data.
+ * Convert Pipeforge [[Environment]] into Pipewrench enviornment and write the file to configured directory.
+ * Run the Pipewrench Merge command to produce output scripts based one specified template.
+ *
+ * All endpoints accept and produce either JSON or Yaml documents.
+ *
+ * @param pipewrenchService Pipewrench Service
+ * @param executionContext Application execution context
+ */
 class PipewrenchController(pipewrenchService: Pipewrench)(
     implicit executionContext: ExecutionContext)
     extends Handlers
     with PipewrenchYamlSupport {
 
+  // base path for all uris
   val basePath = "pipewrench"
 
   val route =
     handleExceptions(exceptionHandler) {
       extractRequest { request =>
+        logger.debug(s"""
+             |Method: ${request.method.value}
+             |URI: ${request.uri}
+             |Content Type: ${request.entity.contentType}
+             |Headers: ${request.headers}
+           """.stripMargin)
+        // Basic GET endpoint displays a text message
         path(basePath) {
           get {
             complete(s"Pipewrench Rest Api")
           }
         } ~
+        // POST http://<host>:<port>/pipewrench/merge?template=<template name>
         path(basePath / "merge") {
           post {
             parameter('template) { template =>
@@ -61,6 +82,7 @@ class PipewrenchController(pipewrenchService: Pipewrench)(
             }
           }
         } ~
+        // PUT http://<host>:<port>/pipewrench/configuration
         path(basePath / "configuration") {
           put {
             decodePassword(request) match {
@@ -88,6 +110,7 @@ class PipewrenchController(pipewrenchService: Pipewrench)(
             }
           }
         } ~
+        // POST http://<host>:<port>/pipwrench/environment
         path(basePath / "environment") {
           post {
             request.entity.contentType match {
@@ -108,16 +131,34 @@ class PipewrenchController(pipewrenchService: Pipewrench)(
       }
     }
 
+  /**
+   * Executes the Pipewrench merge command.  First saves the configuration to the configured directory then runs pipewrench.
+   *
+   * @param template A string containing only the template name
+   * @param configuration The Pipewrench [[Configuration]]
+   */
   def merge(template: String, configuration: Configuration) = {
     pipewrenchService.saveConfiguration(configuration)
     pipewrenchService.executePipewrenchMergeApi(template, configuration)
   }
 
+  /**
+   * Builds Pipewrench [[Configuration]] from JDBC metadata.
+   *
+   * @param password A base64 encoded string
+   * @param environment The Pipeforge [[Environment]]
+   * @return [[Configuration]]
+   */
   def buildConfiguration(password: String, environment: Environment) =
     pipewrenchService.buildConfiguration(databaseConf = environment.toDatabaseConfig(password),
                                          tableMetadata = environment.metadata,
                                          environment = environment.toPipewrenchEnvironment)
 
+  /**
+   * Writes a Pipewrench Environment to the configured directory
+   *
+   * @param environment The Pipeforge [[Environment]]
+   */
   def saveEnvironment(environment: Environment) =
     pipewrenchService.saveEnvironment(environment.toPipewrenchEnvironment)
 

@@ -27,20 +27,52 @@ import io.phdata.pipewrench.domain._
 
 import scala.util.{ Failure, Success, Try }
 
+/**
+ * Pipewrench service
+ */
 trait Pipewrench {
 
+  /**
+   * Builds a Pipewrench [[Configuration]] from JDBC metadata
+   *
+   * @param databaseConf Database configuration
+   * @param tableMetadata Metadata map used in Hive tblproperties
+   * @param environment Pipewrench [[Environment]]
+   * @return A Configuration
+   */
   def buildConfiguration(databaseConf: DatabaseConf,
                          tableMetadata: Map[String, String],
                          environment: Environment): Try[Configuration]
 
+  /**
+   * Writes a Pipewrench [[Configuration]] to configured directory
+   * @param configuration Pipewrench [[Configuration]]
+   */
   def saveConfiguration(configuration: Configuration): Unit
 
+  /**
+   * Writes a Pipewrench [[Environment]] to configured directory
+   * @param environment Pipewrench [[Environment]]
+   */
   def saveEnvironment(environment: Environment): Unit
 
+  /**
+   * Executes Pipewrench merge command
+   * @param template Template name
+   * @param configuration Pipewrench [[Configuration]]
+   */
   def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit
 
+  /**
+   * Executes Pipewrench merge command
+   * @param directory Ingest configuration directory
+   * @param template Template name
+   */
   def executePipewrenchMerge(directory: String, template: String): Unit
 
+  /**
+   * Verifies necessary dependencies are installed
+   */
   def install(): Unit
 
 }
@@ -51,6 +83,14 @@ class PipewrenchService()
     with YamlSupport
     with LazyLogging {
 
+  /**
+   * Builds a Pipewrench [[Configuration]] from JDBC metadata
+   *
+   * @param databaseConf Database configuration
+   * @param tableMetadata Metadata map used in Hive tblproperties
+   * @param environment Pipewrench [[Environment]]
+   * @return A Configuration
+   */
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],
                                   environment: Environment): Try[Configuration] =
@@ -80,42 +120,71 @@ class PipewrenchService()
         Failure(ex)
     }
 
+  /**
+   * Writes a Pipewrench [[Configuration]] to configured directory
+   * @param configuration Pipewrench [[Configuration]]
+   */
   override def saveConfiguration(configuration: Configuration): Unit = {
     val dir = projectDir(configuration.group, configuration.name)
+    logger.info(s"Saving configuration: $configuration, directory: $dir")
     checkIfDirExists(dir)
     configuration.writeYamlFile(s"$dir/tables.yml")
   }
 
+  /**
+   * Writes a Pipewrench [[Environment]] to configured directory
+   * @param environment Pipewrench [[Environment]]
+   */
   override def saveEnvironment(environment: Environment): Unit = {
     val dir = projectDir(environment.group, environment.name)
+    logger.info(s"Saving environment: $environment, directory: $dir")
     checkIfDirExists(dir)
     environment.writeYamlFile(s"$dir/environment.yml")
   }
 
+  /**
+   * Executes Pipewrench merge command
+   * @param template Template name
+   * @param configuration Pipewrench [[Configuration]]
+   */
   override def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit =
     executePipewrenchMerge(projectDir(configuration.group, configuration.name), template)
 
+  /**
+   * Executes Pipewrench merge command
+   * @param directory Ingest configuration directory
+   * @param template Template name
+   */
   override def executePipewrenchMerge(directory: String, template: String): Unit = {
     import sys.process._
     val cmd =
       s"$pipewrenchIngestConf/generate-scripts.sh -e environment.yml -c tables.yml -p $pipewrenchDir -t $pipewrenchTemplatesDir/$template -d $directory -v $virtualInstall"
-    logger.debug(s"Executing: $cmd")
+    logger.debug(s"Executing cmd: $cmd")
     cmd !!
   }
 
+  /**
+   * Verifies necessary dependencies are installed
+   */
   override def install(): Unit = {
     import sys.process._
     val cmd =
       s"$installScriptDir/requirements.sh -i $installScriptDir -u $pipewrenchGitUrl -c $pipewrenchIngestConf -p $pipewrenchDir -v $virtualInstall"
-    logger.info(s"Checking installation requirements, executing: $cmd")
+    logger.debug(s"Checking installation requirements, executing: $cmd")
     cmd !!
   }
 
+  /**
+   * Builds Pipewrench [[Table]] object from Jdbc metadata [[DbTable]]
+   * @param tables Database tables [[DbTable]]
+   * @param tableMetadata A map of expanded tblproperties
+   * @return A list of [[Table]]s
+   */
   private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
       .sortBy(_.name)
       .map { table =>
-        logger.debug(s"Table definition: $table")
+        logger.trace(s"Table definition: $table")
         val allColumns = table.primaryKeys ++ table.columns
         val pks        = table.primaryKeys.toList.sortBy(_.index).map(_.name)
         Table(
@@ -130,12 +199,17 @@ class PipewrenchService()
         )
       }
 
+  /**
+   * Builds Pipewrench [[Column]] objects from Jdbc metadata [[DbColumn]]
+   * @param columns Database columns [[DbColumn]]
+   * @return A list of [[Column]]s
+   */
   private def buildColumns(columns: Set[DbColumn]): Seq[Column] =
     columns.toList
       .sortBy(_.index)
       .map { column =>
         val dataType = DataType.mapDataType(column)
-        logger.debug(s"Column definition: $column, mapped dataType: $dataType")
+        logger.trace(s"Column definition: $column, mapped dataType: $dataType")
         val columnYaml = Column(column.name, dataType)
         if (dataType == DataType.DECIMAL.toString) {
           logger.trace("Found decimal value: {}", column)
@@ -145,6 +219,11 @@ class PipewrenchService()
         }
       }
 
+  /**
+   * Trys to determine which column from the table definition is the best split by column.
+   * @param table Database [[DbTable]]
+   * @return
+   */
   def getSplitByColumn(table: DbTable) = {
     val jdbc_numerics = List(JDBCType.BIGINT,
                              JDBCType.REAL,
@@ -162,7 +241,18 @@ class PipewrenchService()
       .name
   }
 
+  /**
+   * Gets the unique directory path for a project group and name
+   * @param group project group
+   * @param name ingest name
+   * @return path
+   */
   private def projectDir(group: String, name: String) = s"$pipewrenchIngestConf/$group/$name"
+
+  /**
+   * Creates a directory in the path if it does not exist
+   * @param path Directory path
+   */
   private def checkIfDirExists(path: String): Unit = {
     logger.debug(s"Checking for directory: $path")
     val dir = new File(path)

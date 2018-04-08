@@ -16,6 +16,14 @@
 
 package io.phdata.pipewrench.domain
 
+/**
+ * Column object
+ * @param name
+ * @param datatype
+ * @param comment
+ * @param scale
+ * @param precision
+ */
 case class Column(name: String,
                   datatype: String,
                   comment: String = "",

@@ -21,6 +21,9 @@ import net.jcazevedo.moultingyaml._
 
 import scala.io.Source
 
+/**
+ * Provides Yaml support
+ */
 trait YamlSupport extends DefaultYamlProtocol {
 
   implicit def environmentYamlFormat = yamlFormat13(Environment.apply)

@@ -59,7 +59,7 @@ lazy val assemblySettings = Seq(
 lazy val dependencies =
   new {
 
-    val akkaHttpVersion      = "10.0.11"
+    val akkaHttpVersion      = "10.1.1"
     val dockerTestKitVersion = "0.9.5"
 
     val logback           = "ch.qos.logback"             % "logback-classic"       % "1.2.3"
@@ -70,10 +70,10 @@ lazy val dependencies =
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
     val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
+    val akka              = "com.typesafe.akka"          %% "akka-stream"          % "2.5.11"
     val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
     val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
-    val akkaCluster       = "com.typesafe.akka"          %% "akka-cluster"         % "2.4.19"
-    val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.2.2"
+    val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.3.0"
 
     val scalaTest         = "org.scalatest"     %% "scalatest"                   % "3.0.4"              % Test
     val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
@@ -93,9 +93,9 @@ lazy val dependencies =
                      scalaDockerTest,
                      spotifyDockerTest)
     val jdbc = Seq(mysql, oracle, mssql)
-    val rest = Seq(akkaHttp,
+    val rest = Seq(akka,
+                   akkaHttp,
                    akkaHttpSprayJson,
-                   akkaCluster,
                    akkaCors,
                    akkaHttpTestKit,
                    scalaDockerTest,

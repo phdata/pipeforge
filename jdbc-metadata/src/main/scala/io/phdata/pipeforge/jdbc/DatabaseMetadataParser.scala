@@ -274,7 +274,7 @@ object DatabaseMetadataParser extends LazyLogging {
                 s"${configuration.databaseType} has not been configured"))
         }
       case Failure(e) =>
-        logger.error(s"Failed connecting to: $configuration", e)
+        logger.error(s"Failed connecting to: ${configuration.copy(password = "******")}", e)
         throw e
     }
   }

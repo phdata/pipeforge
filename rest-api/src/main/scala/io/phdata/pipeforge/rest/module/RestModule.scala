@@ -38,9 +38,9 @@ trait RestModule {
 
   val config: Config = ConfigFactory.load()
 
-  implicit val actorSystem: ActorSystem   = ActorSystem()
-  implicit val materializer: Materializer = ActorMaterializer()
-  implicit val executionContext: ExecutionContext = ExecutionContext.global
+  implicit val actorSystem: ActorSystem           = ActorSystem("rest-api")
+  implicit val materializer: Materializer         = ActorMaterializer()
+  implicit val executionContext: ExecutionContext = actorSystem.dispatcher
 
   // Verify Pipewrench installation
   pipewrenchService.install()

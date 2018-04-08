@@ -8,8 +8,8 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{ Matchers, WordSpec }
 
 /**
-  * Controller test spec
-  */
+ * Controller test spec
+ */
 trait ControllerSpec
     extends WordSpec
     with Matchers

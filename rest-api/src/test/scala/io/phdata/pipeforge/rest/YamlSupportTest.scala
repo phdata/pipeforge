@@ -6,8 +6,8 @@ import io.phdata.pipeforge.rest.domain.{ Environment, YamlSupport }
 import org.scalatest.FunSuite
 
 /**
-  * Tests yaml converting
-  */
+ * Tests yaml converting
+ */
 class YamlSupportTest extends FunSuite with YamlSupport {
 
   val testFilePath = "rest-api/src/test/resources/db.yml"

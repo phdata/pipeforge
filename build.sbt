@@ -112,7 +112,7 @@ lazy val pipeforge = project
   .settings(Defaults.itSettings: _*)
   .settings(
     name := "pipeforge",
-    version := "0.3-SNAPSHOT",
+    version := "0.4",
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
@@ -132,7 +132,7 @@ lazy val pipeforge = project
 lazy val `jdbc-metadata` = project
   .settings(
     name := "jdbc-metadata",
-    version := "0.3-SNAPSHOT",
+    version := "0.4",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.jdbc
   )
@@ -140,7 +140,7 @@ lazy val `jdbc-metadata` = project
 lazy val pipewrench = project
   .settings(
     name := "pipewrench",
-    version := "0.3-SNAPSHOT",
+    version := "0.4",
     settings,
     libraryDependencies ++= dependencies.common
   )
@@ -151,7 +151,7 @@ lazy val pipewrench = project
 lazy val `rest-api` = project
   .settings(
     name := "rest-api",
-    version := "0.3-SNAPSHOT",
+    version := "0.4",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.rest
   )

@@ -3,16 +3,42 @@
 ## Purpose
 Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 
-## CLI Arguments
-- `-e, --environment`: Path to source environment.yml file
-- `-p, --password`: Source database user password
-- `-o, --output-path`: Output path where the tables.yml file should be written
-- `-c, --skip-whitelist-check`: Optional. Pipeforge checks table names by default to make sure they exist in the source schema. Use the -c option to skip the check.
+
+## CLI Args
+
+- `configuration`: Builds Pipewrench `tables.yml` and `environment.yml` files from JDBC Metadata.  Writes the results to the configured output directory
+    - `-e, --environment`: Path to source environment.yml file
+    - `-p, --password`: Source database user password
+    - `-o, --output-path`: Output path where the tables.yml file should be written
+    - `-c, --skip-whitelist-check`: Optional. Pipeforge checks table names by default to make sure they exist in the source schema. Use the -c option to skip the check.
+- `merge`: Executes Pipewrench merge and stores the Pipewrench output to the specified directory.
+    - `-d, --directory`: Pipewrench configuration directory containing both the Pipewrench `environment.yml` and `tables.yml`
+    - `-t, --template`: Pipewrench template name
+- `rest-api`: Starts a process for interacting with Pipeforge via REST and Yaml documents
+    - `-p, --port`: Port to expose the pipewrench endpoints on
 
 ### Configuration Files
 
+#### Application Configuration `application.conf`
+[application.conf Example](src/main/resources/application.conf)
+
+```
+pipewrench { 
+  virtualInstall = true # Determines whether Pipeforge should clone Pipewrench and setup virtual environment for Python.  Set to false if Pipewrench is already installed.
+  git {
+    url = "https://github.com/Cargill/pipewrench" # Git location of the pipewrench version to install.
+  }
+  directory {
+    install = "src/main/resources" # Directory path containing installtion scripts `requirements.sh` and `generate-scripts.sh`.  Set to `conf` when using a packaged deployment.
+    pipewrench = "pipewrench_conf" # Pipewrench installation location.
+    templates = "../../../pipewrench/templates" # Fully qualified path location of Pipewrench templates directory.
+    ingest = "pipewrench_conf/ingest_conf" # Path where to write pipewrench configuration files and pipewrench output scripts
+  }
+}
+```
+
 #### Source Environment `environment.yml`
-[Yaml Example](src/main/resources/env.yml)
+[Yaml Example](src/main/resources/environment.yml)
 ```yaml
 name: dev.employee # Unique name for data ingestion
 group: edh_dev_employee # Associated AD group for ingestion
@@ -71,7 +97,7 @@ $INSTALL_LOCATION/bin/pipeforge pipewrench \
 ### Pipeforge Rest Api
 ```
 $INSTALL_LOCATION/bin/pipeforge rest-api \
-  -p <api port>
+  -p <api port> -Dconfig.file=<path to application.conf>
 ```
 [Documentation](rest-api/README.md)
 

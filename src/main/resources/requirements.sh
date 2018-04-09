@@ -6,8 +6,8 @@ do
 key="$1"
 
 case $key in
-    -d|--base-dir)
-    BASE_DIR="$2"
+    -i|--install-dir)
+    INSTALL_DIR="$2"
     shift # past argument
     shift # past value
     ;;
@@ -39,19 +39,14 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [ ! -d "$BASE_DIR" ]; then
-    echo "Base directory: $BASE_DIR does not exist creating..."
-    mkdir -p $BASE_DIR
-fi
-
 if [ ! -d "$INGEST_DIR" ]; then
     echo "Ingest configuration directory: $INGEST_DIR does not exist creating..."
     mkdir -p $INGEST_DIR
 fi
 
-if [ ! -f "$BASE_DIR/generate-scripts.sh" ]; then
-    echo "conf/generate-scripts.sh not found in $BASE_DIR copying from pipeforge source..."
-    cp conf/generate-scripts.sh $BASE_DIR
+if [ ! -f "$INGEST_DIR/generate-scripts.sh" ]; then
+    echo "$INSTALL_DIR/generate-scripts.sh not found in $INGEST_DIR copying from pipeforge source..."
+    cp $INSTALL_DIR/generate-scripts.sh $INGEST_DIR
 fi
 
 if [ $VIRTUAL_INSTALL == "true" ]; then

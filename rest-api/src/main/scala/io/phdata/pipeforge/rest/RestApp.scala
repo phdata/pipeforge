@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.domain
+package io.phdata.pipeforge.rest
 
-import net.jcazevedo.moultingyaml.DefaultYamlProtocol
-import net.jcazevedo.moultingyaml._
+import io.phdata.pipeforge.rest.module.RestModule
+import io.phdata.pipewrench.PipewrenchService
 
-import scala.io.Source
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 /**
- * Provides Yaml support
+ * RestApp an application exposing Pipeforge Rest endpoints
+ *
+ * @param service PipewrenchService
  */
-trait YamlSupport extends DefaultYamlProtocol {
+class RestApp(service: PipewrenchService) extends RestModule {
 
-  implicit def environmentYamlFormat = yamlFormat13(Environment.apply)
+  override def pipewrenchService: PipewrenchService = service
 
   /**
-   * Parses input file into Environment object
-   * @param path
-   * @return
+   * Starts the rest api
+   * @param port Port to run the webservice on
    */
-  def parseFile(path: String): Environment = {
-    val file = Source.fromFile(path).getLines.mkString("\n")
-    file.parseYaml.convertTo[Environment]
-  }
+  def start(port: Int) = Await.ready(restApi.start(port), Duration.Inf)
+
 }

@@ -27,4 +27,15 @@ object DatabaseType extends Enumeration {
   val HANA     = Value("hana")
   val TERADATA = Value("teradata")
 
+  def getConnectionManager(dbType: DatabaseType.Value): String =
+    dbType match {
+      case MYSQL    => "org.apache.sqoop.manager.MySQLManager"
+      case ORACLE   => "org.apache.sqoop.manager.OracleManager"
+      case MSSQL    => "org.apache.sqoop.manager.SQLServerManager"
+      case HANA     => "org.apache.sqoop.manager.GenericjdbcManager"
+      case TERADATA => "org.apache.sqoop.manager.GenericjdbcManager"
+      case _ =>
+        throw new Exception(
+          s"Database type: $dbType does not have valid Connection Manager mapping")
+    }
 }

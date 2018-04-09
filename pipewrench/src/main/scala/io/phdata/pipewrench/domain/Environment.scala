@@ -16,6 +16,16 @@
 
 package io.phdata.pipewrench.domain
 
+/**
+ * Environment object
+ * @param name
+ * @param group
+ * @param connection_string
+ * @param hdfs_basedir
+ * @param hadoop_user
+ * @param password_file
+ * @param destination_database
+ */
 case class Environment(name: String,
                        group: String,
                        connection_string: String,

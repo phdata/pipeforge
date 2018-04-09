@@ -16,6 +16,20 @@
 
 package io.phdata.pipewrench.domain
 
+/**
+ * Configuration object
+ * @param name
+ * @param group
+ * @param user_name
+ * @param type_mapping
+ * @param sqoop_password_file
+ * @param connection_manager
+ * @param sqoop_job_name_suffix
+ * @param source_database
+ * @param staging_database
+ * @param impala_cmd
+ * @param tables
+ */
 case class Configuration(name: String,
                          group: String,
                          user_name: String = "{{ source_db_user_name }}",

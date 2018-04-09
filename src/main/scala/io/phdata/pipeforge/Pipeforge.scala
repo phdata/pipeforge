@@ -17,10 +17,9 @@
 package io.phdata.pipeforge
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.RestApi
+import io.phdata.pipeforge.rest.RestApp
 import io.phdata.pipeforge.rest.domain.YamlSupport
-import io.phdata.pipeforge.rest.domain.Implicits._
-import io.phdata.pipewrench.PipewrenchImpl
+import io.phdata.pipewrench.PipewrenchService
 import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import org.rogach.scallop.{ ScallopConf, Subcommand }
 
@@ -36,33 +35,36 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
     // Parse command line arguments
     val cliArgs = new CliArgsParser(args)
 
+    val pipewrenchService = new PipewrenchService()
+
     cliArgs.subcommand match {
       case Some(cliArgs.restApi) =>
         logger.info("Starting Pipeforge rest api")
-        RestApi.start(cliArgs.restApi.port())
-      case Some(cliArgs.pipewrench) =>
-        logger.info("pipewrench called")
+        new RestApp(pipewrenchService).start(cliArgs.restApi.port())
+      case Some(cliArgs.configuration) =>
         // Parse file into Environment
-        val environment = parseFile(cliArgs.pipewrench.databaseConf())
+        val environment = parseFile(cliArgs.configuration.environment())
+        logger.info(s"Building Pipewrench configuration from environment: $environment")
         // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
-        logger.debug(s"Parsed environment: $environment")
-        logger.debug(s"Pipewrench environment: $pipewrenchEnv")
-
         // Build Pipewrench Configuration
-        PipewrenchImpl.buildConfiguration(
-          environment.toDatabaseConfig(cliArgs.pipewrench.databasePassword()),
+        pipewrenchService.buildConfiguration(
+          environment.toDatabaseConfig(cliArgs.configuration.databasePassword()),
           environment.metadata,
           pipewrenchEnv) match {
           case Success(configuration) =>
-            val path = cliArgs.pipewrench.outputPath()
-            logger.debug(s"Pipewrench Configuraiton: $configuration")
-            configuration.writeYamlFile(s"$path/tables.yml")
-            pipewrenchEnv.writeYamlFile(s"$path/env.yml")
+            val path = cliArgs.configuration.outputPath()
+            pipewrenchService.saveEnvironment(pipewrenchEnv)
+            pipewrenchService.saveConfiguration(configuration)
           case Failure(ex) =>
             logger.error("Failed to build Pipewrench Config", ex)
         }
+      case Some(cliArgs.merge) =>
+        logger.info("Running Pipewrench merge from command line")
+        pipewrenchService.install()
+        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
+                                                 cliArgs.merge.template())
       case _ => // parsing failure
     }
   }
@@ -92,9 +94,10 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
     }
     addSubcommand(restApi)
 
-    val pipewrench = new Subcommand("pipewrench") {
+    val configuration = new Subcommand("configuration") {
       descr("Build pipewrench table.yml and environment.yml")
-      val databaseConf =
+
+      val environment =
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
         opt[String]("password", 'p', descr = "database password", required = true)
@@ -106,7 +109,15 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         default = Some(true))
 
     }
-    addSubcommand(pipewrench)
+    addSubcommand(configuration)
+
+    val merge = new Subcommand("merge") {
+      descr("Build pipewrench table.yml and environment.yml")
+      val directory =
+        opt[String]("directory", 'd', descr = "Pipewrench configuration directory", required = true)
+      val template = opt[String]("template", 't', descr = "Pipewrench template", required = true)
+    }
+    addSubcommand(merge)
 
     verify()
 

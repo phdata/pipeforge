@@ -2,10 +2,12 @@ package io.phdata.pipeforge.rest
 
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
 import io.phdata.pipeforge.rest.domain.{ Environment, YamlSupport }
-import io.phdata.pipeforge.rest.domain.Implicits._
 
 import org.scalatest.FunSuite
 
+/**
+ * Tests yaml converting
+ */
 class YamlSupportTest extends FunSuite with YamlSupport {
 
   val testFilePath = "rest-api/src/test/resources/db.yml"

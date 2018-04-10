@@ -6,5 +6,4 @@ pipeline:
     commands:
       - sbt test
       - sbt assembly
-      - sbt publish
       - sbt rpm:publish

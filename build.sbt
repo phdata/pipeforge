@@ -21,6 +21,7 @@ scalaVersion in ThisBuild := "2.12.3"
 
 lazy val artifactoryApiKey = sys.env("ARTIFACTORY_API_KEY")
 lazy val artifactoryUser   = sys.env("ARTIFACTORY_USER")
+lazy val appVersion = "0.5"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -124,7 +125,7 @@ lazy val pipeforge = project
   .settings(Defaults.itSettings: _*)
   .settings(
     name := "pipeforge",
-    version := "0.4",
+    version := appVersion,
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
@@ -154,7 +155,7 @@ lazy val `jdbc-metadata` = project
 lazy val pipewrench = project
   .settings(
     name := "pipewrench",
-    version := "0.4",
+    version := appVersion,
     settings,
     libraryDependencies ++= dependencies.common
   )
@@ -165,7 +166,7 @@ lazy val pipewrench = project
 lazy val `rest-api` = project
   .settings(
     name := "rest-api",
-    version := "0.4",
+    version := appVersion,
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.rest
   )

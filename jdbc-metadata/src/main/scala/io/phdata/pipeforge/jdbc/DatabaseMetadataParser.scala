@@ -67,7 +67,8 @@ trait DatabaseMetadataParser extends LazyLogging {
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    newStatement.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
+    val stmt = connection.createStatement()
+    val result = stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
       case Some(metaData) =>
         val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         Success(mapMetaDataToColumn(metaData, rsMetadata))
@@ -75,6 +76,8 @@ trait DatabaseMetadataParser extends LazyLogging {
         Failure(
           new Exception(s"$table does not contain any records, cannot provide column definitions"))
     }
+    stmt.close()
+    result
   }
 
   /**
@@ -203,19 +206,16 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return A Set of tables or views
    */
   def listTables(objectType: ObjectType.Value, schema: String): List[String] = {
-    val stmt: Statement = newStatement
+    val stmt: Statement = connection.createStatement()
     val query =
       if (objectType == ObjectType.TABLE) listTablesStatement(schema)
       else listViewsStatement(schema)
     logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    newStatement.executeQuery(query).toStream.map(_.getString(1)).toList
+    val result = stmt.executeQuery(query).toStream.map(_.getString(1)).toList
+    stmt.close()
+    result
   }
 
-  /**
-   * Prepares a statement
-   * @return
-   */
-  def newStatement = connection.createStatement()
 }
 
 /**

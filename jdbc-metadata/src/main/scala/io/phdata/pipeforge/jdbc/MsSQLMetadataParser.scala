@@ -66,7 +66,8 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        """.stripMargin
 
     logger.debug(s"Gathering primary keys for $schema.$table, query: {}", query)
-    val pks = newStatement
+    val stmt = connection.createStatement()
+    val pks = stmt
       .executeQuery(query)
       .toStream
       .map { record =>
@@ -74,6 +75,8 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
       }
       .toMap
 
-    mapPrimaryKeyToColumn(pks, columns)
+    val result = mapPrimaryKeyToColumn(pks, columns)
+    stmt.close()
+    result
   }
 }

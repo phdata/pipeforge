@@ -21,7 +21,7 @@ scalaVersion in ThisBuild := "2.12.3"
 
 lazy val artifactoryApiKey = sys.env("ARTIFACTORY_API_KEY")
 lazy val artifactoryUser   = sys.env("ARTIFACTORY_USER")
-lazy val appVersion        = "0.5"
+lazy val appVersion        = "0.6"
 
 lazy val compilerOptions = Seq(
   "-unchecked",

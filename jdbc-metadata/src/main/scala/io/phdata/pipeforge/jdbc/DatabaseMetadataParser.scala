@@ -113,7 +113,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     tableWhiteList match {
       case Some(whiteList) =>
         logger.debug("Checking user supplied white list against source system: {}", whiteList)
-        if (whiteList.toSet(sourceTables)) {
+        if (whiteList.toSet.subsetOf(sourceTables.toSet)) {
           Success(whiteList)
         } else {
           Failure(new Exception(

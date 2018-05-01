@@ -28,11 +28,11 @@ trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
 
   import net.jcazevedo.moultingyaml._
 
-  implicit def pipewrenchEnvironmentFormat   = yamlFormat7(Environment)
+  implicit def pipewrenchEnvironmentFormat   = yamlFormat10(Environment)
   implicit def pipewrenchColumnFormat        = yamlFormat5(Column)
   implicit def pipewrenchKuduFormat          = yamlFormat2(Kudu)
   implicit def pipewrenchTableFormat         = yamlFormat8(Table)
-  implicit def pipewrenchConfigurationFormat = yamlFormat11(Configuration)
+  implicit def pipewrenchConfigurationFormat = yamlFormat12(Configuration)
 
   /**
    * Implicit class for writing yaml files

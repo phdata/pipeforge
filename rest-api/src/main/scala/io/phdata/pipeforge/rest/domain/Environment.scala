@@ -33,7 +33,6 @@ import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
  * @param hdfsPath HDFS storage path
  * @param hadoopUser Hadoop user
  * @param passwordFile Location of database password file
- * @param destinationDatabase Hadoop database
  * @param tables A whitelist of table names
  */
 case class Environment(name: String,
@@ -47,8 +46,11 @@ case class Environment(name: String,
                        hdfsPath: String,
                        hadoopUser: String,
                        passwordFile: String,
-                       destinationDatabase: String,
+                       stagingDatabase: Database,
+                       rawDatabase: Database,
                        tables: Option[List[String]] = None)
+
+case class Database(name: String, path: String)
 
 /**
  * Helper object converting Pipeforge configs into Pipewrench ones
@@ -63,7 +65,10 @@ object Environment {
         hdfs_basedir = environment.hdfsPath,
         hadoop_user = environment.hadoopUser,
         password_file = environment.passwordFile,
-        destination_database = environment.destinationDatabase
+        staging_database_name = environment.stagingDatabase.name,
+        staging_database_path = environment.stagingDatabase.path,
+        raw_database_name = environment.rawDatabase.name,
+        raw_database_path = environment.rawDatabase.path
       )
   }
 

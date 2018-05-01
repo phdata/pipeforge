@@ -105,11 +105,14 @@ class PipewrenchService()
             sqoop_password_file = environment.password_file,
             connection_manager = DatabaseType.getConnectionManager(databaseConf.databaseType),
             sqoop_job_name_suffix = environment.name,
-            source_database =
-              Map("name" -> databaseConf.schema, "cmd" -> databaseConf.databaseType.toString),
-            staging_database = Map(
-              "path" -> environment.hdfs_basedir,
-              "name" -> environment.destination_database
+            source_database = Map("name"              -> databaseConf.schema,
+                                  "cmd"               -> databaseConf.databaseType.toString,
+                                  "connection_string" -> environment.connection_string),
+            staging_database = Map("path"             -> environment.staging_database_path,
+                                   "name"             -> environment.staging_database_name),
+            raw_database = Map(
+              "path" -> environment.raw_database_path,
+              "name" -> environment.raw_database_name
             ),
             impala_cmd = impalaCmd,
             tables = buildTables(tables, tableMetadata)

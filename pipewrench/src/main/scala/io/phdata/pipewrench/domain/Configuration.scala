@@ -39,5 +39,6 @@ case class Configuration(name: String,
                          sqoop_job_name_suffix: String,
                          source_database: Map[String, String],
                          staging_database: Map[String, String],
+                         raw_database: Map[String, String],
                          impala_cmd: String,
                          tables: Seq[Table])

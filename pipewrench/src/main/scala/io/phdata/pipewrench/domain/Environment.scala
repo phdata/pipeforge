@@ -24,7 +24,6 @@ package io.phdata.pipewrench.domain
  * @param hdfs_basedir
  * @param hadoop_user
  * @param password_file
- * @param destination_database
  */
 case class Environment(name: String,
                        group: String,
@@ -32,4 +31,7 @@ case class Environment(name: String,
                        hdfs_basedir: String,
                        hadoop_user: String,
                        password_file: String,
-                       destination_database: String)
+                       staging_database_path: String,
+                       staging_database_name: String,
+                       raw_database_path: String,
+                       raw_database_name: String)

@@ -54,7 +54,6 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
           environment.metadata,
           pipewrenchEnv) match {
           case Success(configuration) =>
-            val path = cliArgs.configuration.outputPath()
             pipewrenchService.saveEnvironment(pipewrenchEnv)
             pipewrenchService.saveConfiguration(configuration)
           case Failure(ex) =>
@@ -101,7 +100,6 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
         opt[String]("password", 'p', descr = "database password", required = true)
-      val outputPath = opt[String]("output-path", 'o', descr = "output path", required = true)
       val skipcheckWhitelist = opt[Boolean](
         "override-whitelist-check",
         'c',

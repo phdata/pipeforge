@@ -21,14 +21,12 @@ package io.phdata.pipewrench.domain
  * @param name
  * @param group
  * @param connection_string
- * @param hdfs_basedir
  * @param hadoop_user
  * @param password_file
  */
 case class Environment(name: String,
                        group: String,
                        connection_string: String,
-                       hdfs_basedir: String,
                        hadoop_user: String,
                        password_file: String,
                        staging_database_path: String,

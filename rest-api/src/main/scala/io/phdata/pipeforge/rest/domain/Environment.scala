@@ -30,7 +30,6 @@ import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
  * @param username Database Username
  * @param objectType table or view
  * @param metadata Metadata map to be added to Hadoop tblproperties
- * @param hdfsPath HDFS storage path
  * @param hadoopUser Hadoop user
  * @param passwordFile Location of database password file
  * @param tables A whitelist of table names

@@ -1,8 +1,7 @@
 package io.phdata.pipeforge.rest
 
 import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipeforge.rest.domain.{ Environment, YamlSupport }
-
+import io.phdata.pipeforge.rest.domain.{ Database, Environment, YamlSupport }
 import org.scalatest.FunSuite
 
 /**
@@ -23,10 +22,10 @@ class YamlSupportTest extends FunSuite with YamlSupport {
       "test_username",
       "table",
       Map("key1" -> "val1"),
-      "test_hdfs_path",
       "test_hadoop_user",
       "test_password_file",
-      "test_destination_database",
+      Database("test_name", "test_path"),
+      Database("test_name", "test_path"),
       Some(List("test_table1", "test_table2"))
     )
     assertResult(expected)(environment)

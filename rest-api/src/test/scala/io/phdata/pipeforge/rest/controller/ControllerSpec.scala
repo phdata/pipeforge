@@ -1,7 +1,7 @@
 package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import io.phdata.pipeforge.rest.domain.Environment
+import io.phdata.pipeforge.rest.domain.{ Database, Environment }
 import io.phdata.pipewrench.Pipewrench
 import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import org.scalamock.scalatest.MockFactory
@@ -31,6 +31,7 @@ trait ControllerSpec
     sqoop_job_name_suffix = "test.sqoop_job_name_suffix",
     source_database = Map("name"  -> "test.source_database.name"),
     staging_database = Map("name" -> "test.staging_database.name"),
+    raw_database = Map("name"     -> "test.raw_database.name"),
     impala_cmd = "test.impal_cmd",
     tables = Seq(
       Table(
@@ -65,9 +66,9 @@ trait ControllerSpec
     username = "test.username",
     objectType = "table", // must match enum value
     metadata = Map("source" -> "test.table.metadata.source"),
-    hdfsPath = "test.hdfsPath",
     hadoopUser = "test.hadoopUser",
     passwordFile = "test.passwordFile",
-    destinationDatabase = "test.destinationDatabase"
+    stagingDatabase = Database("test.stagingDatabase.name", "test.stagingDatabase.name"),
+    rawDatabase = Database("test.rawDatabase.name", "test.rawDatabase.name")
   )
 }

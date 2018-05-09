@@ -58,8 +58,20 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def listViewsStatement(schema: String): String
 
+  /**
+    * Database specific query that returns the table comment
+    * @param schema Database schema
+    * @param table Database table
+    * @return The table comment query
+    */
   def tableCommentQuery(schema: String, table: String): String
 
+  /**
+    * Database specific query that returns the column comments for the specified schema and table
+    * @param schema Database schema
+    * @param table Database table
+    * @return The column comment query
+    */
   def columnCommentsQuery(schema: String, table: String): String
 
   /**
@@ -141,29 +153,69 @@ trait DatabaseMetadataParser extends LazyLogging {
       case Success(allColumns) =>
         val pks     = primaryKeys(schema, table, allColumns)
         val columns = allColumns.diff(pks)
-        Some(Table(table, getTableComment(schema, table), pks, columns))
+        Some(
+          Table(table,
+            getTableComment(schema, table),
+            pks,
+            columns)
+        )
       case Failure(ex) =>
         logger.warn(s"Failed to get metadata for table:$table", ex)
         None
     }
 
+  /**
+    * Gets table comments from the source system, user will need access to the sys or information_schema schemas
+    * to read table comments.  A blank comment will be used if access has not been granted.
+    *
+    * @param schema Database schema
+    * @param table Table schema
+    * @return The table comment
+    */
   def getTableComment(schema: String, table: String): String = {
     val stmt = connection.createStatement()
-    val result =
-      stmt.executeQuery(tableCommentQuery(schema, table)).toStream.map(rs => rs.getString(1)).head
-    stmt.close()
-    result
+    val query = tableCommentQuery(schema, table)
+    logger.debug("Getting table comments, query: {}", query)
+    try {
+        stmt.executeQuery(query).toStream.map(rs => rs.getString(1)).head
+    } catch {
+      case e: Exception =>
+        logger.warn("Failed to query source for table comment, defaulting to empty comment", e)
+        // If the query fails here it is most likely due to the user not having permissions
+        // Instead of failing we need to capture the exception and return an empty comment
+        ""
+    } finally {
+      stmt.close()
+    }
   }
 
+  /**
+    * Gets column comments from the source system, user will need access to the sys or information_schema schemas
+    * to read column comments.  A blank comment will be used if access has not been granted.
+    *
+    * @param schema Database schema
+    * @param table Database table
+    * @return A list containing (column, comment)
+    */
   def getColumnComments(schema: String, table: String): List[(String, String)] = {
     val stmt = connection.createStatement()
-    val result = stmt
-      .executeQuery(columnCommentsQuery(schema, table))
-      .toStream
-      .map(rs => (rs.getString(1), rs.getString(2)))
-      .toList
-    stmt.close()
-    result
+    val query = columnCommentsQuery(schema, table)
+    logger.debug("Getting column comments, query: {}", query)
+    try {
+      stmt
+        .executeQuery(query)
+        .toStream
+        .map(rs => (rs.getString(1), rs.getString(2)))
+        .toList
+    } catch {
+      case e: Exception =>
+        logger.warn("Failed to query source for column comments, defaulting to empty comments", e)
+        // If the query fails here it is most likely due to the user not having permissions
+        // Instead of failing we need to capture the exception and return an empty list of comments
+        List[(String, String)]()
+    } finally {
+      stmt.close()
+    }
   }
 
   /**
@@ -203,8 +255,8 @@ trait DatabaseMetadataParser extends LazyLogging {
       }
 
       Column(
-        metaData.getColumnName(i),
-        comment, // TODO: get column comment from db
+        columnName,
+        comment,
         JDBCType.valueOf(rsMetadata.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,

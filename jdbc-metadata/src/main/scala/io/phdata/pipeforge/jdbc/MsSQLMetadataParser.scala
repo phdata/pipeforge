@@ -33,7 +33,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     s"""
        |SELECT TABLE_NAME
        |FROM information_schema.tables
-       |WHERE TABLE_CATALOG = '$schema' AND TABLE_TYPE = 'BASE TABLE'
+       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_TYPE = 'BASE TABLE'
      """.stripMargin
 
   override def singleRecordQuery(schema: String, table: String) =
@@ -46,7 +46,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     s"""
        |SELECT TABLE_NAME
        |FROM information_schema.views
-       |WHERE TABLE_CATALOG = '$schema'
+       |WHERE TABLE_SCHEMA = '$schema'
      """.stripMargin
 
   /**
@@ -62,7 +62,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
          |SELECT COLUMN_NAME, ORDINAL_POSITION
          |FROM INFORMATION_SCHEMA.key_column_usage c
          |  JOIN INFORMATION_SCHEMA.table_constraints t ON c.TABLE_NAME = t.TABLE_NAME
-         |WHERE t.TABLE_CATALOG = '$schema' AND t.TABLE_NAME = '$table' AND CONSTRAINT_TYPE = 'PRIMARY KEY';
+         |WHERE t.TABLE_SCHEMA = '$schema' AND t.TABLE_NAME = '$table' AND CONSTRAINT_TYPE = 'PRIMARY KEY';
        """.stripMargin
 
     logger.debug(s"Gathering primary keys for $schema.$table, query: {}", query)
@@ -82,7 +82,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
 
   override def tableCommentQuery(schema: String, table: String): String =
     s"""
-       |SELECT ep.value AS TABLE_COMMENT
+       |SELECT CAST(ep.value AS NVARCHAR(255)) AS TABLE_COMMENT
        |FROM sys.objects objects
        |   INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
        |   CROSS APPLY fn_listextendedproperty(default,
@@ -96,7 +96,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
 
   override def columnCommentsQuery(schema: String, table: String): String =
     s"""
-       |SELECT columns.name AS COLUMN_NAME, ep.value AS COLUMN_COMMENT
+       |SELECT columns.name AS COLUMN_NAME, CAST(ep.value AS NVARCHAR(255)) AS COLUMN_COMMENT
        |FROM sys.objects objects
        |  INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
        |  INNER JOIN sys.columns columns ON objects.object_id = columns.object_id

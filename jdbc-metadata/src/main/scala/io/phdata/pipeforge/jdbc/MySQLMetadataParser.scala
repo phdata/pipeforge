@@ -46,4 +46,18 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM INFORMATION_SCHEMA.VIEWS
        |WHERE TABLE_SCHEMA = '$schema'
      """.stripMargin
+
+  override def tableCommentQuery(schema: String, table: String): String =
+    s"""
+       |SELECT TABLE_COMMENT
+       |FROM INFORMATION_SCHEMA.TABLES
+       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_NAME = '$table'
+     """.stripMargin
+
+  override def columnCommentsQuery(schema: String, table: String): String =
+    s"""
+       |SELECT COLUMN_NAME, COLUMN_COMMENT
+       |FROM INFORMATION_SCHEMA_COLUMNS
+       |WHERE TABLE_SCHEMA = $schema' AND TABLE_NAME = '$table'
+     """.stripMargin
 }

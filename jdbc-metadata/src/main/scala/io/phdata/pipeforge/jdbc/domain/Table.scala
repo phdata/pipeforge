@@ -19,7 +19,8 @@ package io.phdata.pipeforge.jdbc.domain
 /**
  * Table definition
  * @param name Table name
+ * @param comment Table comment
  * @param primaryKeys A set of primary key definitions
  * @param columns A set of column definitions
  */
-case class Table(name: String, primaryKeys: Set[Column], columns: Set[Column])
+case class Table(name: String, comment: String, primaryKeys: Set[Column], columns: Set[Column])

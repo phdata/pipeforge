@@ -21,6 +21,7 @@ import java.sql.SQLType
 /**
  * Column Definition
  * @param name Column name
+ * @param comment Column comment
  * @param dataType SQL data type
  * @param nullable Is column nullable
  * @param index Column position
@@ -28,6 +29,7 @@ import java.sql.SQLType
  * @param scale Data type scale
  */
 case class Column(name: String,
+                  comment: String,
                   dataType: SQLType,
                   nullable: Boolean,
                   index: Int,

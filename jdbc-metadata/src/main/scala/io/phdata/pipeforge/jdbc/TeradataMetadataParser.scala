@@ -41,4 +41,18 @@ class TeradataMetadataParser(_connection: Connection) extends DatabaseMetadataPa
     s"""
        |SELECT tablename FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
      """.stripMargin
+
+  override def tableCommentQuery(schema: String, table: String): String =
+    s"""
+       |SELECT comment AS TABLE_COMMENT
+       |FROM DBC.Tables
+       |WHERE DatabaseName = '$schema' AND TableName = '$table'
+     """.stripMargin
+
+  override def columnCommentsQuery(schema: String, table: String): String =
+    s"""
+       |SELECT ColumnName AS COLUMN_NAME, Comment AS COLUMN_COMMENT
+       |FROM DBC.Columns
+       |WHERE DatabaseName = '$schema' AND TableName = '$table'
+     """.stripMargin
 }

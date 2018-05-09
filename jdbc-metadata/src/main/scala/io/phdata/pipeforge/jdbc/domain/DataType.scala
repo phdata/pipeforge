@@ -27,11 +27,14 @@ object DataType extends Enumeration {
 
   def mapDataType(column: Column): String =
     column match {
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s > 0            => DataType.DECIMAL.toString
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19 => DataType.DECIMAL.toString
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10 => DataType.BIG_INT.toString
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5  => DataType.INTEGER.toString
-      case Column(_, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3  => DataType.SHORT.toString
-      case _                                                           => column.dataType.toString
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s > 0 => DataType.DECIMAL.toString
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19 =>
+        DataType.DECIMAL.toString
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10 =>
+        DataType.BIG_INT.toString
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5 =>
+        DataType.INTEGER.toString
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3 => DataType.SHORT.toString
+      case _                                                             => column.dataType.toString
     }
 }

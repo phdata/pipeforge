@@ -84,8 +84,9 @@ class OracleMetadataParserTest extends DockerTestRunner {
         assert(definitions.size == 1)
         val expected = Set(
           Table(TABLE,
-            Set(Column("REGION_ID", JDBCType.NUMERIC, false, 1, 0, -127)),
-            Set(Column("REGION_NAME", JDBCType.VARCHAR, true, 2, 25, 0)
+            "",
+            Set(Column("REGION_ID","", JDBCType.NUMERIC, false, 1, 0, -127)),
+            Set(Column("REGION_NAME","", JDBCType.VARCHAR, true, 2, 25, 0)
             )))
         assertResult(expected)(definitions)
       case Failure(ex) =>
@@ -100,24 +101,25 @@ class OracleMetadataParserTest extends DockerTestRunner {
         val expected = Set(
           Table(
             VIEW,
+            "",
             Set(),
             Set(
-              Column("JOB_ID", JDBCType.VARCHAR, false, 2, 10, 0),
-              Column("SALARY", JDBCType.NUMERIC, true, 9, 8, 2),
-              Column("EMPLOYEE_ID", JDBCType.NUMERIC, false, 1, 6, 0),
-              Column("LOCATION_ID", JDBCType.NUMERIC, true, 5, 4, 0),
-              Column("REGION_NAME", JDBCType.VARCHAR, true, 16, 25, 0),
-              Column("COUNTRY_NAME", JDBCType.VARCHAR, true, 15, 40, 0),
-              Column("COUNTRY_ID", JDBCType.CHAR, true, 6, 2, 0),
-              Column("DEPARTMENT_NAME", JDBCType.VARCHAR, false, 11, 30, 0),
-              Column("STATE_PROVINCE", JDBCType.VARCHAR, true, 14, 25, 0),
-              Column("DEPARTMENT_ID", JDBCType.NUMERIC, true, 4, 4, 0),
-              Column("COMMISSION_PCT", JDBCType.NUMERIC, true, 10, 2, 2),
-              Column("JOB_TITLE", JDBCType.VARCHAR, false, 12, 35, 0),
-              Column("FIRST_NAME", JDBCType.VARCHAR, true, 7, 20, 0),
-              Column("CITY", JDBCType.VARCHAR, false, 13, 30, 0),
-              Column("MANAGER_ID", JDBCType.NUMERIC, true, 3, 6, 0),
-              Column("LAST_NAME", JDBCType.VARCHAR, false, 8, 25, 0)
+              Column("JOB_ID","", JDBCType.VARCHAR, false, 2, 10, 0),
+              Column("SALARY","", JDBCType.NUMERIC, true, 9, 8, 2),
+              Column("EMPLOYEE_ID","", JDBCType.NUMERIC, false, 1, 6, 0),
+              Column("LOCATION_ID","", JDBCType.NUMERIC, true, 5, 4, 0),
+              Column("REGION_NAME","", JDBCType.VARCHAR, true, 16, 25, 0),
+              Column("COUNTRY_NAME","", JDBCType.VARCHAR, true, 15, 40, 0),
+              Column("COUNTRY_ID","", JDBCType.CHAR, true, 6, 2, 0),
+              Column("DEPARTMENT_NAME","", JDBCType.VARCHAR, false, 11, 30, 0),
+              Column("STATE_PROVINCE","", JDBCType.VARCHAR, true, 14, 25, 0),
+              Column("DEPARTMENT_ID","", JDBCType.NUMERIC, true, 4, 4, 0),
+              Column("COMMISSION_PCT","", JDBCType.NUMERIC, true, 10, 2, 2),
+              Column("JOB_TITLE","", JDBCType.VARCHAR, false, 12, 35, 0),
+              Column("FIRST_NAME","", JDBCType.VARCHAR, true, 7, 20, 0),
+              Column("CITY","", JDBCType.VARCHAR, false, 13, 30, 0),
+              Column("MANAGER_ID","", JDBCType.NUMERIC, true, 3, 6, 0),
+              Column("LAST_NAME","", JDBCType.VARCHAR, false, 8, 25, 0)
             )
           ))
         assertResult(expected)(definitions)

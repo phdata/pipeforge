@@ -98,12 +98,13 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
         assert(definitions.size == 1)
         val expected = Set(
           Table(TABLE,
+            "",
             Set(
-              Column("ID",JDBCType.INTEGER,false,1,10,0),
-              Column("LastName",JDBCType.VARCHAR,false,2,255,0)),
+              Column("ID","",JDBCType.INTEGER,false,1,10,0),
+              Column("LastName","",JDBCType.VARCHAR,false,2,255,0)),
             Set(
-              Column("FirstName",JDBCType.VARCHAR,true,3,255,0),
-              Column("Age",JDBCType.INTEGER,true,4,10,0)
+              Column("FirstName","",JDBCType.VARCHAR,true,3,255,0),
+              Column("Age","",JDBCType.INTEGER,true,4,10,0)
             )))
         assertResult(expected)(definitions)
 
@@ -119,12 +120,13 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
         assert(definitions.size == 1)
         val expected = Set(
           Table(VIEW,
+            "",
             Set(),
             Set(
-              Column("ID",JDBCType.INTEGER,false,1,10,0),
-              Column("LastName",JDBCType.VARCHAR,false,2,255,0),
-              Column("FirstName",JDBCType.VARCHAR,true,3,255,0),
-              Column("Age",JDBCType.INTEGER,true,4,10,0)))
+              Column("ID","",JDBCType.INTEGER,false,1,10,0),
+              Column("LastName","",JDBCType.VARCHAR,false,2,255,0),
+              Column("FirstName","",JDBCType.VARCHAR,true,3,255,0),
+              Column("Age","",JDBCType.INTEGER,true,4,10,0)))
         )
         assertResult(expected)(definitions)
       case Failure(ex) =>

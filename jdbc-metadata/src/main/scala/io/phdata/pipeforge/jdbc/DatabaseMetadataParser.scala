@@ -58,7 +58,6 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def listViewsStatement(schema: String): String
 
-
   def tableCommentQuery(schema: String, table: String): String
 
   def columnCommentsQuery(schema: String, table: String): String
@@ -75,8 +74,9 @@ trait DatabaseMetadataParser extends LazyLogging {
     val stmt = connection.createStatement()
     val result = stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
       case Some(metaData) =>
-        val rsMetadata = metaData.asInstanceOf[java.sql.ResultSetMetaData]
-        Success(mapMetaDataToColumn(metaData, rsMetadata))
+        val rsMetadata     = metaData.asInstanceOf[java.sql.ResultSetMetaData]
+        val columnComments = getColumnComments(schema, table)
+        Success(mapMetaDataToColumn(columnComments, metaData, rsMetadata))
       case None =>
         Failure(
           new Exception(s"$table does not contain any records, cannot provide column definitions"))
@@ -127,16 +127,30 @@ trait DatabaseMetadataParser extends LazyLogging {
       case Success(allColumns) =>
         val pks     = primaryKeys(schema, table, allColumns)
         val columns = allColumns.diff(pks)
-        Some(
-          Table(
-            table,
-            "", // TODO: get table comment from db
-            pks,
-            columns))
+        Some(Table(table, getTableComment(schema, table), pks, columns))
       case Failure(ex) =>
         logger.warn(s"Failed to get metadata for table:$table", ex)
         None
     }
+
+  def getTableComment(schema: String, table: String): String = {
+    val stmt = connection.createStatement()
+    val result =
+      stmt.executeQuery(tableCommentQuery(schema, table)).toStream.map(rs => rs.getString(1)).head
+    stmt.close()
+    result
+  }
+
+  def getColumnComments(schema: String, table: String): List[(String, String)] = {
+    val stmt = connection.createStatement()
+    val result = stmt
+      .executeQuery(columnCommentsQuery(schema, table))
+      .toStream
+      .map(rs => (rs.getString(1), rs.getString(2)))
+      .toList
+    stmt.close()
+    result
+  }
 
   /**
    * Gets the primary keys for a table
@@ -162,14 +176,21 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param rsMetadata
    * @return A set of column definitions
    */
-  def mapMetaDataToColumn(metaData: ResultSetMetaData,
+  def mapMetaDataToColumn(columnComments: List[(String, String)],
+                          metaData: ResultSetMetaData,
                           rsMetadata: ResultSetMetaData): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
 
     (1 to metaData.getColumnCount).map { i =>
+      val columnName = metaData.getColumnName(i)
+      val comment = columnComments.find(f => columnName == f._1) match {
+        case Some((column, commentOpt)) => commentOpt
+        case None                       => ""
+      }
+
       Column(
         metaData.getColumnName(i),
-        "", // TODO: get column comment from db
+        comment, // TODO: get column comment from db
         JDBCType.valueOf(rsMetadata.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,

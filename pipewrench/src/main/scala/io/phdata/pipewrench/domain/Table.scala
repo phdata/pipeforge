@@ -34,4 +34,5 @@ case class Table(id: String,
                  primary_keys: Seq[String],
                  kudu: Kudu,
                  columns: Seq[Column],
-                 metadata: Map[String, String])
+                 metadata: Map[String, String],
+                 comment: String = "")

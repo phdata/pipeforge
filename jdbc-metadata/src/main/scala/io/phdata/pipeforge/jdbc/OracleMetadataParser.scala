@@ -47,4 +47,18 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
        |WHERE owner = '$schema'
      """.stripMargin
 
+  override def tableCommentQuery(schema: String, table: String) =
+    s"""
+       |SELECT COMMENTS AS TABLE_COMMENT
+       |FROM ALL_TAB_COMMENTS
+       |WHERE OWNER = '$schema' AND TABLE_NAME = '$table'
+     """.stripMargin
+
+  override def columnCommentsQuery(schema: String, table: String) =
+    s"""
+       |SELECT COLUMN_NAME, COMMENTS AS COLUMN_COMMENT
+       |FROM ALL_COL_COMMENTS
+       |WHERE OWNER = '$schema' TABLE_NAME = '$table'
+     """.stripMargin
+
 }

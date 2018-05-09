@@ -58,6 +58,11 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def listViewsStatement(schema: String): String
 
+
+  def tableCommentQuery(schema: String, table: String): String
+
+  def columnCommentsQuery(schema: String, table: String): String
+
   /**
    * Build column definitions for a specific table
    * @param schema Schema or database name
@@ -136,7 +141,12 @@ trait DatabaseMetadataParser extends LazyLogging {
       case Success(allColumns) =>
         val pks     = primaryKeys(schema, table, allColumns)
         val columns = allColumns.diff(pks)
-        Some(Table(table, pks, columns))
+        Some(
+          Table(
+            table,
+            "", // TODO: get table comment from db
+            pks,
+            columns))
       case Failure(ex) =>
         logger.warn(s"Failed to get metadata for table:$table", ex)
         None
@@ -173,6 +183,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     (1 to metaData.getColumnCount).map { i =>
       Column(
         metaData.getColumnName(i),
+        "", // TODO: get column comment from db
         JDBCType.valueOf(rsMetadata.getColumnType(i)),
         asBoolean(metaData.isNullable(i)),
         i,

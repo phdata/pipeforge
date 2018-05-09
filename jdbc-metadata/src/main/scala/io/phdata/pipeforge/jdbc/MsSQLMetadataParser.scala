@@ -79,4 +79,32 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     stmt.close()
     result
   }
+
+  override def tableCommentQuery(schema: String, table: String): String =
+    s"""
+       |SELECT ep.value AS TABLE_COMMENT
+       |FROM sys.objects objects
+       |   INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
+       |   CROSS APPLY fn_listextendedproperty(default,
+       |                                    'SCHEMA', schemas.name,
+       |                                    'TABLE', objects.name, null, null) ep
+       |WHERE objects.name NOT IN ('sysdiagrams')
+       |  AND objects.name = '$table'
+       |  AND schemas.name = '$schema'
+       |ORDER BY objects.name
+     """.stripMargin
+
+  override def columnCommentsQuery(schema: String, table: String): String =
+    s"""
+       |SELECT columns.name AS COLUMN_NAME, ep.value AS COLUMN_COMMENT
+       |FROM sys.objects objects
+       |  INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
+       |  INNER JOIN sys.columns columns ON objects.object_id = columns.object_id
+       |  CROSS APPLY fn_listextendedproperty(default,
+       |                  'SCHEMA', schemas.name,
+       |                  'TABLE', objects.name, 'COLUMN', columns.name) ep
+       |WHERE objects.name = '$table'
+       |  AND schemas.name = '$schema'
+       |ORDER BY objects.name, columns.column_id
+     """.stripMargin
 }

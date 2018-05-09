@@ -93,13 +93,14 @@ class MySQLMetadataParserTest extends DockerTestRunner {
         assert(definitions.size == 1)
         val expected = Set(
           Table(TABLE,
-            Set(Column("primary_key", JDBCType.INTEGER, false, 1, 11, 0)),
-            Set(Column("b_boolean",JDBCType.BIT,true,7,1,0),
-              Column("i_int",JDBCType.INTEGER,true,5,11,0),
-              Column("b_bigint",JDBCType.BIGINT,true,6,20,0),
-              Column("d_datetime",JDBCType.TIMESTAMP,true,4,19,0),
-              Column("str",JDBCType.VARCHAR,true,2,32,0),
-              Column("d_date",JDBCType.DATE,true,3,10,0)
+            "",
+            Set(Column("primary_key","", JDBCType.INTEGER, false, 1, 11, 0)),
+            Set(Column("b_boolean","",JDBCType.BIT,true,7,1,0),
+              Column("i_int","",JDBCType.INTEGER,true,5,11,0),
+              Column("b_bigint","",JDBCType.BIGINT,true,6,20,0),
+              Column("d_datetime","",JDBCType.TIMESTAMP,true,4,19,0),
+              Column("str","",JDBCType.VARCHAR,true,2,32,0),
+              Column("d_date","",JDBCType.DATE,true,3,10,0)
             )))
         assertResult(expected)(definitions)
       case Failure(ex) =>
@@ -114,14 +115,15 @@ class MySQLMetadataParserTest extends DockerTestRunner {
         assert(definitions.size == 1)
         val expected = Set(
           Table(VIEW,
+            "",
             Set(),
-            Set(Column("primary_key", JDBCType.INTEGER, false, 1, 11, 0),
-              Column("b_boolean",JDBCType.BIT,true,7,1,0),
-              Column("i_int",JDBCType.INTEGER,true,5,11,0),
-              Column("b_bigint",JDBCType.BIGINT,true,6,20,0),
-              Column("d_datetime",JDBCType.TIMESTAMP,true,4,19,0),
-              Column("str",JDBCType.VARCHAR,true,2,32,0),
-              Column("d_date",JDBCType.DATE,true,3,10,0)
+            Set(Column("primary_key","", JDBCType.INTEGER, false, 1, 11, 0),
+              Column("b_boolean","",JDBCType.BIT,true,7,1,0),
+              Column("i_int","",JDBCType.INTEGER,true,5,11,0),
+              Column("b_bigint","",JDBCType.BIGINT,true,6,20,0),
+              Column("d_datetime","",JDBCType.TIMESTAMP,true,4,19,0),
+              Column("str","",JDBCType.VARCHAR,true,2,32,0),
+              Column("d_date","",JDBCType.DATE,true,3,10,0)
             )))
         assertResult(expected)(definitions)
       case Failure(ex) =>

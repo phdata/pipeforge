@@ -89,40 +89,26 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def getTablesMetadata(objectType: ObjectType.Value,
                         schema: String,
-                        tableWhiteList: Option[List[String]],
+                        tableWhiteList: Option[List[String]] = None,
                         skipWhiteListCheck: Boolean = false): Try[List[Table]] =
     // Query database for a list of tables or views
-    if (skipWhiteListCheck) {
-      tableWhiteList match {
-        case Some(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
-        case None         => Failure(new Exception("Whitelist tables not specified."))
-      }
-    } else {
-      val sourceTables = listTables(objectType, schema)
-      checkWhiteListedTables(sourceTables, tableWhiteList) match {
-        case Success(tables) => Try(tables.flatMap(getTableMetadata(schema, _)))
-        case Failure(ex)     => Failure(ex)
-      }
-    }
-
-  /**
-   * Verifies all user supplied white listed tables or views with database
-   * @param sourceTables A set containing a list of source tables or views
-   * @param tableWhiteList Optional user supplied table whitelisting
-   * @return A Set of tables
-   */
-  def checkWhiteListedTables(sourceTables: List[String],
-                             tableWhiteList: Option[List[String]]): Try[List[String]] =
     tableWhiteList match {
-      case Some(whiteList) =>
-        logger.debug("Checking user supplied white list against source system: {}", whiteList)
-        if (whiteList.toSet.subsetOf(sourceTables.toSet)) {
-          Success(whiteList)
+      case Some(tables) =>
+        if (skipWhiteListCheck) {
+          Try(tables.flatMap(getTableMetadata(schema, _)))
         } else {
-          Failure(new Exception(
-            s"A table in the whitelist was not found in the source system, whitelist=$whiteList, source tables=$sourceTables"))
+          logger.debug("Checking user supplied white list against source system: {}", tables)
+          val sourceTables = listTables(objectType, schema)
+          if (tables.toSet.subsetOf(sourceTables.toSet)) {
+            Try(tables.flatMap(getTableMetadata(schema, _)))
+          } else {
+            Failure(new Exception(
+              s"A table in the whitelist was not found in the source system, whitelist=$tables, source tables=$sourceTables"))
+          }
         }
-      case None => Success(sourceTables)
+      case None =>
+        val sourceTables = listTables(objectType, schema)
+        Try(sourceTables.flatMap(getTableMetadata(schema, _)))
     }
 
   /**

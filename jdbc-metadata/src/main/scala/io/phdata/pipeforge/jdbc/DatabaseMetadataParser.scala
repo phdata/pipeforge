@@ -141,7 +141,7 @@ trait DatabaseMetadataParser extends LazyLogging {
         val columns = allColumns.diff(pks)
         Some(
           Table(table,
-            getTableComment(schema, table),
+            getTableComment(schema, table).getOrElse(""),
             pks,
             columns)
         )
@@ -158,18 +158,18 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @param table Table schema
     * @return The table comment
     */
-  def getTableComment(schema: String, table: String): String = {
+  def getTableComment(schema: String, table: String): Option[String] = {
     val stmt = connection.createStatement()
     val query = tableCommentQuery(schema, table)
     logger.debug("Getting table comments, query: {}", query)
     try {
-        stmt.executeQuery(query).toStream.map(rs => rs.getString(1)).head
+        stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).head
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for table comment, defaulting to empty comment", e)
         // If the query fails here it is most likely due to the user not having permissions
         // Instead of failing we need to capture the exception and return an empty comment
-        ""
+        Some("")
     } finally {
       stmt.close()
     }
@@ -183,7 +183,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     * @param table Database table
     * @return A list containing (column, comment)
     */
-  def getColumnComments(schema: String, table: String): List[(String, String)] = {
+  def getColumnComments(schema: String, table: String): List[(String, Option[String])] = {
     val stmt = connection.createStatement()
     val query = columnCommentsQuery(schema, table)
     logger.debug("Getting column comments, query: {}", query)
@@ -191,14 +191,14 @@ trait DatabaseMetadataParser extends LazyLogging {
       stmt
         .executeQuery(query)
         .toStream
-        .map(rs => (rs.getString(1), rs.getString(2)))
+        .map(rs => (rs.getString(1), Option(rs.getString(2))))
         .toList
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for column comments, defaulting to empty comments", e)
         // If the query fails here it is most likely due to the user not having permissions
         // Instead of failing we need to capture the exception and return an empty list of comments
-        List[(String, String)]()
+        List[(String, Option[String])]()
     } finally {
       stmt.close()
     }
@@ -228,7 +228,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param rsMetadata
    * @return A set of column definitions
    */
-  def mapMetaDataToColumn(columnComments: List[(String, String)],
+  def mapMetaDataToColumn(columnComments: List[(String, Option[String])],
                           metaData: ResultSetMetaData,
                           rsMetadata: ResultSetMetaData): Set[Column] = {
     def asBoolean(i: Int) = if (i == 0) false else true
@@ -236,7 +236,7 @@ trait DatabaseMetadataParser extends LazyLogging {
     (1 to metaData.getColumnCount).map { i =>
       val columnName = metaData.getColumnName(i)
       val comment = columnComments.find(f => columnName == f._1) match {
-        case Some((column, commentOpt)) => commentOpt
+        case Some((column, commentOpt)) => commentOpt.getOrElse("")
         case None                       => ""
       }
 

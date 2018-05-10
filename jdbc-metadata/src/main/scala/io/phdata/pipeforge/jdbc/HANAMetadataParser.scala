@@ -39,14 +39,14 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
     s"""
        |SELECT TABLE_NAME
        |FROM SYS.TABLES
-       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_TYPE = 'BASE TABLE'
+       |WHERE SCHEMA_NAME = '$schema'
      """.stripMargin
 
   override def listViewsStatement(schema: String): String =
     s"""
        |SELECT TABLE_NAME
-       |FROM INFORMATION_SCHEMA.VIEWS
-       |WHERE TABLE_SCHEMA = '$schema'
+       |FROM SYS.VIEWS
+       |WHERE SCHEMA_NAME = '$schema'
      """.stripMargin
 
   override def tableCommentQuery(schema: String, table: String): String =

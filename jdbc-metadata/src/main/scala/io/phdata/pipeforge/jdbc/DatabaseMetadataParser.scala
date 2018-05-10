@@ -50,7 +50,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return SQL query selecting a single row from table
    */
   def singleRecordQuery(schema: String, table: String): String
-
+  
   /**
    * Database specific query that returns a result set containing all views in the specified schema
    * @param schema Schema or database name

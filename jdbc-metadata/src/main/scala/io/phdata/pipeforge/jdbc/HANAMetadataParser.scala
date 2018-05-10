@@ -38,7 +38,7 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
   override def listTablesStatement(schema: String) =
     s"""
        |SELECT TABLE_NAME
-       |FROM INFORMATION_SCHEMA.TABLES
+       |FROM SYS.TABLES
        |WHERE TABLE_SCHEMA = '$schema' AND TABLE_TYPE = 'BASE TABLE'
      """.stripMargin
 

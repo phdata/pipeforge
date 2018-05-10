@@ -48,11 +48,13 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
+        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
         // Build Pipewrench Configuration
         pipewrenchService.buildConfiguration(
           environment.toDatabaseConfig(cliArgs.configuration.databasePassword()),
           environment.metadata,
-          pipewrenchEnv) match {
+          pipewrenchEnv,
+          skipWhiteListCheck) match {
           case Success(configuration) =>
             pipewrenchService.saveEnvironment(pipewrenchEnv)
             pipewrenchService.saveConfiguration(configuration)
@@ -104,7 +106,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         "override-whitelist-check",
         'c',
         descr = "Skips checking whitelisted tables against source database",
-        default = Some(true))
+        default = Some(false))
 
     }
     addSubcommand(configuration)

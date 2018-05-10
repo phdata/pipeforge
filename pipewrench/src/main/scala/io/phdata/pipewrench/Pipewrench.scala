@@ -42,7 +42,8 @@ trait Pipewrench {
    */
   def buildConfiguration(databaseConf: DatabaseConf,
                          tableMetadata: Map[String, String],
-                         environment: Environment): Try[Configuration]
+                         environment: Environment,
+                         skipWhiteListCheck: Boolean = false): Try[Configuration]
 
   /**
    * Writes a Pipewrench [[Configuration]] to configured directory
@@ -93,8 +94,9 @@ class PipewrenchService()
    */
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],
-                                  environment: Environment): Try[Configuration] =
-    DatabaseMetadataParser.parse(databaseConf) match {
+                                  environment: Environment,
+                                  skipWhiteListCheck: Boolean = false): Try[Configuration] =
+    DatabaseMetadataParser.parse(databaseConf, skipWhiteListCheck) match {
       case Success(tables: Seq[DbTable]) =>
         logger.debug(s"Successfully parsed JDBC metadata: $tables")
         Try(

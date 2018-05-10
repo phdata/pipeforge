@@ -49,18 +49,6 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
        |WHERE TABLE_SCHEMA = '$schema'
      """.stripMargin
 
-  override def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
-    //val rs: ResultSet = metadata.getPrimaryKeys(schema, schema, table)
-    logger.debug("Gathering primary keys from JDBC metadata")
-    //val pks = results(rs) { record =>
-    //  record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ")
-    //}.toMap
-
-    //mapPrimaryKeyToColumn(pks, columns)
-    Set()
-
-  }
-
   override def tableCommentQuery(schema: String, table: String): String =
     s"""
        |SELECT COMMENTS AS TABLE_COMMENT

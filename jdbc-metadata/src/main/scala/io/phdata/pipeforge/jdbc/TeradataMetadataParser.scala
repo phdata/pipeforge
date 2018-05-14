@@ -32,6 +32,13 @@ class TeradataMetadataParser(_connection: Connection) extends DatabaseMetadataPa
        |FROM $schema.$table
      """.stripMargin
 
+  override def joinedSingleRecordQuery(schema: String, table: String): String =
+    s"""
+       |SELECT TOP 1 t.*
+       |FROM dbc.tables AS d
+       |  LEFT OUTER JOIN $schema.$table AS t ON 1 = 1
+     """.stripMargin
+
   override def listTablesStatement(schema: String) =
     s"""
        |SELECT tablename FROM dbc.tables WHERE tablekind = 'T' and databasename='$schema'
@@ -55,4 +62,5 @@ class TeradataMetadataParser(_connection: Connection) extends DatabaseMetadataPa
        |FROM DBC.Columns
        |WHERE DatabaseName = '$schema' AND TableName = '$table'
      """.stripMargin
+
 }

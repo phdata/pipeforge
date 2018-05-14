@@ -50,6 +50,15 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return SQL query selecting a single row from table
    */
   def singleRecordQuery(schema: String, table: String): String
+
+  /**
+    * Secondary SQL query for use when tables do not have any records.  This query will left outer join to another
+    * table to return a record with all NULL records.
+    * @param schema Schema or database name
+    * @param table Table name
+    * @return SQL query selecting a single row from a table
+    */
+  def joinedSingleRecordQuery(schema: String, table: String): String
   
   /**
    * Database specific query that returns a result set containing all views in the specified schema
@@ -84,15 +93,29 @@ trait DatabaseMetadataParser extends LazyLogging {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
     val stmt = connection.createStatement()
-    val result = stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
-      case Some(metaData) =>
+    val metaDataResult: Try[ResultSetMetaData] = stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
+      case Some(metaData) => Success(metaData)
+      case None =>
+        val joinedQuery = joinedSingleRecordQuery(schema, table)
+        logger.debug(s"Table: $table does not contain any records, using joined query: {}", joinedQuery)
+        try {
+          stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
+            case Some(metaData) => Success(metaData)
+            case None => Failure(new Exception(s"Failed to use join query to get column definitions"))
+          }
+        } catch {
+          case e: Exception => Failure(e)
+        }
+    }
+
+    val result: Try[Set[Column]] = metaDataResult match {
+      case Success(metaData) =>
         val rsMetadata     = metaData.asInstanceOf[java.sql.ResultSetMetaData]
         val columnComments = getColumnComments(schema, table)
         Success(mapMetaDataToColumn(columnComments, metaData, rsMetadata))
-      case None =>
-        Failure(
-          new Exception(s"$table does not contain any records, cannot provide column definitions"))
+      case Failure(ex) => Failure(ex)
     }
+
     stmt.close()
     result
   }

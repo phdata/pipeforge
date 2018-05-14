@@ -4,7 +4,7 @@ databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or terad
 schema: employees # Database schema to ingest
 jdbcUrl: "jdbc:mysql://localhost:3306/employees" # JDBC Url for connecting to database
 username: employee # Database user name
-objectType: view # Database object type to be ingested must be either table or view
+objectType: table # Database object type to be ingested must be either table or view
 # tables: # Optionally add a whitelisting of tables to ingest
 #   - employee
 metadata: # Metadata map to be applied to every table's tblproperties. https://www.cloudera.com/documentation/enterprise/latest/topics/impala_create_table.html

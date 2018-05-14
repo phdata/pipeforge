@@ -33,6 +33,14 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |LIMIT 1
      """.stripMargin
 
+  override def joinedSingleRecordQuery(schema: String, table: String): String =
+    s"""
+       |SELECT t.*
+       |FROM INFORMATION_SCHEMA.TABLES AS d
+       |  LEFT OUTER JOIN $schema.$table AS t ON 1=1
+       |LIMIT 1
+     """.stripMargin
+
   override def listTablesStatement(schema: String) =
     s"""
        |SELECT TABLE_NAME
@@ -60,4 +68,5 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM INFORMATION_SCHEMA.COLUMNS
        |WHERE TABLE_SCHEMA = '$schema' AND TABLE_NAME = '$table'
      """.stripMargin
+
 }

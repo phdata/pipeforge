@@ -33,6 +33,14 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
        |WHERE ROWNUM = 1
      """.stripMargin
 
+  override def joinedSingleRecordQuery(schema: String, table: String): String =
+    s"""
+       |SELECT t.*
+       |FROM SYS.DUAL AS d
+       |  LEFT OUTER JOIN $schema.$table AS t ON 1=1
+       |WHERE ROWNUM = 1
+     """.stripMargin
+
   override def listTablesStatement(schema: String) =
     s"""
        |SELECT table_name

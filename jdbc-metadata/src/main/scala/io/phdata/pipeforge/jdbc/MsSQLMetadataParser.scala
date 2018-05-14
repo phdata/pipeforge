@@ -42,6 +42,13 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM \"$table\"
      """.stripMargin
 
+  override def joinedSingleRecordQuery(schema: String, table: String): String =
+    s"""
+       |SELECT TOP 1 t.*
+       |FROM INFORMATION_SCHEMA.TABLES AS d
+       |  LEFT OUTER JOIN \"$schema\".\"$table\" AS t ON 1=1
+     """.stripMargin
+
   override def listViewsStatement(schema: String) =
     s"""
        |SELECT TABLE_NAME
@@ -107,4 +114,5 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |  AND schemas.name = '$schema'
        |ORDER BY objects.name, columns.column_id
      """.stripMargin
+
 }

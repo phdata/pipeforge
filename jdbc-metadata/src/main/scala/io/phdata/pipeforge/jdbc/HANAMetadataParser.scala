@@ -35,6 +35,14 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
        |LIMIT 1
      """.stripMargin
 
+  override def joinedSingleRecordQuery(schema: String, table: String): String =
+    s"""
+       |SELECT t.*
+       |FROM SYS.DUMMY AS d
+       |  LEFT OUTER JOIN $schema.$table AS t ON 1=1
+       |LIMIT 1
+     """.stripMargin
+
   override def listTablesStatement(schema: String) =
     s"""
        |SELECT TABLE_NAME
@@ -63,4 +71,5 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
        |WHERE SCHEMA_NAME = '$schema' AND TABLE_NAME = '$table'
        |ORDER BY POSITION
      """.stripMargin
+
 }

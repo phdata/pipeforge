@@ -382,6 +382,8 @@ object DatabaseMetadataParser extends LazyLogging {
    */
   def getConnection(configuration: DatabaseConf): Try[Connection] = {
     logger.debug("Connecting to database: {}", configuration.copy(password = "******"))
+    // Need to register the AS400 manually
+    Class.forName("com.ibm.as400.access.AS400JDBCDriver")
     Try(
       DriverManager
         .getConnection(configuration.jdbcUrl, configuration.username, configuration.password))

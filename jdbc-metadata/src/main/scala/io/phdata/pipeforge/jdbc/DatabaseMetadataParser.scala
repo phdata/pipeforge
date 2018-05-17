@@ -52,14 +52,14 @@ trait DatabaseMetadataParser extends LazyLogging {
   def singleRecordQuery(schema: String, table: String): String
 
   /**
-    * Secondary SQL query for use when tables do not have any records.  This query will left outer join to another
-    * table to return a record with all NULL records.
-    * @param schema Schema or database name
-    * @param table Table name
-    * @return SQL query selecting a single row from a table
-    */
+   * Secondary SQL query for use when tables do not have any records.  This query will left outer join to another
+   * table to return a record with all NULL records.
+   * @param schema Schema or database name
+   * @param table Table name
+   * @return SQL query selecting a single row from a table
+   */
   def joinedSingleRecordQuery(schema: String, table: String): String
-  
+
   /**
    * Database specific query that returns a result set containing all views in the specified schema
    * @param schema Schema or database name
@@ -68,19 +68,19 @@ trait DatabaseMetadataParser extends LazyLogging {
   def listViewsStatement(schema: String): String
 
   /**
-    * Database specific query that returns the table comment
-    * @param schema Database schema
-    * @param table Database table
-    * @return The table comment query
-    */
+   * Database specific query that returns the table comment
+   * @param schema Database schema
+   * @param table Database table
+   * @return The table comment query
+   */
   def tableCommentQuery(schema: String, table: String): String
 
   /**
-    * Database specific query that returns the column comments for the specified schema and table
-    * @param schema Database schema
-    * @param table Database table
-    * @return The column comment query
-    */
+   * Database specific query that returns the column comments for the specified schema and table
+   * @param schema Database schema
+   * @param table Database table
+   * @return The column comment query
+   */
   def columnCommentsQuery(schema: String, table: String): String
 
   /**
@@ -93,20 +93,23 @@ trait DatabaseMetadataParser extends LazyLogging {
     val query = singleRecordQuery(schema, table)
     logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
     val stmt = connection.createStatement()
-    val metaDataResult: Try[ResultSetMetaData] = stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
-      case Some(metaData) => Success(metaData)
-      case None =>
-        val joinedQuery = joinedSingleRecordQuery(schema, table)
-        logger.debug(s"Table: $table does not contain any records, using joined query: {}", joinedQuery)
-        try {
-          stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
-            case Some(metaData) => Success(metaData)
-            case None => Failure(new Exception(s"Failed to use join query to get column definitions"))
+    val metaDataResult: Try[ResultSetMetaData] =
+      stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
+        case Some(metaData) => Success(metaData)
+        case None =>
+          val joinedQuery = joinedSingleRecordQuery(schema, table)
+          logger.debug(s"Table: $table does not contain any records, using joined query: {}",
+                       joinedQuery)
+          try {
+            stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
+              case Some(metaData) => Success(metaData)
+              case None =>
+                Failure(new Exception(s"Failed to use join query to get column definitions"))
+            }
+          } catch {
+            case e: Exception => Failure(e)
           }
-        } catch {
-          case e: Exception => Failure(e)
-        }
-    }
+      }
 
     val result: Try[Set[Column]] = metaDataResult match {
       case Success(metaData) =>
@@ -163,10 +166,7 @@ trait DatabaseMetadataParser extends LazyLogging {
         val pks     = primaryKeys(schema, table, allColumns)
         val columns = allColumns.diff(pks)
         Some(
-          Table(table,
-            getTableComment(schema, table).getOrElse(""),
-            pks,
-            columns)
+          Table(table, getTableComment(schema, table).getOrElse(""), pks, columns)
         )
       case Failure(ex) =>
         logger.warn(s"Failed to get metadata for table:$table", ex)
@@ -174,19 +174,19 @@ trait DatabaseMetadataParser extends LazyLogging {
     }
 
   /**
-    * Gets table comments from the source system, user will need access to the sys or information_schema schemas
-    * to read table comments.  A blank comment will be used if access has not been granted.
-    *
-    * @param schema Database schema
-    * @param table Table schema
-    * @return The table comment
-    */
+   * Gets table comments from the source system, user will need access to the sys or information_schema schemas
+   * to read table comments.  A blank comment will be used if access has not been granted.
+   *
+   * @param schema Database schema
+   * @param table Table schema
+   * @return The table comment
+   */
   def getTableComment(schema: String, table: String): Option[String] = {
-    val stmt = connection.createStatement()
+    val stmt  = connection.createStatement()
     val query = tableCommentQuery(schema, table)
     logger.debug("Getting table comments, query: {}", query)
     try {
-        stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).head
+      stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).head
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for table comment, defaulting to empty comment", e)
@@ -199,15 +199,15 @@ trait DatabaseMetadataParser extends LazyLogging {
   }
 
   /**
-    * Gets column comments from the source system, user will need access to the sys or information_schema schemas
-    * to read column comments.  A blank comment will be used if access has not been granted.
-    *
-    * @param schema Database schema
-    * @param table Database table
-    * @return A list containing (column, comment)
-    */
+   * Gets column comments from the source system, user will need access to the sys or information_schema schemas
+   * to read column comments.  A blank comment will be used if access has not been granted.
+   *
+   * @param schema Database schema
+   * @param table Database table
+   * @return A list containing (column, comment)
+   */
   def getColumnComments(schema: String, table: String): List[(String, Option[String])] = {
-    val stmt = connection.createStatement()
+    val stmt  = connection.createStatement()
     val query = columnCommentsQuery(schema, table)
     logger.debug("Getting column comments, query: {}", query)
     try {
@@ -236,7 +236,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
     logger.debug("Gathering primary keys from JDBC metadata")
-    val pks = metadata
+    val pks = connection.getMetaData
       .getPrimaryKeys(schema, schema, table)
       .toStream
       .map(record => record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ"))
@@ -281,7 +281,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param columns A Set of column definitions
    * @return Primary key column definitions
    */
-  def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]) =
+  def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]): Set[Column] =
     primaryKeys.flatMap {
       case (key, index) =>
         columns.find(_.name == key) match {
@@ -289,8 +289,6 @@ trait DatabaseMetadataParser extends LazyLogging {
           case None         => None
         }
     }.toSet
-
-  def metadata = connection.getMetaData
 
   /**
    * Gathers a list of tables or views from the specified schema in the database
@@ -360,6 +358,11 @@ object DatabaseMetadataParser extends LazyLogging {
                                  configuration.schema,
                                  configuration.tables,
                                  skipWhiteListCheck)
+          case DatabaseType.AS400 =>
+            new AS400MetadataParser(connection).getTablesMetadata(configuration.objectType,
+                                                                  configuration.schema,
+                                                                  configuration.tables,
+                                                                  skipWhiteListCheck)
           case _ =>
             Failure(
               new Exception(
@@ -377,7 +380,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @param configuration Database configuration
    * @return
    */
-  def getConnection(configuration: DatabaseConf) = {
+  def getConnection(configuration: DatabaseConf): Try[Connection] = {
     logger.debug("Connecting to database: {}", configuration.copy(password = "******"))
     Try(
       DriverManager

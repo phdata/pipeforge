@@ -18,9 +18,9 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    */
   override def listTablesStatement(schema: String): String =
     s"""
-       |SELECT NAME
+       |SELECT TABLE_NAME
        |FROM QSYS2.SYSTABLES
-       |WHERE TABLE_TYPE = 'T' AND TABLE_SCHEMA = '$schema'
+       |WHERE (TABLE_TYPE = 'T' OR TABLE_TYPE = 'P' OR TABLE_TYPE = 'L') AND TABLE_SCHEMA = '$schema'
      """.stripMargin
 
   /**
@@ -61,7 +61,7 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    */
   override def listViewsStatement(schema: String): String =
     s"""
-       |SELECT NAME
+       |SELECT TABLE_NAME
        |FROM QSYS2.SYSTABLES
        |WHERE TABLE_TYPE = 'V' AND TABLE_SCHEMA = '$schema'
      """.stripMargin

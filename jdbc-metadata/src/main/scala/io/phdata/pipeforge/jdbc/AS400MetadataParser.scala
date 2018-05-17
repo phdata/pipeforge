@@ -19,8 +19,8 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def listTablesStatement(schema: String): String =
     s"""
        |SELECT NAME
-       |FROM SYSIBM.SYSTABLES
-       |WHERE TYPE = 'T' AND DBNAME = '$schema'
+       |FROM QSYS2.SYSTABLES
+       |WHERE TABLE_TYPE = 'T' AND TABLE_SCHEMA = '$schema'
      """.stripMargin
 
   /**
@@ -48,7 +48,7 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def joinedSingleRecordQuery(schema: String, table: String): String =
     s"""
        |SELECT t.*
-       |FROM SYSIBM.SYSDUMMY1 d
+       |FROM QSYS2.SYSTABLES d
        |LEFT OUTER JOIN $schema.$table t ON 1=1
        |LIMIT 1
      """.stripMargin
@@ -62,8 +62,8 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def listViewsStatement(schema: String): String =
     s"""
        |SELECT NAME
-       |FROM SYSIBM.SYSTABLES
-       |WHERE TYPE = 'V' AND DBNAME = '$schema'
+       |FROM QSYS2.SYSTABLES
+       |WHERE TABLE_TYPE = 'V' AND TABLE_SCHEMA = '$schema'
      """.stripMargin
 
   /**
@@ -75,9 +75,9 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    */
   override def tableCommentQuery(schema: String, table: String): String =
     s"""
-       |SELECT REMARKS
-       |FROM SYSIBM.SYSTABLES
-       |WHERE DBNAME = '$schema' AND NAME = '$table'
+       |SELECT COALESCE(LONG_COMMENT, TABLE_TEXT) AS TABLE_COMMENT
+       |FROM QSYS2.SYSTABLES
+       |WHERE TABLE_SCHEMA = '$schema' AND TABLE_NAME = '$table'
      """.stripMargin
 
   /**
@@ -89,8 +89,9 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    */
   override def columnCommentsQuery(schema: String, table: String): String =
     s"""
-       |SELECT NAME AS COLUMN_NAME, REMARKS AS COLUMN_COMMENT
-       |FROM SYSIBM.SYSCOLUMNS
-       |WHERE TBNAME = '$schema'
+       |SELECT COLUMN_NAME, COALESCE(LONG_COMMENT, COLUMN_HEADING) AS COLUMN_COMMENT
+       |FROM QSYS2.SYSCOLUMNS
+       |WHERE TABLE_NAME = '$table'
+       |ORDER BY ORDINAL_POSITION
      """.stripMargin
 }

@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.7"
+lazy val appVersion = "0.8-SNAPSHOT"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -80,7 +80,7 @@ lazy val dependencies =
     val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
     val spotifyDockerTest = "com.whisk"         %% "docker-testkit-impl-spotify" % dockerTestKitVersion % Test
     val akkaHttpTestKit   = "com.typesafe.akka" %% "akka-http-testkit"           % akkaHttpVersion      % Test
-    val mockito           = "org.mockito"       % "mockito-core"                 % "2.+"                % Test
+    val mockito           = "org.mockito"       % "mockito-core"                 % "2.18.3"             % Test
     val scalaMock         = "org.scalamock"     %% "scalamock-scalatest-support" % "3.6.0"              % Test
 
     val common = Seq(scallop,

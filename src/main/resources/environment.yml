@@ -1,9 +1,9 @@
 name: dev # Unique name for data ingestion
 group: edh_employee_db # Associated AD group for ingestion
-databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or teradata
-schema: employees # Database schema to ingest
-jdbcUrl: "jdbc:mysql://localhost:3306/employees" # JDBC Url for connecting to database
-username: employee # Database user name
+databaseType: sybase # Database type must be mysql, oracle, mssql, hana, or teradata
+schema: dbo # Database schema to ingest
+jdbcUrl: "jdbc:jtds:sybase://localhost:5000/testdb" # JDBC Url for connecting to database
+username: sa # Database user name
 objectType: table # Database object type to be ingested must be either table or view
 # tables: # Optionally add a whitelisting of tables to ingest
 #   - employee

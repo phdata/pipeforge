@@ -363,6 +363,11 @@ object DatabaseMetadataParser extends LazyLogging {
                                                                   configuration.schema,
                                                                   configuration.tables,
                                                                   skipWhiteListCheck)
+          case DatabaseType.SYBASE =>
+            new SybaseMetadataParser(connection).getTablesMetadata(configuration.objectType,
+                                                                   configuration.schema,
+                                                                   configuration.tables,
+                                                                   skipWhiteListCheck)
           case _ =>
             Failure(
               new Exception(
@@ -384,6 +389,7 @@ object DatabaseMetadataParser extends LazyLogging {
     logger.debug("Connecting to database: {}", configuration.copy(password = "******"))
     // Need to register the AS400 manually
     Class.forName("com.ibm.as400.access.AS400JDBCDriver")
+    Class.forName("net.sourceforge.jtds.jdbc.Driver")
     Try(
       DriverManager
         .getConnection(configuration.jdbcUrl, configuration.username, configuration.password))

@@ -27,6 +27,7 @@ object DatabaseType extends Enumeration {
   val HANA     = Value("hana")
   val TERADATA = Value("teradata")
   val AS400    = Value("as400")
+  val SYBASE   = Value("sybase")
 
   def getConnectionManager(dbType: DatabaseType.Value): String =
     dbType match {
@@ -36,6 +37,7 @@ object DatabaseType extends Enumeration {
       case HANA     => "org.apache.sqoop.manager.GenericjdbcManager"
       case TERADATA => "org.apache.sqoop.manager.GenericjdbcManager"
       case AS400    => "com.ibm.as400.access.AS400JDBCDriver"
+      case SYBASE   => "com.sybase.jdbc4.jdbc.SybDriver"
       case _ =>
         throw new Exception(
           s"Database type: $dbType does not have valid Connection Manager mapping")

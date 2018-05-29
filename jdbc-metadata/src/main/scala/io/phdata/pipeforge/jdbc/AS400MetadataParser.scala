@@ -89,7 +89,7 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    */
   override def columnCommentsQuery(schema: String, table: String): String =
     s"""
-       |SELECT COLUMN_NAME, COALESCE(LONG_COMMENT, COLUMN_HEADING) AS COLUMN_COMMENT
+       |SELECT COLUMN_NAME, COALESCE(COLUMN_TEXT, LONG_COMMENT, COLUMN_HEADING) AS COLUMN_COMMENT
        |FROM QSYS2.SYSCOLUMNS
        |WHERE TABLE_NAME = '$table'
        |ORDER BY ORDINAL_POSITION

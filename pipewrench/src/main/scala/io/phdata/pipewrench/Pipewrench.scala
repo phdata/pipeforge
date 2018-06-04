@@ -106,6 +106,7 @@ class PipewrenchService()
             databaseConf.username,
             sqoop_password_file = environment.password_file,
             connection_manager = DatabaseType.getConnectionManager(databaseConf.databaseType),
+            sqoop_driver = DatabaseType.getDriver(databaseConf.databaseType),
             sqoop_job_name_suffix = environment.name,
             source_database = Map("name"              -> databaseConf.schema,
                                   "cmd"               -> databaseConf.databaseType.toString,

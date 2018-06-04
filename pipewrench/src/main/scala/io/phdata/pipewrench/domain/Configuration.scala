@@ -24,6 +24,7 @@ package io.phdata.pipewrench.domain
  * @param type_mapping
  * @param sqoop_password_file
  * @param connection_manager
+ * @param sqoop_driver
  * @param sqoop_job_name_suffix
  * @param source_database
  * @param staging_database
@@ -35,7 +36,8 @@ case class Configuration(name: String,
                          user_name: String = "{{ source_db_user_name }}",
                          type_mapping: String = "type-mapping.yml",
                          sqoop_password_file: String = "{{ password_file }}",
-                         connection_manager: String,
+                         connection_manager: Option[String],
+                         sqoop_driver: Option[String],
                          sqoop_job_name_suffix: String,
                          source_database: Map[String, String],
                          staging_database: Map[String, String],

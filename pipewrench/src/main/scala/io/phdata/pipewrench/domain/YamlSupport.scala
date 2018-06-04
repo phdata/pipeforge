@@ -32,7 +32,7 @@ trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
   implicit def pipewrenchColumnFormat        = yamlFormat5(Column)
   implicit def pipewrenchKuduFormat          = yamlFormat2(Kudu)
   implicit def pipewrenchTableFormat         = yamlFormat9(Table)
-  implicit def pipewrenchConfigurationFormat = yamlFormat12(Configuration)
+  implicit def pipewrenchConfigurationFormat = yamlFormat13(Configuration)
 
   /**
    * Implicit class for writing yaml files

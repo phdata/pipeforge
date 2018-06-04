@@ -236,13 +236,21 @@ trait DatabaseMetadataParser extends LazyLogging {
    */
   def primaryKeys(schema: String, table: String, columns: Set[Column]): Set[Column] = {
     logger.debug("Gathering primary keys from JDBC metadata")
-    val pks = connection.getMetaData
-      .getPrimaryKeys(schema, schema, table)
-      .toStream
-      .map(record => record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ"))
-      .toMap
+    try {
+      val pks = connection.getMetaData
+        .getPrimaryKeys(schema, schema, table)
+        .toStream
+        .map(record => record.getString("COLUMN_NAME") -> record.getInt("KEY_SEQ"))
+        .toMap
 
-    mapPrimaryKeyToColumn(pks, columns)
+      mapPrimaryKeyToColumn(pks, columns)
+    } catch {
+      case e: Exception =>
+        logger.warn(
+          s"Failed to get primary keys for schema: $schema, table: $table from source system",
+          e)
+        Set[Column]()
+    }
   }
 
   /**

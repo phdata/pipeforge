@@ -28,16 +28,22 @@ object DatabaseType extends Enumeration {
   val TERADATA = Value("teradata")
   val AS400    = Value("as400")
 
-  def getConnectionManager(dbType: DatabaseType.Value): String =
+  def getDriver(dbType: DatabaseType.Value): Option[String] =
     dbType match {
-      case MYSQL    => "org.apache.sqoop.manager.MySQLManager"
-      case ORACLE   => "org.apache.sqoop.manager.OracleManager"
-      case MSSQL    => "org.apache.sqoop.manager.SQLServerManager"
-      case HANA     => "org.apache.sqoop.manager.GenericjdbcManager"
-      case TERADATA => "org.apache.sqoop.manager.GenericjdbcManager"
-      case AS400    => "com.ibm.as400.access.AS400JDBCDriver"
-      case _ =>
-        throw new Exception(
-          s"Database type: $dbType does not have valid Connection Manager mapping")
+      case MYSQL    => Some("com.mysql.jdbc.Driver")
+      case ORACLE   => Some("oracle.jdbc.OracleDriver")
+      case MSSQL    => Some("com.microsoft.sql.server.jdbc.SQLServerDriver")
+      case HANA     => Some("com.sap.db.jdbc.Driver")
+      case TERADATA => Some("com.teradata.jdbc.TeraDriver")
+      case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")
+      case _        => None
+    }
+
+  def getConnectionManager(dbType: DatabaseType.Value): Option[String] =
+    dbType match {
+      case MYSQL  => Some("org.apache.sqoop.manager.MySQLManager")
+      case ORACLE => Some("org.apache.sqoop.manager.OracleManager")
+      case MSSQL  => Some("org.apache.sqoop.manager.SQLServerManager")
+      case _      => None
     }
 }

@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.9"
+lazy val appVersion = "0.10"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -37,7 +37,7 @@ lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-    "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
+    "datanucleus" at "http://www.datanucleus.org/downloads/maven2/",
     Resolver.sonatypeRepo("releases")
   )
 )

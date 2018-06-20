@@ -57,19 +57,19 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
        |WHERE SCHEMA_NAME = '$schema'
      """.stripMargin
 
-  override def tableCommentQuery(schema: String, table: String): String =
-    s"""
+  override def tableCommentQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT COMMENTS AS TABLE_COMMENT
        |FROM SYS.TABLES
        |WHERE SCHEMA_NAME = '$schema' AND TABLE_NAME = '$table'
-     """.stripMargin
+     """.stripMargin)
 
-  override def columnCommentsQuery(schema: String, table: String): String =
-    s"""
+  override def columnCommentsQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT COLUMN_NAME, COMMENTS AS COLUMN_COMMENT
        |FROM SYS.TABLE_COLUMNS
        |WHERE SCHEMA_NAME = '$schema' AND TABLE_NAME = '$table'
        |ORDER BY POSITION
-     """.stripMargin
+     """.stripMargin)
 
 }

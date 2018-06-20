@@ -87,8 +87,8 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
     result
   }
 
-  override def tableCommentQuery(schema: String, table: String): String =
-    s"""
+  override def tableCommentQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT CAST(ep.value AS NVARCHAR(255)) AS TABLE_COMMENT
        |FROM sys.objects objects
        |   INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
@@ -99,10 +99,10 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |  AND objects.name = '$table'
        |  AND schemas.name = '$schema'
        |ORDER BY objects.name
-     """.stripMargin
+     """.stripMargin)
 
-  override def columnCommentsQuery(schema: String, table: String): String =
-    s"""
+  override def columnCommentsQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT columns.name AS COLUMN_NAME, CAST(ep.value AS NVARCHAR(255)) AS COLUMN_COMMENT
        |FROM sys.objects objects
        |  INNER JOIN sys.schemas schemas ON objects.schema_id = schemas.schema_id
@@ -113,6 +113,6 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |WHERE objects.name = '$table'
        |  AND schemas.name = '$schema'
        |ORDER BY objects.name, columns.column_id
-     """.stripMargin
+     """.stripMargin)
 
 }

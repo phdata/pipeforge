@@ -64,7 +64,7 @@ class RedshiftMetadataParser(_connection: Connection) extends DatabaseMetadataPa
     s"""
        |SELECT TABLE_NAME
        |FROM INFORMATION_SCHEMA.TABLES
-       |WHERE table_schema='$schema' and table_table='BASE TABLE'
+       |WHERE table_schema='$schema' and table_type='VIEW'
      """.stripMargin
 
   /**

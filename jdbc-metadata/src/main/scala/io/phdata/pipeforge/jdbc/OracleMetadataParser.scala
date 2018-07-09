@@ -56,14 +56,14 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
      """.stripMargin
 
   override def tableCommentQuery(schema: String, table: String) =
-    s"""
+    Some(s"""
        |SELECT COMMENTS AS TABLE_COMMENT
        |FROM ALL_TAB_COMMENTS
        |WHERE OWNER = '$schema' AND TABLE_NAME = '$table'
-     """.stripMargin
+     """.stripMargin)
 
   override def columnCommentsQuery(schema: String, table: String) =
-    s"""
+    Some(s"""
        |SELECT COLUMN_NAME, COMMENTS AS COLUMN_COMMENT
        |FROM ALL_COL_COMMENTS
        |WHERE OWNER = '$schema' AND TABLE_NAME = '$table'

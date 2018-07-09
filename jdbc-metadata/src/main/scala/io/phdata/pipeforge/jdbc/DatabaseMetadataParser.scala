@@ -73,7 +73,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param table Database table
    * @return The table comment query
    */
-  def tableCommentQuery(schema: String, table: String): String
+  def tableCommentQuery(schema: String, table: String): Option[String]
 
   /**
    * Database specific query that returns the column comments for the specified schema and table
@@ -81,7 +81,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param table Database table
    * @return The column comment query
    */
-  def columnCommentsQuery(schema: String, table: String): String
+  def columnCommentsQuery(schema: String, table: String): Option[String]
 
   /**
    * Build column definitions for a specific table
@@ -182,11 +182,14 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return The table comment
    */
   def getTableComment(schema: String, table: String): Option[String] = {
-    val stmt  = connection.createStatement()
-    val query = tableCommentQuery(schema, table)
-    logger.debug("Getting table comments, query: {}", query)
+    val stmt = connection.createStatement()
     try {
-      stmt.executeQuery(query).toStream.map(rs => rs.getString(1)).headOption
+      tableCommentQuery(schema, table) match {
+        case Some(query) =>
+          logger.debug("Getting table comments, query: {}", query)
+          stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).headOption
+        case None => Some("")
+      }
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for table comment, defaulting to empty comment", e)
@@ -207,15 +210,19 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return A list containing (column, comment)
    */
   def getColumnComments(schema: String, table: String): List[(String, Option[String])] = {
-    val stmt  = connection.createStatement()
-    val query = columnCommentsQuery(schema, table)
-    logger.debug("Getting column comments, query: {}", query)
+    val stmt = connection.createStatement()
     try {
-      stmt
-        .executeQuery(query)
-        .toStream
-        .map(rs => (rs.getString(1), Option(rs.getString(2))))
-        .toList
+      columnCommentsQuery(schema, table) match {
+        case Some(query) =>
+          logger.debug("Getting column comments, query: {}", query)
+          stmt
+            .executeQuery(query)
+            .toStream
+            .map(rs => (rs.getString(1), Option(rs.getString(2))))
+            .toList
+        case None =>
+          List[(String, Option[String])]()
+      }
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for column comments, defaulting to empty comments", e)
@@ -371,6 +378,11 @@ object DatabaseMetadataParser extends LazyLogging {
                                                                   configuration.schema,
                                                                   configuration.tables,
                                                                   skipWhiteListCheck)
+          case DatabaseType.REDSHIFT =>
+            new RedshiftMetadataParser(connection).getTablesMetadata(configuration.objectType,
+                                                                     configuration.schema,
+                                                                     configuration.tables,
+                                                                     skipWhiteListCheck)
           case _ =>
             Failure(
               new Exception(

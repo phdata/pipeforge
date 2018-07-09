@@ -73,12 +73,12 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    * @param table  Database table
    * @return The table comment query
    */
-  override def tableCommentQuery(schema: String, table: String): String =
-    s"""
+  override def tableCommentQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT COALESCE(LONG_COMMENT, TABLE_TEXT) AS TABLE_COMMENT
        |FROM QSYS2.SYSTABLES
        |WHERE TABLE_SCHEMA = '$schema' AND TABLE_NAME = '$table'
-     """.stripMargin
+     """.stripMargin)
 
   /**
    * Database specific query that returns the column comments for the specified schema and table
@@ -87,11 +87,11 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    * @param table  Database table
    * @return The column comment query
    */
-  override def columnCommentsQuery(schema: String, table: String): String =
-    s"""
+  override def columnCommentsQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT COLUMN_NAME, COALESCE(COLUMN_TEXT, LONG_COMMENT, COLUMN_HEADING) AS COLUMN_COMMENT
        |FROM QSYS2.SYSCOLUMNS
        |WHERE TABLE_NAME = '$table'
        |ORDER BY ORDINAL_POSITION
-     """.stripMargin
+     """.stripMargin)
 }

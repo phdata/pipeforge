@@ -27,6 +27,7 @@ object DatabaseType extends Enumeration {
   val HANA     = Value("hana")
   val TERADATA = Value("teradata")
   val AS400    = Value("as400")
+  val REDSHIFT = Value("redshift")
 
   def getDriver(dbType: DatabaseType.Value): Option[String] =
     dbType match {
@@ -36,6 +37,7 @@ object DatabaseType extends Enumeration {
       case HANA     => Some("com.sap.db.jdbc.Driver")
       case TERADATA => Some("com.teradata.jdbc.TeraDriver")
       case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")
+      case REDSHIFT => Some("com.amazon.redshift.jdbc41.Driver")
       case _        => None
     }
 

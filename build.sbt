@@ -37,7 +37,7 @@ lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-    "datanucleus " at "http://www.datanucleus.org/downloads/maven2/",
+    "datanucleus" at "http://www.datanucleus.org/downloads/maven2/",
     Resolver.sonatypeRepo("releases")
   )
 )

@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.9"
+lazy val appVersion = "0.11"
 
 lazy val compilerOptions = Seq(
   "-unchecked",

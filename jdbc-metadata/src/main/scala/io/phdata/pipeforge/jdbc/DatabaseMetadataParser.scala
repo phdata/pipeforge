@@ -187,10 +187,9 @@ trait DatabaseMetadataParser extends LazyLogging {
       tableCommentQuery(schema, table) match {
         case Some(query) =>
           logger.debug("Getting table comments, query: {}", query)
-          stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).head
+          stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).headOption
         case None => Some("")
       }
-
     } catch {
       case e: Exception =>
         logger.warn("Failed to query source for table comment, defaulting to empty comment", e)

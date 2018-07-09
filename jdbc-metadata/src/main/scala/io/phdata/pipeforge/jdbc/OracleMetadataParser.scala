@@ -66,7 +66,7 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
     Some(s"""
        |SELECT COLUMN_NAME, COMMENTS AS COLUMN_COMMENT
        |FROM ALL_COL_COMMENTS
-       |WHERE OWNER = '$schema' TABLE_NAME = '$table'
-     """.stripMargin)
+       |WHERE OWNER = '$schema' AND TABLE_NAME = '$table'
+     """.stripMargin
 
 }

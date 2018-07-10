@@ -196,7 +196,7 @@ class PipewrenchService()
         Table(
           table.name,
           Map("name" -> table.name),
-          Map("name" -> table.name),
+          Map("name" -> cleanTableName(table.name)),
           getSplitByColumn(table),
           pks,
           Kudu(pks, 2),
@@ -205,6 +205,29 @@ class PipewrenchService()
           table.comment.replaceAll("\"", "")
         )
       }
+
+  /**
+   * Cleansing function for tables names that may contain / in their name (mainly SAP Hana tables).
+   * @param name The table name
+   * @return Cleansed table name
+   */
+  private def cleanTableName(name: String) = {
+    def stripLeadingSlash(name: String) =
+      if (name.startsWith("/")) {
+        logger.debug(s"Table name: $name has a leading slash, this will be removed")
+        name.replaceFirst("/", "")
+      } else {
+        name
+      }
+    def replaceSlash(name: String) =
+      if (name.contains("/")) {
+        logger.debug(s"Table name: $name contains slashes, these will be replaced with underscores")
+        name.replaceAll("/", "_")
+      } else {
+        name
+      }
+    replaceSlash(stripLeadingSlash(name)).toLowerCase
+  }
 
   /**
    * Builds Pipewrench [[Column]] objects from Jdbc metadata [[DbColumn]]

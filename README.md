@@ -21,6 +21,8 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 #### Application Configuration `application.conf`
 [application.conf Example](src/main/resources/application.conf)
 
+To provide a custom application
+
 ```
 pipewrench { 
   virtualInstall = true # Determines whether Pipeforge should clone Pipewrench and setup virtual environment for Python.  Set to false if Pipewrench is already installed.
@@ -29,10 +31,13 @@ pipewrench {
   }
   directory {
     install = "src/main/resources" # Directory path containing installtion scripts `requirements.sh` and `generate-scripts.sh`.  Set to `conf` when using a packaged deployment.
-    pipewrench = "pipewrench_conf" # Pipewrench installation location.
-    templates = "../../../pipewrench/templates" # Fully qualified path location of Pipewrench templates directory.
-    ingest = "pipewrench_conf/ingest_conf" # Path where to write pipewrench configuration files and pipewrench output scripts
+    pipewrench = "<fully qualified path where Pipewrench should be installed>" # Pipewrench installation location.
+    templates = "<pipewrench template directory>" # Fully qualified path location of Pipewrench templates directory.
+    ingest = "." # Path where to write pipewrench configuration files and pipewrench output scripts
   }
+}
+impala {
+  cmd = "<impala-shell command> -f "  # Environment specific impala shell command.  Note -f is required as pipewrench passes sql files to the impala shell commands
 }
 ```
 
@@ -41,7 +46,7 @@ pipewrench {
 ```yaml
 name: dev.employee # Unique name for data ingestion
 group: edh_dev_employee # Associated AD group for ingestion
-databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or teradata
+databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or teradata, as400, redshift
 schema: employees # Database schema to ingest
 jdbcUrl: "jdbc:mysql://localhost:3306/employees" # JDBC Url for connecting to database
 username: employee # Database user name
@@ -91,10 +96,9 @@ Creates a bundled zip application with required dependencies and executable scri
 
 ### Pipewrench Configuration Builder
 ```
-$INSTALL_LOCATION/bin/pipeforge pipewrench \
-  -s <path to pipeforge environment file>
+$INSTALL_LOCATION/bin/pipeforge configuration \
+  -e <path to pipeforge environment file>
   -p <database password>
-  -o <output path where pipwrench environment and configuration files should be written>
 ```
 
 ### Pipeforge Rest Api

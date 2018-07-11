@@ -83,24 +83,7 @@ lazy val dependencies =
     val mockito           = "org.mockito"       % "mockito-core"                 % "2.18.3"             % Test
     val scalaMock         = "org.scalamock"     %% "scalamock-scalatest-support" % "3.6.0"              % Test
 
-    val common = Seq(scallop,
-                     scalaYaml,
-                     logback,
-                     scalaLogging,
-                     typesafeConf,
-                     scalaTest,
-                     mockito,
-                     scalaMock,
-                     scalaDockerTest,
-                     spotifyDockerTest)
-    val jdbc = Seq(mysql, oracle, mssql)
-    val rest = Seq(akka,
-                   akkaHttp,
-                   akkaHttpSprayJson,
-                   akkaCors,
-                   akkaHttpTestKit,
-                   scalaDockerTest,
-                   spotifyDockerTest)
+    val common = Seq(logback, scalaLogging, scalaTest, mockito, scalaMock)
   }
 
 lazy val settings = commonSettings ++ scalafmtSettings
@@ -117,7 +100,9 @@ lazy val pipeforge = project
     settings,
     assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
-    libraryDependencies ++= dependencies.common,
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop,
+                                                       dependencies.scalaDockerTest,
+                                                       dependencies.spotifyDockerTest),
     rpmLicense := Some("License: GPLv2"),
     rpmVendor := "phData"
   )
@@ -138,7 +123,8 @@ lazy val common = project
     name := "common",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
+                                                       dependencies.typesafeConf)
   )
 
 lazy val `jdbc-metadata` = project
@@ -146,7 +132,9 @@ lazy val `jdbc-metadata` = project
     name := "jdbc-metadata",
     version := "0.4",
     settings,
-    libraryDependencies ++= dependencies.common ++ dependencies.jdbc
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
+                                                       dependencies.oracle,
+                                                       dependencies.mssql)
   )
   .dependsOn(
     common
@@ -169,7 +157,11 @@ lazy val `rest-api` = project
     name := "rest-api",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ dependencies.rest
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.akka,
+                                                       dependencies.akkaHttp,
+                                                       dependencies.akkaHttpSprayJson,
+                                                       dependencies.akkaCors,
+                                                       dependencies.akkaHttpTestKit)
   )
   .dependsOn(
     common,

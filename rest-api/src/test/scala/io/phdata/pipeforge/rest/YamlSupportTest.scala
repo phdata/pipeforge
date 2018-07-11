@@ -1,7 +1,7 @@
 package io.phdata.pipeforge.rest
 
-import io.phdata.pipeforge.common.jdbc.{DatabaseConf, DatabaseType, ObjectType}
-import io.phdata.pipeforge.common.{Database, Environment, YamlSupport}
+import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType, ObjectType }
+import io.phdata.pipeforge.common.{ Database, Environment, YamlSupport }
 import org.scalatest.FunSuite
 
 /**

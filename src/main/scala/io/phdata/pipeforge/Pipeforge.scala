@@ -52,7 +52,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
         // If password is not supplied via CLI parameter then ask the user for it
         val password = cliArgs.configuration.databasePassword.toOption match {
-          case Some(password) => password
+          case Some(databasePassword) => databasePassword
           case None =>
             logger.info("Password not supplied on cli")
             print("Database Password: ")

@@ -23,7 +23,6 @@ import io.phdata.pipewrench.PipewrenchService
 import org.rogach.scallop.{ScallopConf, Subcommand}
 
 import scala.io.StdIn
-import scala.util.{Failure, Success}
 
 /**
  * The purpose of the Pipeforge application is build Pipewrench configuration files by parsing metadata
@@ -45,8 +44,6 @@ object Pipeforge extends YamlSupport with LazyLogging {
         // Parse file into Environment
         val environment = parseEnvironmentFile(cliArgs.configuration.environment())
         logger.info(s"Building Pipewrench configuration from environment: $environment")
-        // Build Pipewrench Environment from Pipeforge environment
-        val pipewrenchEnv = environment.toPipewrenchEnvironment
 
         val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
         // If password is not supplied via CLI parameter then ask the user for it
@@ -58,18 +55,8 @@ object Pipeforge extends YamlSupport with LazyLogging {
             StdIn.readLine()
         }
 
-        // Build Pipewrench Configuration
-        pipewrenchService.buildConfiguration(
-          environment.toDatabaseConfig(password),
-          environment.metadata,
-          pipewrenchEnv,
-          skipWhiteListCheck) match {
-          case Success(configuration) =>
-            pipewrenchService.saveEnvironment(pipewrenchEnv)
-            pipewrenchService.saveConfiguration(configuration)
-          case Failure(ex) =>
-            logger.error("Failed to build Pipewrench Config", ex)
-        }
+        pipewrenchService.buildConfiguration(environment, password, skipWhiteListCheck)
+
       case Some(cliArgs.merge) =>
         logger.info("Running Pipewrench merge from command line")
         pipewrenchService.install()

@@ -20,18 +20,21 @@ import java.io.File
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.common.{ AppConfiguration, YamlSupport }
+import io.phdata.pipeforge.common.{AppConfiguration, YamlSupport}
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType }
-import io.phdata.pipeforge.common.jdbc.{ DataType, Column => DbColumn, Table => DbTable }
+import io.phdata.pipeforge.common.jdbc.{DatabaseConf, DatabaseType}
+import io.phdata.pipeforge.common.jdbc.{DataType, Column => DbColumn, Table => DbTable}
+import io.phdata.pipeforge.common.{Environment => PipeforgeEnvironment}
 import io.phdata.pipeforge.common.pipewrench._
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * Pipewrench service
  */
 trait Pipewrench {
+
+  def buildConfiguration(environment: PipeforgeEnvironment, password: String, skipWhitelistCheck: Boolean = false): Unit
 
   /**
    * Builds a Pipewrench Configuratio from JDBC metadata
@@ -84,6 +87,17 @@ class PipewrenchService()
     with AppConfiguration
     with YamlSupport
     with LazyLogging {
+
+  override def buildConfiguration(environment: PipeforgeEnvironment, password: String, skipWhiteListCheck: Boolean = false): Unit = {
+    val pipewrenchEnvironment = environment.toPipewrenchEnvironment
+    buildConfiguration(environment.toDatabaseConfig(password), environment.metadata, pipewrenchEnvironment, skipWhiteListCheck) match {
+      case Success(configuration) =>
+        saveEnvironment(pipewrenchEnvironment)
+        saveConfiguration(configuration)
+      case Failure(ex) =>
+        logger.error("Failed to build Pipewrench Config", ex)
+    }
+  }
 
   /**
    * Builds a Pipewrench Configuration from JDBC metadata

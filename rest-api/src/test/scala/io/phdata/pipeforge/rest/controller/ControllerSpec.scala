@@ -1,9 +1,9 @@
 package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import io.phdata.pipeforge.rest.domain.{ Database, Environment }
+import io.phdata.pipeforge.common.{ Database, Environment }
 import io.phdata.pipewrench.Pipewrench
-import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
+import io.phdata.pipeforge.common.pipewrench.{ Column, Configuration, Kudu, Table }
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{ Matchers, WordSpec }
 

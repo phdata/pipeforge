@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.domain
+package io.phdata.pipeforge.common.jdbc
 
 import java.sql.SQLType
 

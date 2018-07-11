@@ -122,6 +122,7 @@ lazy val pipeforge = project
     rpmVendor := "phData"
   )
   .dependsOn(
+    common,
     `jdbc-metadata`,
     pipewrench,
     `rest-api`
@@ -132,12 +133,23 @@ lazy val pipeforge = project
     `rest-api`
   )
 
+lazy val common = project
+  .settings(
+    name := "common",
+    version := appVersion,
+    settings,
+    libraryDependencies ++= dependencies.common
+  )
+
 lazy val `jdbc-metadata` = project
   .settings(
     name := "jdbc-metadata",
     version := "0.4",
     settings,
     libraryDependencies ++= dependencies.common ++ dependencies.jdbc
+  )
+  .dependsOn(
+    common
   )
 
 lazy val pipewrench = project
@@ -148,6 +160,7 @@ lazy val pipewrench = project
     libraryDependencies ++= dependencies.common
   )
   .dependsOn(
+    common,
     `jdbc-metadata`
   )
 
@@ -159,6 +172,7 @@ lazy val `rest-api` = project
     libraryDependencies ++= dependencies.common ++ dependencies.rest
   )
   .dependsOn(
+    common,
     pipewrench
   )
 

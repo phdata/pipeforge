@@ -19,9 +19,8 @@ package io.phdata.pipeforge
 import java.sql.{JDBCType, ResultSet}
 
 import com.whisk.docker.{DockerContainer, DockerReadyChecker}
+import io.phdata.pipeforge.common.jdbc._
 import io.phdata.pipeforge.jdbc.{DatabaseMetadataParser, MsSQLMetadataParser, MySQLMetadataParser}
-import io.phdata.pipeforge.jdbc.config.{DatabaseConf, DatabaseType, ObjectType}
-import io.phdata.pipeforge.jdbc.domain.{Column, Table}
 import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{Failure, Success}
@@ -55,7 +54,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
   override val URL = s"jdbc:mysql://${CONTAINER.hostname.getOrElse("localhost")}:$EXPOSED_PORT/$DATABASE"
   override val DRIVER = "com.mysql.jdbc.Driver"
 
-  private lazy val DOCKER_CONFIG = new DatabaseConf(DatabaseType.MYSQL,
+  private lazy val DOCKER_CONFIG = DatabaseConf(DatabaseType.MYSQL,
     DATABASE,
     URL,
     USER,

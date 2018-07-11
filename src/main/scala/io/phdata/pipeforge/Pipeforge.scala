@@ -18,9 +18,8 @@ package io.phdata.pipeforge
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.RestApp
-import io.phdata.pipeforge.rest.domain.YamlSupport
+import io.phdata.pipeforge.common.YamlSupport
 import io.phdata.pipewrench.PipewrenchService
-import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
 import org.rogach.scallop.{ ScallopConf, Subcommand }
 
 import scala.util.{ Failure, Success }
@@ -29,7 +28,7 @@ import scala.util.{ Failure, Success }
  * The purpose of the Pipeforge application is build Pipewrench configuration files by parsing metadata
  * from a source database.
  */
-object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging {
+object Pipeforge extends YamlSupport with LazyLogging {
 
   def main(args: Array[String]): Unit = {
     // Parse command line arguments
@@ -43,7 +42,7 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         new RestApp(pipewrenchService).start(cliArgs.restApi.port())
       case Some(cliArgs.configuration) =>
         // Parse file into Environment
-        val environment = parseFile(cliArgs.configuration.environment())
+        val environment = parseEnvironmentFile(cliArgs.configuration.environment())
         logger.info(s"Building Pipewrench configuration from environment: $environment")
         // Build Pipewrench Environment from Pipeforge environment
         val pipewrenchEnv = environment.toPipewrenchEnvironment

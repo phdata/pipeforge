@@ -18,7 +18,7 @@ package io.phdata.pipeforge.jdbc
 
 import java.sql.Connection
 
-import io.phdata.pipeforge.jdbc.domain.Column
+import io.phdata.pipeforge.common.jdbc.Column
 import io.phdata.pipeforge.jdbc.Implicits._
 
 /**

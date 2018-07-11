@@ -2,15 +2,15 @@ package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import io.phdata.pipeforge.rest.domain.YamlSupport
-import io.phdata.pipewrench.domain.{ Configuration, YamlSupport => PipewrenchYamlSupport }
+import io.phdata.pipeforge.common.YamlSupport
+import io.phdata.pipeforge.common.pipewrench.Configuration
 
 import scala.util.Success
 
 /**
  * Pipewrench endpoint tests
  */
-class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with PipewrenchYamlSupport {
+class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
 
   import spray.json._
   import net.jcazevedo.moultingyaml._

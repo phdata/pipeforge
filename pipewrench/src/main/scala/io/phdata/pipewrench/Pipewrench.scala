@@ -20,10 +20,11 @@ import java.io.File
 import java.sql.JDBCType
 
 import com.typesafe.scalalogging.LazyLogging
+import io.phdata.pipeforge.common.{ AppConfiguration, YamlSupport }
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType }
-import io.phdata.pipeforge.jdbc.domain.{ DataType, Column => DbColumn, Table => DbTable }
-import io.phdata.pipewrench.domain._
+import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType }
+import io.phdata.pipeforge.common.jdbc.{ DataType, Column => DbColumn, Table => DbTable }
+import io.phdata.pipeforge.common.pipewrench._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -33,11 +34,11 @@ import scala.util.{ Failure, Success, Try }
 trait Pipewrench {
 
   /**
-   * Builds a Pipewrench [[Configuration]] from JDBC metadata
+   * Builds a Pipewrench Configuratio from JDBC metadata
    *
    * @param databaseConf Database configuration
    * @param tableMetadata Metadata map used in Hive tblproperties
-   * @param environment Pipewrench [[Environment]]
+   * @param environment Pipewrench Environment
    * @return A Configuration
    */
   def buildConfiguration(databaseConf: DatabaseConf,
@@ -46,21 +47,21 @@ trait Pipewrench {
                          skipWhiteListCheck: Boolean = false): Try[Configuration]
 
   /**
-   * Writes a Pipewrench [[Configuration]] to configured directory
-   * @param configuration Pipewrench [[Configuration]]
+   * Writes a Pipewrench Configuration to configured directory
+   * @param configuration Pipewrench Configuration
    */
   def saveConfiguration(configuration: Configuration): Unit
 
   /**
-   * Writes a Pipewrench [[Environment]] to configured directory
-   * @param environment Pipewrench [[Environment]]
+   * Writes a Pipewrench Environment to configured directory
+   * @param environment Pipewrench Environment
    */
   def saveEnvironment(environment: Environment): Unit
 
   /**
    * Executes Pipewrench merge command
    * @param template Template name
-   * @param configuration Pipewrench [[Configuration]]
+   * @param configuration Pipewrench Configuration
    */
   def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit
 
@@ -85,11 +86,11 @@ class PipewrenchService()
     with LazyLogging {
 
   /**
-   * Builds a Pipewrench [[Configuration]] from JDBC metadata
+   * Builds a Pipewrench Configuration from JDBC metadata
    *
    * @param databaseConf Database configuration
    * @param tableMetadata Metadata map used in Hive tblproperties
-   * @param environment Pipewrench [[Environment]]
+   * @param environment Pipewrench Environment
    * @return A Configuration
    */
   override def buildConfiguration(databaseConf: DatabaseConf,
@@ -127,8 +128,8 @@ class PipewrenchService()
     }
 
   /**
-   * Writes a Pipewrench [[Configuration]] to configured directory
-   * @param configuration Pipewrench [[Configuration]]
+   * Writes a Pipewrench Configuration to configured directory
+   * @param configuration Pipewrench Configuration
    */
   override def saveConfiguration(configuration: Configuration): Unit = {
     val dir = projectDir(configuration.group, configuration.name)
@@ -138,8 +139,8 @@ class PipewrenchService()
   }
 
   /**
-   * Writes a Pipewrench [[Environment]] to configured directory
-   * @param environment Pipewrench [[Environment]]
+   * Writes a Pipewrench Environment to configured directory
+   * @param environment Pipewrench Environment
    */
   override def saveEnvironment(environment: Environment): Unit = {
     val dir = projectDir(environment.group, environment.name)
@@ -151,7 +152,7 @@ class PipewrenchService()
   /**
    * Executes Pipewrench merge command
    * @param template Template name
-   * @param configuration Pipewrench [[Configuration]]
+   * @param configuration Pipewrench Configuration
    */
   override def executePipewrenchMergeApi(template: String, configuration: Configuration): Unit =
     executePipewrenchMerge(projectDir(configuration.group, configuration.name), template)
@@ -181,10 +182,10 @@ class PipewrenchService()
   }
 
   /**
-   * Builds Pipewrench [[Table]] object from Jdbc metadata [[DbTable]]
-   * @param tables Database tables [[DbTable]]
+   * Builds Pipewrench Table object from Jdbc metadata DbTable
+   * @param tables Database tables DbTable
    * @param tableMetadata A map of expanded tblproperties
-   * @return A list of [[Table]]s
+   * @return A list of Tables
    */
   private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
     tables.toList
@@ -230,9 +231,9 @@ class PipewrenchService()
   }
 
   /**
-   * Builds Pipewrench [[Column]] objects from Jdbc metadata [[DbColumn]]
-   * @param columns Database columns [[DbColumn]]
-   * @return A list of [[Column]]s
+   * Builds Pipewrench Column objects from Jdbc metadata DbColumn
+   * @param columns Database columns DbColumn
+   * @return A list of Columns
    */
   private def buildColumns(columns: Set[DbColumn]): Seq[Column] =
     columns.toList
@@ -251,7 +252,7 @@ class PipewrenchService()
 
   /**
    * Trys to determine which column from the table definition is the best split by column.
-   * @param table Database [[DbTable]]
+   * @param table Database DbTable
    * @return
    */
   def getSplitByColumn(table: DbTable) = {

@@ -1,7 +1,7 @@
 package io.phdata.pipeforge.rest
 
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipeforge.rest.domain.{ Database, Environment, YamlSupport }
+import io.phdata.pipeforge.common.jdbc.{DatabaseConf, DatabaseType, ObjectType}
+import io.phdata.pipeforge.common.{Database, Environment, YamlSupport}
 import org.scalatest.FunSuite
 
 /**
@@ -12,7 +12,7 @@ class YamlSupportTest extends FunSuite with YamlSupport {
   val testFilePath = "rest-api/src/test/resources/db.yml"
 
   test("YamlProtocol Trait should parse a file into Environment") {
-    val environment = parseFile(testFilePath)
+    val environment = parseEnvironmentFile(testFilePath)
     val expected = Environment(
       "test_name",
       "test_group",
@@ -33,7 +33,7 @@ class YamlSupportTest extends FunSuite with YamlSupport {
 
   test("Should parse yaml file into DatabaseConf") {
     val testPass     = "test_pass"
-    val environment  = parseFile(testFilePath)
+    val environment  = parseEnvironmentFile(testFilePath)
     val databaseConf = environment.toDatabaseConfig(testPass)
     val expected = DatabaseConf(
       databaseType = DatabaseType.MYSQL,

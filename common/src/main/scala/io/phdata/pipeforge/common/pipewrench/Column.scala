@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.config
+package io.phdata.pipeforge.common.pipewrench
 
 /**
- * Supported Database objects
+ * Column object
+ * @param name
+ * @param datatype
+ * @param comment
+ * @param scale
+ * @param precision
  */
-object ObjectType extends Enumeration {
-  val VIEW  = Value("view")
-  val TABLE = Value("table")
-}
+case class Column(name: String,
+                  datatype: String,
+                  comment: String = "",
+                  scale: Option[Int] = None,
+                  precision: Option[Int] = None)

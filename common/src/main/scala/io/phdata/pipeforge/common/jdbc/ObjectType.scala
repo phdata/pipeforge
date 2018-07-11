@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common.jdbc
 
 /**
- * Environment object
- * @param name
- * @param group
- * @param connection_string
- * @param hadoop_user
- * @param password_file
+ * Supported Database objects
  */
-case class Environment(name: String,
-                       group: String,
-                       connection_string: String,
-                       hadoop_user: String,
-                       password_file: String,
-                       staging_database_path: String,
-                       staging_database_name: String,
-                       raw_database_path: String,
-                       raw_database_name: String)
+object ObjectType extends Enumeration {
+  val VIEW  = Value("view")
+  val TABLE = Value("table")
+}

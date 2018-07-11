@@ -18,8 +18,6 @@ package io.phdata.pipeforge.jdbc
 
 import java.sql.Connection
 
-import io.phdata.pipeforge.jdbc.domain.Column
-
 /**
  * HANA metadata parser implementation
  * @param _connection

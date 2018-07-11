@@ -19,8 +19,7 @@ package io.phdata.pipeforge.jdbc
 import java.sql._
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipeforge.jdbc.domain.{ Column, Table }
+import io.phdata.pipeforge.common.jdbc._
 import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{ Failure, Success, Try }

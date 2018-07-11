@@ -20,9 +20,10 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.RestApp
 import io.phdata.pipeforge.common.YamlSupport
 import io.phdata.pipewrench.PipewrenchService
-import org.rogach.scallop.{ ScallopConf, Subcommand }
+import org.rogach.scallop.{ScallopConf, Subcommand}
 
-import scala.util.{ Failure, Success }
+import scala.io.StdIn
+import scala.util.{Failure, Success}
 
 /**
  * The purpose of the Pipeforge application is build Pipewrench configuration files by parsing metadata
@@ -48,9 +49,18 @@ object Pipeforge extends YamlSupport with LazyLogging {
         val pipewrenchEnv = environment.toPipewrenchEnvironment
 
         val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
+        // If password is not supplied via CLI parameter then ask the user for it
+        val password = cliArgs.configuration.databasePassword.toOption match {
+          case Some(databasePassword) => databasePassword
+          case None =>
+            logger.info("Password not supplied on cli")
+            print("Database Password: ")
+            StdIn.readLine()
+        }
+
         // Build Pipewrench Configuration
         pipewrenchService.buildConfiguration(
-          environment.toDatabaseConfig(cliArgs.configuration.databasePassword()),
+          environment.toDatabaseConfig(password),
           environment.metadata,
           pipewrenchEnv,
           skipWhiteListCheck) match {
@@ -75,8 +85,7 @@ object Pipeforge extends YamlSupport with LazyLogging {
    * Subcommands:
    *   - pipewrench: Connects to source database and writes parsed Pipewrench Configuration
    *       Args:
-   *       enviornment (e) Required - Path to the source database configuration file
-   *       password (p) Required - The source database password
+   *       environment (e) Required - Path to the source database configuration file
    *       output-path (o) - Output path for the file generated tables.yml file
    *       check-whitelist (c) - Output path for the file generated tables.yml file
    *
@@ -100,7 +109,7 @@ object Pipeforge extends YamlSupport with LazyLogging {
       val environment =
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
-        opt[String]("password", 'p', descr = "database password", required = true)
+        opt[String]("password", 'p', descr = "database password", required = false)
       val skipcheckWhitelist = opt[Boolean](
         "override-whitelist-check",
         'c',

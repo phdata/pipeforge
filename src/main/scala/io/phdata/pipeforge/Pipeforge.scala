@@ -19,8 +19,9 @@ package io.phdata.pipeforge
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.RestApp
 import io.phdata.pipeforge.common.YamlSupport
+import io.phdata.pipeforge.jdbc.SchemaValidator
 import io.phdata.pipewrench.PipewrenchService
-import org.rogach.scallop.{ScallopConf, Subcommand}
+import org.rogach.scallop.{ ScallopConf, Subcommand }
 
 import scala.io.StdIn
 
@@ -30,41 +31,41 @@ import scala.io.StdIn
  */
 object Pipeforge extends YamlSupport with LazyLogging {
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     // Parse command line arguments
-    val cliArgs = new CliArgsParser(args)
+    SchemaValidator.validateSchema()
+//    val cliArgs = new CliArgsParser(args)
 
-    val pipewrenchService = new PipewrenchService()
-
-    cliArgs.subcommand match {
-      case Some(cliArgs.restApi) =>
-        logger.info("Starting Pipeforge rest api")
-        new RestApp(pipewrenchService).start(cliArgs.restApi.port())
-      case Some(cliArgs.configuration) =>
-        // Parse file into Environment
-        val environment = parseEnvironmentFile(cliArgs.configuration.environment())
-        logger.info(s"Building Pipewrench configuration from environment: $environment")
-
-        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
-        // If password is not supplied via CLI parameter then ask the user for it
-        val password = cliArgs.configuration.databasePassword.toOption match {
-          case Some(databasePassword) => databasePassword
-          case None =>
-            logger.info("Password not supplied on cli")
-            print("Database Password: ")
-            StdIn.readLine()
-        }
-
-        pipewrenchService.buildConfiguration(environment, password, skipWhiteListCheck)
-
-      case Some(cliArgs.merge) =>
-        logger.info("Running Pipewrench merge from command line")
-        pipewrenchService.install()
-        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
-                                                 cliArgs.merge.template())
-      case _ => // parsing failure
-    }
-  }
+//    val pipewrenchService = new PipewrenchService()
+//
+//    cliArgs.subcommand match {
+//      case Some(cliArgs.restApi) =>
+//        logger.info("Starting Pipeforge rest api")
+//        new RestApp(pipewrenchService).start(cliArgs.restApi.port())
+//      case Some(cliArgs.configuration) =>
+//        // Parse file into Environment
+//        val environment = parseEnvironmentFile(cliArgs.configuration.environment())
+//        logger.info(s"Building Pipewrench configuration from environment: $environment")
+//
+//        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
+//        // If password is not supplied via CLI parameter then ask the user for it
+//        val password = cliArgs.configuration.databasePassword.toOption match {
+//          case Some(databasePassword) => databasePassword
+//          case None =>
+//            logger.info("Password not supplied on cli")
+//            print("Database Password: ")
+//            StdIn.readLine()
+//        }
+//
+//        pipewrenchService.buildConfiguration(environment, password, skipWhiteListCheck)
+//
+//      case Some(cliArgs.merge) =>
+//        logger.info("Running Pipewrench merge from command line")
+//        pipewrenchService.install()
+//        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
+//                                                 cliArgs.merge.template())
+//      case _ => // parsing failure
+//    }
 
   /**
    * CLI parameter parser*

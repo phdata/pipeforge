@@ -38,6 +38,7 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
     "datanucleus" at "http://www.datanucleus.org/downloads/maven2/",
+    "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
     Resolver.sonatypeRepo("releases")
   )
 )
@@ -75,6 +76,7 @@ lazy val dependencies =
     val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
     val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
     val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.3.0"
+    val hive              = "org.apache.hive"            % "hive-jdbc"             % "1.1.0-cdh5.14.2"
 
     val scalaTest         = "org.scalatest"     %% "scalatest"                   % "3.0.4"              % Test
     val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
@@ -134,7 +136,8 @@ lazy val `jdbc-metadata` = project
     settings,
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
                                                        dependencies.oracle,
-                                                       dependencies.mssql)
+                                                       dependencies.mssql,
+                                                       dependencies.hive)
   )
   .dependsOn(
     common

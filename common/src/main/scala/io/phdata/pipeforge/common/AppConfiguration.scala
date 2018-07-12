@@ -39,6 +39,7 @@ trait AppConfiguration {
   // Pipewrench ingest config output directory
   val pipewrenchIngestConf: String = config.getString("pipewrench.directory.ingest")
   // Cluster specific impala shell command
-  val impalaCmd: String = config.getString("impala.cmd")
-
+  val impalaCmd: String  = config.getString("impala.cmd")
+  val impalaHost: String = config.getString("impala.hostname")
+  val impalaPort: Int    = config.getInt("impala.port")
 }

@@ -31,41 +31,61 @@ import scala.io.StdIn
  */
 object Pipeforge extends YamlSupport with LazyLogging {
 
-  def main(args: Array[String]): Unit =
+  def main(args: Array[String]): Unit = {
     // Parse command line arguments
-    SchemaValidator.validateSchema()
-//    val cliArgs = new CliArgsParser(args)
+    val cliArgs = new CliArgsParser(args)
 
-//    val pipewrenchService = new PipewrenchService()
-//
-//    cliArgs.subcommand match {
-//      case Some(cliArgs.restApi) =>
-//        logger.info("Starting Pipeforge rest api")
-//        new RestApp(pipewrenchService).start(cliArgs.restApi.port())
-//      case Some(cliArgs.configuration) =>
-//        // Parse file into Environment
-//        val environment = parseEnvironmentFile(cliArgs.configuration.environment())
-//        logger.info(s"Building Pipewrench configuration from environment: $environment")
-//
-//        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
-//        // If password is not supplied via CLI parameter then ask the user for it
-//        val password = cliArgs.configuration.databasePassword.toOption match {
-//          case Some(databasePassword) => databasePassword
-//          case None =>
-//            logger.info("Password not supplied on cli")
-//            print("Database Password: ")
-//            StdIn.readLine()
-//        }
-//
-//        pipewrenchService.buildConfiguration(environment, password, skipWhiteListCheck)
-//
-//      case Some(cliArgs.merge) =>
-//        logger.info("Running Pipewrench merge from command line")
-//        pipewrenchService.install()
-//        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
-//                                                 cliArgs.merge.template())
-//      case _ => // parsing failure
-//    }
+    val pipewrenchService = new PipewrenchService()
+
+    cliArgs.subcommand match {
+      case Some(cliArgs.restApi) =>
+        logger.info("Starting Pipeforge rest api")
+        new RestApp(pipewrenchService).start(cliArgs.restApi.port())
+      case Some(cliArgs.configuration) =>
+        // Parse file into Environment
+        val environment = parseEnvironmentFile(cliArgs.configuration.environment())
+        logger.info(s"Building Pipewrench configuration from environment: $environment")
+
+        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
+        // If password is not supplied via CLI parameter then ask the user for it
+        val password =
+          getArgOrAsk(cliArgs.configuration.databasePassword.toOption, "Enter database password: ")
+
+        pipewrenchService.buildAndSaveConfiguration(environment, password, skipWhiteListCheck)
+
+      case Some(cliArgs.merge) =>
+        logger.info("Running Pipewrench merge from command line")
+        pipewrenchService.install()
+        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
+                                                 cliArgs.merge.template())
+      case Some(cliArgs.validateSchema) =>
+        logger.info("Executing schema validation")
+        val environment        = parseEnvironmentFile(cliArgs.validateSchema.environment())
+        val skipWhiteListCheck = cliArgs.validateSchema.skipcheckWhitelist.getOrElse(false)
+        val databasePassword =
+          getArgOrAsk(cliArgs.validateSchema.databasePassword.toOption, "Enter database password: ")
+        val impalaUser =
+          getArgOrAsk(cliArgs.validateSchema.impalaUser.toOption, "Impala username: ")
+        val impalaPassword =
+          getArgOrAsk(cliArgs.validateSchema.impalaPassword.toOption, "Impala password: ")
+
+        SchemaValidator.validateSchema(environment,
+                                       databasePassword,
+                                       impalaUser,
+                                       impalaPassword,
+                                       skipWhiteListCheck)
+
+      case _ => // parsing failure
+    }
+  }
+
+  private def getArgOrAsk(cliArg: Option[String], msg: String): String =
+    cliArg match {
+      case Some(password) => password
+      case None =>
+        print(msg)
+        StdIn.readLine()
+    }
 
   /**
    * CLI parameter parser*
@@ -114,6 +134,24 @@ object Pipeforge extends YamlSupport with LazyLogging {
       val template = opt[String]("template", 't', descr = "Pipewrench template", required = true)
     }
     addSubcommand(merge)
+
+    val validateSchema = new Subcommand("validate-schema") {
+      descr("Validate source database schema against Hive Metastore")
+      val environment =
+        opt[String]("environment", 'e', descr = "environment.yml file", required = true)
+      val databasePassword =
+        opt[String]("database-password", 'p', descr = "database password", required = false)
+      val impalaUser =
+        opt[String]("user", 'u', descr = "impala user", required = false)
+      val impalaPassword =
+        opt[String]("impala-password", 'i', descr = "impala password", required = false)
+      val skipcheckWhitelist = opt[Boolean](
+        "override-whitelist-check",
+        'c',
+        descr = "Skips checking whitelisted tables against source database",
+        default = Some(false))
+    }
+    addSubcommand(validateSchema)
 
     verify()
 

@@ -187,7 +187,13 @@ trait DatabaseMetadataParser extends LazyLogging {
       tableCommentQuery(schema, table) match {
         case Some(query) =>
           logger.debug("Getting table comments, query: {}", query)
-          stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).toList.head
+          stmt
+            .executeQuery(query)
+            .toStream
+            .map(rs => Option(rs.getString(1)))
+            .toList
+            .headOption
+            .flatten
         case None => Some("")
       }
     } catch {

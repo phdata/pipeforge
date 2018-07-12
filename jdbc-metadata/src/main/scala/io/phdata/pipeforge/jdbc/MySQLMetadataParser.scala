@@ -33,13 +33,13 @@ class MySQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |LIMIT 1
      """.stripMargin
 
-  override def joinedSingleRecordQuery(schema: String, table: String): String =
-    s"""
+  override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT t.*
        |FROM INFORMATION_SCHEMA.TABLES AS d
        |  LEFT OUTER JOIN $schema.$table AS t ON 1=1
        |LIMIT 1
-     """.stripMargin
+     """.stripMargin)
 
   override def listTablesStatement(schema: String) =
     s"""

@@ -61,7 +61,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @param table  Table name
    * @return SQL query selecting a single row from a table
    */
-  def joinedSingleRecordQuery(schema: String, table: String): String
+  def joinedSingleRecordQuery(schema: String, table: String): Option[String]
 
   /**
    * Database specific query that returns a result set containing all views in the specified schema
@@ -88,47 +88,6 @@ trait DatabaseMetadataParser extends LazyLogging {
    * @return The column comment query
    */
   def columnCommentsQuery(schema: String, table: String): Option[String]
-
-  /**
-   * Build column definitions for a specific table
-   *
-   * @param schema Schema or database name
-   * @param table  Table name
-   * @return A Set of Column definitions
-   */
-  def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
-    val query = singleRecordQuery(schema, table)
-    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
-    val stmt = connection.createStatement()
-    val metaDataResult: Try[ResultSetMetaData] =
-      stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
-        case Some(metaData) => Success(metaData)
-        case None =>
-          val joinedQuery = joinedSingleRecordQuery(schema, table)
-          logger.debug(s"Table: $table does not contain any records, using joined query: {}",
-                       joinedQuery)
-          try {
-            stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
-              case Some(metaData) => Success(metaData)
-              case None =>
-                Failure(new Exception(s"Failed to use join query to get column definitions"))
-            }
-          } catch {
-            case e: Exception => Failure(e)
-          }
-      }
-
-    val result: Try[Set[Column]] = metaDataResult match {
-      case Success(metaData) =>
-        val rsMetadata     = metaData.asInstanceOf[java.sql.ResultSetMetaData]
-        val columnComments = getColumnComments(schema, table)
-        Success(mapMetaDataToColumn(columnComments, metaData, rsMetadata))
-      case Failure(ex) => Failure(ex)
-    }
-
-    stmt.close()
-    result
-  }
 
   /**
    * Main starting point for gathering table and column metadata
@@ -176,6 +135,54 @@ trait DatabaseMetadataParser extends LazyLogging {
         logger.warn(s"Failed to get metadata for table:$table", ex)
         None
     }
+
+  /**
+   * Build column definitions for a specific table
+   *
+   * @param schema Schema or database name
+   * @param table  Table name
+   * @return A Set of Column definitions
+   */
+  def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
+    val query = singleRecordQuery(schema, table)
+    logger.debug(s"Gathering column definitions for $schema.$table, query: {}", query)
+    val stmt = connection.createStatement()
+    val metaDataResult: Try[ResultSetMetaData] =
+      stmt.executeQuery(query).toStream.map(_.getMetaData).toList.headOption match {
+        case Some(metaData) => Success(metaData)
+        case None =>
+          joinedSingleRecordQuery(schema, table) match {
+            case Some(joinedQuery) =>
+              logger.debug(s"Table: $table does not contain any records, using joined query: {}",
+                           joinedQuery)
+              try {
+                stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
+                  case Some(metaData) => Success(metaData)
+                  case None =>
+                    Failure(
+                      new Exception(
+                        s"Failed to use join query to get column definitions, query: $joinedQuery"))
+                }
+              } catch {
+                case e: Exception => Failure(e)
+              }
+            case None =>
+              Failure(new Exception(
+                s"Table: $schema.$table is empty and joinedSingleRecord query is None, cannot get column definitions"))
+          }
+      }
+
+    val result: Try[Set[Column]] = metaDataResult match {
+      case Success(metaData) =>
+        val rsMetadata     = metaData.asInstanceOf[java.sql.ResultSetMetaData]
+        val columnComments = getColumnComments(schema, table)
+        Success(mapMetaDataToColumn(columnComments, metaData, rsMetadata))
+      case Failure(ex) => Failure(ex)
+    }
+
+    stmt.close()
+    result
+  }
 
   /**
    * Gets table comments from the source system, user will need access to the sys or information_schema schemas

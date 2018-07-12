@@ -41,12 +41,7 @@ class ImpalaMetadataParser(_connection: Connection) extends DatabaseMetadataPars
    * @param table  Table name
    * @return SQL query selecting a single row from a table
    */
-  override def joinedSingleRecordQuery(schema: String, table: String): String =
-    s"""
-       |SELECT *
-       |FROM $schema.$table
-       |LIMIT 1
-   """.stripMargin
+  override def joinedSingleRecordQuery(schema: String, table: String): Option[String] = None
 
   /**
    * Database specific query that returns a result set containing all views in the specified schema

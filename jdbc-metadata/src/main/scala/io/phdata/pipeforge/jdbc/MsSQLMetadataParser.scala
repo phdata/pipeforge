@@ -42,12 +42,12 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
        |FROM \"$table\"
      """.stripMargin
 
-  override def joinedSingleRecordQuery(schema: String, table: String): String =
-    s"""
+  override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT TOP 1 t.*
        |FROM INFORMATION_SCHEMA.TABLES AS d
        |  LEFT OUTER JOIN \"$schema\".\"$table\" AS t ON 1=1
-     """.stripMargin
+     """.stripMargin)
 
   override def listViewsStatement(schema: String) =
     s"""

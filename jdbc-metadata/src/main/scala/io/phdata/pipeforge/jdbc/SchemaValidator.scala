@@ -19,9 +19,6 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
                               databasePassword: String,
                               impalaUser: String,
                               impalaPassword: String,
-                              skipWhitelistCheck: Boolean = false): Unit = {
-
-  }
-
+                              skipWhitelistCheck: Boolean = false): Unit = {}
 
 }

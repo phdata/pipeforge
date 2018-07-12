@@ -20,11 +20,11 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.rest.RestApp
 import io.phdata.pipeforge.rest.domain.YamlSupport
 import io.phdata.pipewrench.PipewrenchService
-import io.phdata.pipewrench.domain.{YamlSupport => PipewrenchYamlSupport}
-import org.rogach.scallop.{ScallopConf, Subcommand}
+import io.phdata.pipewrench.domain.{ YamlSupport => PipewrenchYamlSupport }
+import org.rogach.scallop.{ ScallopConf, Subcommand }
 
 import scala.io.StdIn
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 /**
  * The purpose of the Pipeforge application is build Pipewrench configuration files by parsing metadata
@@ -60,11 +60,10 @@ object Pipeforge extends YamlSupport with PipewrenchYamlSupport with LazyLogging
         }
 
         // Build Pipewrench Configuration
-        pipewrenchService.buildConfiguration(
-          environment.toDatabaseConfig(password),
-          environment.metadata,
-          pipewrenchEnv,
-          skipWhiteListCheck) match {
+        pipewrenchService.buildConfiguration(environment.toDatabaseConfig(password),
+                                             environment.metadata,
+                                             pipewrenchEnv,
+                                             skipWhiteListCheck) match {
           case Success(configuration) =>
             pipewrenchService.saveEnvironment(pipewrenchEnv)
             pipewrenchService.saveConfiguration(configuration)

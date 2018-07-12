@@ -46,12 +46,11 @@ object Pipeforge extends YamlSupport with LazyLogging {
         val environment = parseEnvironmentFile(cliArgs.configuration.environment())
         logger.info(s"Building Pipewrench configuration from environment: $environment")
 
-        val skipWhiteListCheck = cliArgs.configuration.skipcheckWhitelist.getOrElse(false)
         // If password is not supplied via CLI parameter then ask the user for it
         val password =
           getArgOrAsk(cliArgs.configuration.databasePassword.toOption, "Enter database password: ")
 
-        pipewrenchService.buildAndSaveConfiguration(environment, password, skipWhiteListCheck)
+        pipewrenchService.buildAndSaveConfiguration(environment, password)
 
       case Some(cliArgs.merge) =>
         logger.info("Running Pipewrench merge from command line")
@@ -60,20 +59,13 @@ object Pipeforge extends YamlSupport with LazyLogging {
                                                  cliArgs.merge.template())
       case Some(cliArgs.validateSchema) =>
         logger.info("Executing schema validation")
-        val environment        = parseEnvironmentFile(cliArgs.validateSchema.environment())
-        val skipWhiteListCheck = cliArgs.validateSchema.skipcheckWhitelist.getOrElse(false)
+        val environment = parseEnvironmentFile(cliArgs.validateSchema.environment())
         val databasePassword =
           getArgOrAsk(cliArgs.validateSchema.databasePassword.toOption, "Enter database password: ")
-        val impalaUser =
-          getArgOrAsk(cliArgs.validateSchema.impalaUser.toOption, "Impala username: ")
-        val impalaPassword =
-          getArgOrAsk(cliArgs.validateSchema.impalaPassword.toOption, "Impala password: ")
+        val hadoopPassword =
+          getArgOrAsk(cliArgs.validateSchema.hadoopPassword.toOption, "Emter Hadoop password: ")
 
-        SchemaValidator.validateSchema(environment,
-                                       databasePassword,
-                                       impalaUser,
-                                       impalaPassword,
-                                       skipWhiteListCheck)
+        SchemaValidator.validateSchema(environment, databasePassword, hadoopPassword)
 
       case _ => // parsing failure
     }
@@ -118,11 +110,6 @@ object Pipeforge extends YamlSupport with LazyLogging {
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
         opt[String]("password", 'p', descr = "database password", required = false)
-      val skipcheckWhitelist = opt[Boolean](
-        "override-whitelist-check",
-        'c',
-        descr = "Skips checking whitelisted tables against source database",
-        default = Some(false))
 
     }
     addSubcommand(configuration)
@@ -141,15 +128,8 @@ object Pipeforge extends YamlSupport with LazyLogging {
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
         opt[String]("database-password", 'p', descr = "database password", required = false)
-      val impalaUser =
-        opt[String]("user", 'u', descr = "impala user", required = false)
-      val impalaPassword =
-        opt[String]("impala-password", 'i', descr = "impala password", required = false)
-      val skipcheckWhitelist = opt[Boolean](
-        "override-whitelist-check",
-        'c',
-        descr = "Skips checking whitelisted tables against source database",
-        default = Some(false))
+      val hadoopPassword =
+        opt[String]("hadoop-password", 'h', descr = "impala password", required = false)
     }
     addSubcommand(validateSchema)
 

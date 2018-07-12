@@ -31,12 +31,14 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Database connection
+   *
    * @return Connection
    */
   def connection: Connection
 
   /**
    * Database specific query that returns a result set containing all tables in the specified schema
+   *
    * @param schema Schema or database name
    * @return SQL query listing databases in schema
    */
@@ -44,8 +46,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Database specific query selecting a single row from the a schema and table
+   *
    * @param schema Schema or database name
-   * @param table Table name
+   * @param table  Table name
    * @return SQL query selecting a single row from table
    */
   def singleRecordQuery(schema: String, table: String): String
@@ -53,14 +56,16 @@ trait DatabaseMetadataParser extends LazyLogging {
   /**
    * Secondary SQL query for use when tables do not have any records.  This query will left outer join to another
    * table to return a record with all NULL records.
+   *
    * @param schema Schema or database name
-   * @param table Table name
+   * @param table  Table name
    * @return SQL query selecting a single row from a table
    */
   def joinedSingleRecordQuery(schema: String, table: String): String
 
   /**
    * Database specific query that returns a result set containing all views in the specified schema
+   *
    * @param schema Schema or database name
    * @return
    */
@@ -68,24 +73,27 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Database specific query that returns the table comment
+   *
    * @param schema Database schema
-   * @param table Database table
+   * @param table  Database table
    * @return The table comment query
    */
   def tableCommentQuery(schema: String, table: String): Option[String]
 
   /**
    * Database specific query that returns the column comments for the specified schema and table
+   *
    * @param schema Database schema
-   * @param table Database table
+   * @param table  Database table
    * @return The column comment query
    */
   def columnCommentsQuery(schema: String, table: String): Option[String]
 
   /**
    * Build column definitions for a specific table
+   *
    * @param schema Schema or database name
-   * @param table Table name
+   * @param table  Table name
    * @return A Set of Column definitions
    */
   def getColumnDefinitions(schema: String, table: String): Try[Set[Column]] = {
@@ -124,25 +132,24 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Main starting point for gathering table and column metadata
-   * @param configuration Database Configuration
-   * @param skipWhiteListCheck Controls whether or not to skip checking the whitelist against tables in DB
+   *
+   * @param configuration      Database Configuration
    * @return A Set of table definitions
    */
-  def getTablesMetadata(configuration: DatabaseConf,
-                        skipWhiteListCheck: Boolean = false): Try[List[Table]] =
+  def getTablesMetadata(configuration: DatabaseConf): Try[List[Table]] =
     // Query database for a list of tables or views
     configuration.tables match {
       case Some(tables) =>
-        if (skipWhiteListCheck) {
+        val sourceTables = listTables(configuration.objectType, configuration.schema)
+        if (sourceTables.isEmpty) {
           Try(tables.flatMap(getTableMetadata(configuration.schema, _)))
         } else {
           logger.debug("Checking user supplied white list against source system: {}", tables)
-          val sourceTables = listTables(configuration.objectType, configuration.schema)
           if (tables.toSet.subsetOf(sourceTables.toSet)) {
             Try(tables.flatMap(getTableMetadata(configuration.schema, _)))
           } else {
             Failure(new Exception(
-              s"A table in the whitelist was not found in the source system, whitelist=$tables, source tables=$sourceTables"))
+              s"A table in the whitelist was not found in the source system, whitelist: $tables, source tables: $sourceTables"))
           }
         }
       case None =>
@@ -152,8 +159,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Gets metadata for an individual table and its columns
+   *
    * @param schema Schema or database name
-   * @param table Table name
+   * @param table  Table name
    * @return Table definition
    */
   def getTableMetadata(schema: String, table: String): Option[Table] =
@@ -174,7 +182,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * to read table comments.  A blank comment will be used if access has not been granted.
    *
    * @param schema Database schema
-   * @param table Table schema
+   * @param table  Table schema
    * @return The table comment
    */
   def getTableComment(schema: String, table: String): Option[String] =
@@ -201,7 +209,7 @@ trait DatabaseMetadataParser extends LazyLogging {
    * to read column comments.  A blank comment will be used if access has not been granted.
    *
    * @param schema Database schema
-   * @param table Database table
+   * @param table  Database table
    * @return A list containing (column, comment)
    */
   def getColumnComments(schema: String, table: String): List[(String, Option[String])] =
@@ -217,7 +225,8 @@ trait DatabaseMetadataParser extends LazyLogging {
             .toList
         } catch {
           case e: Exception =>
-            logger.warn("Failed to query source for column comments, defaulting to empty comments", e)
+            logger.warn("Failed to query source for column comments, defaulting to empty comments",
+                        e)
             // If the query fails here it is most likely due to the user not having permissions
             // Instead of failing we need to capture the exception and return an empty list of comments
             List[(String, Option[String])]()
@@ -230,8 +239,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Gets the primary keys for a table
-   * @param schema Schema or database name
-   * @param table Table name
+   *
+   * @param schema  Schema or database name
+   * @param table   Table name
    * @param columns Complete set of column definitions for the table
    * @return Primary key definitions
    */
@@ -256,6 +266,7 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Maps a JDBC result set to Column definition
+   *
    * @param metaData Result set metadata
    * @param rsMetadata
    * @return A set of column definitions
@@ -286,8 +297,9 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Finds the column definitions for primary key definitions
+   *
    * @param primaryKeys A Map containing the primary key and its column position
-   * @param columns A Set of column definitions
+   * @param columns     A Set of column definitions
    * @return Primary key column definitions
    */
   def mapPrimaryKeyToColumn(primaryKeys: Map[String, Int], columns: Set[Column]): Set[Column] =
@@ -301,21 +313,29 @@ trait DatabaseMetadataParser extends LazyLogging {
 
   /**
    * Gathers a list of tables or views from the specified schema in the database
+   *
    * @param objectType Table or View
-   * @param schema Schema or database name
+   * @param schema     Schema or database name
    * @return A Set of tables or views
    */
   def listTables(objectType: ObjectType.Value, schema: String): List[String] = {
     val stmt: Statement = connection.createStatement()
-    val query =
-      if (objectType == ObjectType.TABLE) listTablesStatement(schema)
-      else listViewsStatement(schema)
-    logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
-    val result = stmt.executeQuery(query).toStream.map(_.getString(1)).toList
-    stmt.close()
-    result
+    try {
+      val query =
+        if (objectType == ObjectType.TABLE) listTablesStatement(schema)
+        else listViewsStatement(schema)
+      logger.debug(s"Getting list of source ${objectType.toString}s, query: {}", query)
+      stmt.executeQuery(query).toStream.map(_.getString(1)).toList
+    } catch {
+      case e: Exception =>
+        logger.warn("Failed to get a list of tables from source, cannot check whitelist", e)
+        // If the query fails here it is most likely due to the user not having permissions
+        // Default to empty list and assume the user will provide a whitelisting of tables
+        List()
+    } finally {
+      stmt.close()
+    }
   }
-
 }
 
 /**
@@ -328,7 +348,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @param configuration Database configuration
    * @return Set of table definitions
    */
-  def parse(configuration: DatabaseConf, skipWhiteListCheck: Boolean = false): Try[List[Table]] = {
+  def parse(configuration: DatabaseConf): Try[List[Table]] = {
     logger.info("Extracting metadata information from database: {}",
                 configuration.copy(password = "******"))
 
@@ -338,32 +358,28 @@ object DatabaseMetadataParser extends LazyLogging {
         // Determine the database type and parse table definitions
         configuration.databaseType match {
           case DatabaseType.MYSQL =>
-            new MySQLMetadataParser(connection).getTablesMetadata(configuration, skipWhiteListCheck)
+            new MySQLMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.ORACLE =>
-            new OracleMetadataParser(connection)
-              .getTablesMetadata(configuration, skipWhiteListCheck)
+            new OracleMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.MSSQL =>
-            new MsSQLMetadataParser(connection).getTablesMetadata(configuration, skipWhiteListCheck)
+            new MsSQLMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.HANA =>
-            new HANAMetadataParser(connection).getTablesMetadata(configuration, skipWhiteListCheck)
+            new HANAMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.TERADATA =>
-            new TeradataMetadataParser(connection)
-              .getTablesMetadata(configuration, skipWhiteListCheck)
+            new TeradataMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.AS400 =>
-            new AS400MetadataParser(connection).getTablesMetadata(configuration, skipWhiteListCheck)
+            new AS400MetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.REDSHIFT =>
-            new RedshiftMetadataParser(connection)
-              .getTablesMetadata(configuration, skipWhiteListCheck)
+            new RedshiftMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.IMPALA =>
-            new ImpalaMetadataParser(connection)
-              .getTablesMetadata(configuration, skipWhiteListCheck)
+            new ImpalaMetadataParser(connection).getTablesMetadata(configuration)
           case _ =>
             Failure(new Exception(
               s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: ${configuration.copy(password = "******")}", e)
-        throw e
+        Failure(e)
     }
   }
 

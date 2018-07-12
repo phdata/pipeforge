@@ -34,9 +34,7 @@ import scala.util.{ Failure, Success, Try }
  */
 trait Pipewrench {
 
-  def buildAndSaveConfiguration(environment: PipeforgeEnvironment,
-                                password: String,
-                                skipWhitelistCheck: Boolean = false): Unit
+  def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String): Unit
 
   /**
    * Builds a Pipewrench Configuratio from JDBC metadata
@@ -48,8 +46,7 @@ trait Pipewrench {
    */
   def buildConfiguration(databaseConf: DatabaseConf,
                          tableMetadata: Map[String, String],
-                         environment: Environment,
-                         skipWhiteListCheck: Boolean = false): Try[Configuration]
+                         environment: Environment): Try[Configuration]
 
   /**
    * Writes a Pipewrench Configuration to configured directory
@@ -91,13 +88,11 @@ class PipewrenchService()
     with LazyLogging {
 
   override def buildAndSaveConfiguration(environment: PipeforgeEnvironment,
-                                         password: String,
-                                         skipWhiteListCheck: Boolean = false): Unit = {
+                                         password: String): Unit = {
     val pipewrenchEnvironment = environment.toPipewrenchEnvironment
     buildConfiguration(environment.toDatabaseConfig(password),
                        environment.metadata,
-                       pipewrenchEnvironment,
-                       skipWhiteListCheck) match {
+                       pipewrenchEnvironment) match {
       case Success(configuration) =>
         saveEnvironment(pipewrenchEnvironment)
         saveConfiguration(configuration)
@@ -116,9 +111,8 @@ class PipewrenchService()
    */
   override def buildConfiguration(databaseConf: DatabaseConf,
                                   tableMetadata: Map[String, String],
-                                  environment: Environment,
-                                  skipWhiteListCheck: Boolean = false): Try[Configuration] =
-    DatabaseMetadataParser.parse(databaseConf, skipWhiteListCheck) match {
+                                  environment: Environment): Try[Configuration] =
+    DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
         logger.debug(s"Successfully parsed JDBC metadata: $tables")
         Try(

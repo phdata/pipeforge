@@ -5,11 +5,7 @@ import io.phdata.pipeforge.common.{ AppConfiguration, Environment }
 
 trait SchemaValidator {
 
-  def validateSchema(environment: Environment,
-                     databasePassword: String,
-                     impalaUser: String,
-                     impalaPassword: String,
-                     skipWhitelistCheck: Boolean = false)
+  def validateSchema(environment: Environment, databasePassword: String, impalaPassword: String)
 
 }
 
@@ -17,8 +13,6 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
 
   override def validateSchema(environment: Environment,
                               databasePassword: String,
-                              impalaUser: String,
-                              impalaPassword: String,
-                              skipWhitelistCheck: Boolean = false): Unit = {}
+                              impalaPassword: String): Unit = {}
 
 }

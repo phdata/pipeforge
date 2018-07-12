@@ -32,7 +32,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
       }
     }
     "generate configuration from Yaml environment" in {
-      (pipewrenchService.buildConfiguration _).expects(*, *, *, *).returning(Success(configuration))
+      (pipewrenchService.buildConfiguration _).expects(*, *, *).returning(Success(configuration))
       val yaml = environment.toYaml.prettyPrint
       Put(s"/${pipewrenchController.basePath}/configuration", yaml) ~>
       RawHeader("password", "cGFzcw==") ~>
@@ -42,7 +42,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
       }
     }
     "generate configuration from Json environment" in {
-      (pipewrenchService.buildConfiguration _).expects(*, *, *, *).returning(Success(configuration))
+      (pipewrenchService.buildConfiguration _).expects(*, *, *).returning(Success(configuration))
       val json = environment.toJson.prettyPrint
       Put(s"/${pipewrenchController.basePath}/configuration", json) ~>
       RawHeader("Content-Type", ContentTypes.`application/json`.toString()) ~>

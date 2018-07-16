@@ -24,22 +24,27 @@ import com.typesafe.config.{ Config, ConfigFactory }
 trait AppConfiguration {
 
   // Parse application configuration
-  val config: Config = ConfigFactory.load()
+  lazy val config: Config = ConfigFactory.load()
 
   // Indicates whether or not to install Pipewrench
-  val virtualInstall: Boolean = config.getBoolean("pipewrench.virtualInstall")
+  lazy val virtualInstall: Boolean = config.getBoolean("pipewrench.virtualInstall")
   // Git url for Pipewrench
-  val pipewrenchGitUrl: String = config.getString("pipewrench.git.url")
+  lazy val pipewrenchGitUrl: String = config.getString("pipewrench.git.url")
   // Directory containing installation scripts
-  val installScriptDir: String = config.getString("pipewrench.directory.install")
+  lazy val installScriptDir: String = config.getString("pipewrench.directory.install")
   // Pipewrench installation directory
-  val pipewrenchDir: String = config.getString("pipewrench.directory.pipewrench")
+  lazy val pipewrenchDir: String = config.getString("pipewrench.directory.pipewrench")
   // Pipewrench template directory
-  val pipewrenchTemplatesDir: String = config.getString("pipewrench.directory.templates")
+  lazy val pipewrenchTemplatesDir: String = config.getString("pipewrench.directory.templates")
   // Pipewrench ingest config output directory
-  val pipewrenchIngestConf: String = config.getString("pipewrench.directory.ingest")
+  lazy val pipewrenchIngestConf: String = config.getString("pipewrench.directory.ingest")
   // Cluster specific impala shell command
-  val impalaCmd: String  = config.getString("impala.cmd")
-  val impalaHost: String = config.getString("impala.hostname")
-  val impalaPort: Int    = config.getInt("impala.port")
+  lazy val impalaHost: String = config.getString("impala.hostname")
+  lazy val impalaPort: Int    = config.getInt("impala.port")
+
+  lazy val impalaCmd: String = {
+    def ssl = if (config.getBoolean("impala.ssl")) "-ssl " else  ""
+    def kerberos = if (config.getBoolean("impala.kerberos")) "-k " else ""
+    s"impala-shell -i $impalaHost:$impalaPort $ssl $kerberos -f "
+  }
 }

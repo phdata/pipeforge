@@ -85,7 +85,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
     assertResult(64)(results.length)
   }
 
-  test("parse tables metadata") {
+/*  test("parse tables metadata") {
     val parser = new MySQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, None) match {
       case Success(definitions) =>
@@ -138,7 +138,7 @@ class MySQLMetadataParserTest extends DockerTestRunner {
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
-  }
+  }*/
 
   private def createTestTable(): Unit = {
     lazy val query =

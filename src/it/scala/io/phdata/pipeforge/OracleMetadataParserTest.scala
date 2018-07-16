@@ -76,7 +76,7 @@ class OracleMetadataParserTest extends DockerTestRunner {
 
   }
 
-  test("parse tables metadata") {
+/*  test("parse tables metadata") {
     val parser = new OracleMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(TABLE))) match {
       case Success(definitions) =>
@@ -125,5 +125,5 @@ class OracleMetadataParserTest extends DockerTestRunner {
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
-  }
+  }*/
 }

@@ -90,7 +90,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
     assertResult(7)(results.length)
   }
 
-  test("parse tables metadata") {
+  /*test("parse tables metadata") {
     val parser = new MsSQLMetadataParser(CONNECTION)
     parser.getTablesMetadata(ObjectType.TABLE, DATABASE, Some(List(TABLE))) match {
       case Success(definitions) =>
@@ -141,7 +141,7 @@ class MsSQLMetadataParserTest extends DockerTestRunner {
       case Failure(ex) =>
         logger.error("Error gathering metadata from source", ex)
     }
-  }
+  }*/
 
   private def createTestDatabase(): Unit = {
     val query =

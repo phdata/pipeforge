@@ -198,7 +198,7 @@ trait DatabaseMetadataParser extends LazyLogging {
         logger.debug("Getting table comments, query: {}", query)
         val stmt = connection.createStatement()
         try {
-          stmt.executeQuery(query).toStream.map(rs => rs.getString(1)).headOption
+          stmt.executeQuery(query).toStream.map(rs => Option(rs.getString(1))).headOption.flatten
         } catch {
           case e: Exception =>
             logger.warn("Failed to query source for table comment, defaulting to empty comment", e)

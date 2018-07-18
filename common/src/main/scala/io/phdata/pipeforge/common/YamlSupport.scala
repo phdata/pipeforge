@@ -47,10 +47,13 @@ trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
    * @param path
    * @return
    */
-  def parseEnvironmentFile(path: String): Environment = {
-    val file = Source.fromFile(path).getLines.mkString("\n")
-    file.parseYaml.convertTo[Environment]
-  }
+  def parseEnvironmentFile(path: String): Environment =
+    readFile(path).parseYaml.convertTo[Environment]
+
+  def parseConfigurationFile(path: String): Configuration =
+    readFile(path).parseYaml.convertTo[Configuration]
+
+  private def readFile(path: String): String = Source.fromFile(path).getLines.mkString("\n")
 
   /**
    * Implicit class for writing yaml files

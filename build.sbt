@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.11"
+lazy val appVersion = "0.13-SNAPSHOT"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -115,6 +115,7 @@ lazy val pipeforge = project
     `rest-api`
   )
   .aggregate(
+    common,
     `jdbc-metadata`,
     pipewrench,
     `rest-api`
@@ -132,7 +133,7 @@ lazy val common = project
 lazy val `jdbc-metadata` = project
   .settings(
     name := "jdbc-metadata",
-    version := "0.4",
+    version := appVersion,
     settings,
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
                                                        dependencies.oracle,

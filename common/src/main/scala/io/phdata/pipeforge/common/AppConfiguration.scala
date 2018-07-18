@@ -42,9 +42,5 @@ trait AppConfiguration {
   lazy val impalaHost: String = config.getString("impala.hostname")
   lazy val impalaPort: Int    = config.getInt("impala.port")
 
-  lazy val impalaCmd: String = {
-    def ssl = if (config.getBoolean("impala.ssl")) "-ssl " else  ""
-    def kerberos = if (config.getBoolean("impala.kerberos")) "-k " else ""
-    s"impala-shell -i $impalaHost:$impalaPort $ssl $kerberos -f "
-  }
+  lazy val impalaCmd: String = config.getString("impala.cmd")
 }

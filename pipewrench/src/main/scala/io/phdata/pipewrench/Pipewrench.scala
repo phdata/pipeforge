@@ -218,7 +218,7 @@ class PipewrenchService()
           Kudu(pks, 2),
           buildColumns(allColumns),
           tableMetadata,
-          table.comment.replaceAll("\"", "")
+          table.comment.replaceAll("\"", "").replaceAll("\n", " ")
         )
       }
 
@@ -256,7 +256,8 @@ class PipewrenchService()
       .map { column =>
         val dataType = DataType.mapDataType(column)
         logger.trace(s"Column definition: $column, mapped dataType: $dataType")
-        val columnYaml = Column(column.name, dataType, column.comment.replaceAll("\"", ""))
+        val columnYaml =
+          Column(column.name, dataType, column.comment.replaceAll("\"", "").replaceAll("\n", " "))
         if (dataType == DataType.DECIMAL.toString) {
           logger.trace("Found decimal value: {}", column)
           columnYaml.copy(scale = Some(column.scale), precision = Some(column.precision))

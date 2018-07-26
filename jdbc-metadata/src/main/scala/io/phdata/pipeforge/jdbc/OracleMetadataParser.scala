@@ -36,8 +36,8 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
   override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =
     Some(s"""
        |SELECT t.*
-       |FROM SYS.DUAL AS d
-       |  LEFT OUTER JOIN $schema.$table AS t ON 1=1
+       |FROM SYS.DUAL d
+       |  LEFT OUTER JOIN $schema.$table t ON 1=1
        |WHERE ROWNUM = 1
      """.stripMargin)
 

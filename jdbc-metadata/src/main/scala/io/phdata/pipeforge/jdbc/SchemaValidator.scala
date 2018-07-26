@@ -1,7 +1,7 @@
 package io.phdata.pipeforge.jdbc
 
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType, ObjectType, Table }
+import io.phdata.pipeforge.common.jdbc._
 import io.phdata.pipeforge.common.{ AppConfiguration, Environment }
 
 import scala.collection.mutable.ListBuffer
@@ -61,7 +61,7 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
               case Some(destinationColumn) =>
                 // TODO: Add type-mapping.yml logic here
                 // Example oracle NUMBER fields can either be integers or decimals
-                if (destinationColumn.dataType != sourceColumn.dataType) {
+                if (destinationColumn.dataType != DataType.mapDataType(sourceColumn)) {
                   errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} data type: ${sourceColumn.dataType}, does not match in impala, ${destinationColumn.dataType}"
                 }
                 // TODO: Enhance pipewrench templates to add nullable to fields that are

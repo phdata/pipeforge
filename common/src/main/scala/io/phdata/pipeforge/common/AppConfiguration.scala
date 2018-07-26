@@ -17,30 +17,31 @@
 package io.phdata.pipeforge.common
 
 import com.typesafe.config.{ Config, ConfigFactory }
+import net.ceedubs.ficus.Ficus._
 
 /**
  * Trait for parsing application configuration parameters
  */
 trait AppConfiguration {
 
-  // Parse application configuration
   lazy val config: Config = ConfigFactory.load()
 
-  // Indicates whether or not to install Pipewrench
-  lazy val virtualInstall: Boolean = config.getBoolean("pipewrench.virtualInstall")
-  // Git url for Pipewrench
-  lazy val pipewrenchGitUrl: String = config.getString("pipewrench.git.url")
-  // Directory containing installation scripts
-  lazy val installScriptDir: String = config.getString("pipewrench.directory.install")
-  // Pipewrench installation directory
-  lazy val pipewrenchDir: String = config.getString("pipewrench.directory.pipewrench")
-  // Pipewrench template directory
-  lazy val pipewrenchTemplatesDir: String = config.getString("pipewrench.directory.templates")
-  // Pipewrench ingest config output directory
-  lazy val pipewrenchIngestConf: String = config.getString("pipewrench.directory.ingest")
-  // Cluster specific impala shell command
-  lazy val impalaHost: String = config.getString("impala.hostname")
-  lazy val impalaPort: Int    = config.getInt("impala.port")
+  lazy val virtualInstall: Boolean  = config.as[Boolean]("pipewrench.virtualInstall")
+  lazy val installScriptDir: String = config.as[String]("pipewrench.directory.install")
 
-  lazy val impalaCmd: String = config.getString("impala.cmd")
+  lazy val pipewrenchGitUrl: String       = config.as[String]("pipewrench.git.url")
+  lazy val pipewrenchDir: String          = config.as[String]("pipewrench.directory.pipewrench")
+  lazy val pipewrenchTemplatesDir: String = config.as[String]("pipewrench.directory.templates")
+  lazy val pipewrenchIngestConf: String   = config.as[String]("pipewrench.directory.ingest")
+
+  lazy val impalaHost: String = config.as[String]("impala.hostname")
+  lazy val impalaPort: Int    = config.as[Int]("impala.port")
+  lazy val impalaCmd: String  = config.as[String]("impala.cmd")
+
+  lazy val hiveMetastoreUrl          = config.as[Option[String]]("hive.metastore.url")
+  lazy val hiveMetasotreSchema       = config.as[Option[String]]("hive.metastore.schema")
+  lazy val hiveMetastoreUsername     = config.as[Option[String]]("hive.metastore.username")
+  lazy val hiveMetastorePassword     = config.as[Option[String]]("hive.metastore.password")
+  lazy val hiveMetastoreDatabaseType = config.as[Option[String]]("hive.metastore.databaseType")
+
 }

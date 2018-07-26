@@ -67,6 +67,7 @@ lazy val dependencies =
     val logback           = "ch.qos.logback"             % "logback-classic"       % "1.2.3"
     val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"        % "3.7.2"
     val typesafeConf      = "com.typesafe"               % "config"                % "1.3.0"
+    val ficus             = "com.iheart"                 %% "ficus"                % "1.4.3"
     val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
     val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
@@ -127,7 +128,8 @@ lazy val common = project
     version := appVersion,
     settings,
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
-                                                       dependencies.typesafeConf)
+                                                       dependencies.typesafeConf,
+                                                       dependencies.ficus)
   )
 
 lazy val `jdbc-metadata` = project

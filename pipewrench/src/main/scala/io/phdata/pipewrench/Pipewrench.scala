@@ -257,8 +257,10 @@ class PipewrenchService()
         val dataType = DataType.mapDataType(column)
         logger.trace(s"Column definition: $column, mapped dataType: $dataType")
         val columnYaml =
-          Column(column.name, dataType, column.comment.replaceAll("\"", "").replaceAll("\n", " "))
-        if (dataType == DataType.DECIMAL.toString) {
+          Column(column.name,
+                 dataType.toString,
+                 column.comment.replaceAll("\"", "").replaceAll("\n", " "))
+        if (dataType == JDBCType.DECIMAL) {
           logger.trace("Found decimal value: {}", column)
           columnYaml.copy(scale = Some(column.scale), precision = Some(column.precision))
         } else {

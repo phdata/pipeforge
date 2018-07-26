@@ -63,7 +63,7 @@ object Pipeforge extends YamlSupport with LazyLogging {
         val databasePassword =
           getArgOrAsk(cliArgs.validateSchema.databasePassword.toOption, "Enter database password: ")
         val hadoopPassword =
-          getArgOrAsk(cliArgs.validateSchema.hadoopPassword.toOption, "Emter Hadoop password: ")
+          getArgOrAsk(cliArgs.validateSchema.hadoopPassword.toOption, "Enter Hadoop password: ")
 
         SchemaValidator.validateSchema(environment, databasePassword, hadoopPassword)
 

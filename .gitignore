@@ -4,3 +4,4 @@ tables.yml
 pipewrench_conf
 **/out
 log
+output/

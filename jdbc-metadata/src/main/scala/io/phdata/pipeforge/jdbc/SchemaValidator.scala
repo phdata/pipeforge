@@ -2,10 +2,10 @@ package io.phdata.pipeforge.jdbc
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.common.jdbc._
-import io.phdata.pipeforge.common.{ AppConfiguration, Environment }
+import io.phdata.pipeforge.common.{AppConfiguration, Environment}
 
 import scala.collection.mutable.ListBuffer
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success, Try}
 
 trait SchemaValidator {
 
@@ -17,30 +17,32 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
 
   override def validateSchema(environment: Environment,
                               databasePassword: String,
-                              impalaPassword: String): Unit = {
+                              impalaPassword: String): Unit =
+    getImpalaJdbcUrl(environment) match {
+      case Success(impalaJdbcUrl) =>
+        val sourceDatabaseConf = environment.toDatabaseConfig(databasePassword)
+        val impalaDatabaseConf = DatabaseConf(
+          DatabaseType.IMPALA,
+          environment.rawDatabase.name,
+          impalaJdbcUrl,
+          environment.hadoopUser,
+          impalaPassword,
+          ObjectType.withName(environment.objectType)
+        )
 
-    val sourceDatabaseConf = environment.toDatabaseConfig(databasePassword)
-    val impalaDatabaseConf = DatabaseConf(
-      DatabaseType.IMPALA,
-      environment.rawDatabase.name,
-      getImpalaJdbcUrl(environment),
-      environment.hadoopUser,
-      impalaPassword,
-      ObjectType.withName(environment.objectType)
-    )
-
-    logger.info(s"Validating schemas source: {}, impala: {}",
-                sourceDatabaseConf.copy(password = "******"),
-                impalaDatabaseConf.copy(password = "******"))
-    DatabaseMetadataParser.parse(environment.toDatabaseConfig(databasePassword)) match {
-      case Success(sourceTables) =>
-        DatabaseMetadataParser.parse(impalaDatabaseConf) match {
-          case Success(impalaTables) => diffSchemas(sourceTables, impalaTables)
-          case Failure(ex)           => logger.error("Failed to parse impala schema", ex)
+        logger.info(s"Validating schemas source: {}, impala: {}",
+          sourceDatabaseConf.copy(password = "******"),
+          impalaDatabaseConf.copy(password = "******"))
+        DatabaseMetadataParser.parse(environment.toDatabaseConfig(databasePassword)) match {
+          case Success(sourceTables) =>
+            DatabaseMetadataParser.parse(impalaDatabaseConf) match {
+              case Success(impalaTables) => diffSchemas(sourceTables, impalaTables)
+              case Failure(ex)           => logger.error("Failed to parse impala schema", ex)
+            }
+          case Failure(ex) => logger.error("Failed to parse source system schema", ex)
         }
-      case Failure(ex) => logger.error("Failed to parse source system schema", ex)
+      case Failure(ex) => logger.error("Failed to build impala jdbc url from application.conf properties", ex)
     }
-  }
 
   private def diffSchemas(source: List[Table], destination: List[Table]): Unit = {
     logger.debug(s"Diffing schemas source: $source, destination: $destination")
@@ -90,7 +92,16 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
     errors.toList
   }
 
-  private def getImpalaJdbcUrl(environment: Environment): String =
-    s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3"
+  private def getImpalaJdbcUrl(environment: Environment): Try[String] = {
+    impalaHostOpt match {
+      case Some(impalaHost) =>
+        impalaPortOpt match {
+          case Some(impalaPort) => Success(s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3")
+          case None => Failure(new Exception("`impala.port` in application.conf is required to do schema validation"))
+        }
+      case None => Failure(new Exception("`impala.hostname` in application.conf is required to do schema validation"))
+    }
+  }
+
 
 }

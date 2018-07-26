@@ -34,9 +34,9 @@ trait AppConfiguration {
   lazy val pipewrenchTemplatesDir: String = config.as[String]("pipewrench.directory.templates")
   lazy val pipewrenchIngestConf: String   = config.as[String]("pipewrench.directory.ingest")
 
-  lazy val impalaHost: String = config.as[String]("impala.hostname")
-  lazy val impalaPort: Int    = config.as[Int]("impala.port")
-  lazy val impalaCmd: String  = config.as[String]("impala.cmd")
+  lazy val impalaCmd = config.as[String]("impala.cmd")
+  lazy val impalaHostOpt = config.as[Option[String]]("impala.hostname")
+  lazy val impalaPortOpt = config.as[Option[Int]]("impala.port")
 
   lazy val hiveMetastoreUrl          = config.as[Option[String]]("hive.metastore.url")
   lazy val hiveMetasotreSchema       = config.as[Option[String]]("hive.metastore.schema")

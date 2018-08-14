@@ -2,10 +2,10 @@ package io.phdata.pipeforge.jdbc
 
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.common.jdbc._
-import io.phdata.pipeforge.common.{AppConfiguration, Environment}
+import io.phdata.pipeforge.common.{ AppConfiguration, Environment }
 
 import scala.collection.mutable.ListBuffer
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait SchemaValidator {
 
@@ -31,8 +31,8 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
         )
 
         logger.info(s"Validating schemas source: {}, impala: {}",
-          sourceDatabaseConf.copy(password = "******"),
-          impalaDatabaseConf.copy(password = "******"))
+                    sourceDatabaseConf.copy(password = "******"),
+                    impalaDatabaseConf.copy(password = "******"))
         DatabaseMetadataParser.parse(environment.toDatabaseConfig(databasePassword)) match {
           case Success(sourceTables) =>
             DatabaseMetadataParser.parse(impalaDatabaseConf) match {
@@ -41,7 +41,8 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
             }
           case Failure(ex) => logger.error("Failed to parse source system schema", ex)
         }
-      case Failure(ex) => logger.error("Failed to build impala jdbc url from application.conf properties", ex)
+      case Failure(ex) =>
+        logger.error("Failed to build impala jdbc url from application.conf properties", ex)
     }
 
   private def diffSchemas(source: List[Table], destination: List[Table]): Unit = {
@@ -92,16 +93,22 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
     errors.toList
   }
 
-  private def getImpalaJdbcUrl(environment: Environment): Try[String] = {
+  private def getImpalaJdbcUrl(environment: Environment): Try[String] =
     impalaHostOpt match {
       case Some(impalaHost) =>
         impalaPortOpt match {
-          case Some(impalaPort) => Success(s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3")
-          case None => Failure(new Exception("`impala.port` in application.conf is required to do schema validation"))
+          case Some(impalaPort) =>
+            Success(
+              s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3")
+          case None =>
+            Failure(
+              new Exception(
+                "`impala.port` in application.conf is required to do schema validation"))
         }
-      case None => Failure(new Exception("`impala.hostname` in application.conf is required to do schema validation"))
+      case None =>
+        Failure(
+          new Exception(
+            "`impala.hostname` in application.conf is required to do schema validation"))
     }
-  }
-
 
 }

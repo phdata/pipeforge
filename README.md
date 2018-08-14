@@ -14,6 +14,10 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
     - `-t, --template`: Pipewrench template name
 - `rest-api`: Starts a process for interacting with Pipeforge via REST and Yaml documents
     - `-p, --port`: Port to expose the pipewrench endpoints on
+- `validate-schema`: Validated source RDBMS against Impala database.  `application.conf` properties `impala.hostname` and `impala.port` are required for this functionality to work.
+    - `-e, --environment`: Path to source environment.yml file
+    - `-p, --database-password`: Optional. Source database user password, user will be prompted to enter password if it is not supplied
+    - `-h, --hadoop-password`: Optional. Hadoop user password, user will be prompted to enter password if it is not supplied
 
 ### Configuration Files
 
@@ -48,7 +52,7 @@ impala {
   # OPTIONAL: Port for JDBC communication to Impala daemon this value is used when doing schema validation between a source system and existing impala daemon
   port = <Impala daemon port>
 }
-# OPTIONAL: Used to query the Hive Metastore for column level comments
+# OPTIONAL: Used to query the Hive Metastore for column level comments, if left blank Impala comments will not be parsed
 hive {
   metastore {
     # OPTIONAL: JDBC url for Hive Metastore ex. jdbc:mysql://<host>:<port>/<schema>
@@ -82,13 +86,13 @@ metadata: # Metadata map to be applied to every table's tblproperties. https://w
   LOAD_FREQUENCY: Daily # Frequency of data ingestion
   CONTACT: developer@phdata.io # Distribution list for data owners
 hadoopUser: ps_dev_employee # Hadoop user recommended to use a process account
-passwordFile: hdfs://user/developer/.employee_db_password # Location of sqoop's password file recommended HDFS location
+passwordFile: hdfs:///user/developer/.employee_db_password # Location of sqoop's password file recommended HDFS location
 stagingDatabase:
   name: employee
-  path: hdfs://ns/user/developer/staging/db
+  path: hdfs:///ns/user/developer/staging/db
 rawDatabase:
   name: employee_raw
-  path: hdfs://ns/user/developer/raw/db
+  path: hdfs:///ns/user/developer/raw/db
 ```
 
 ## Build

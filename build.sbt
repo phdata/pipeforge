@@ -50,14 +50,6 @@ lazy val scalafmtSettings =
     scalafmtVersion := "1.2.0"
   )
 
-lazy val assemblySettings = Seq(
-  assemblyJarName in assembly := name.value + ".jar",
-  assemblyMergeStrategy in assembly := {
-    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-    case _                             => MergeStrategy.first
-  }
-)
-
 lazy val dependencies =
   new {
 
@@ -101,7 +93,6 @@ lazy val pipeforge = project
     name := "pipeforge",
     version := appVersion,
     settings,
-    assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop,
                                                        dependencies.scalaDockerTest,

@@ -34,6 +34,7 @@ trait ControllerSpec
     staging_database = Map("name" -> "test.staging_database.name"),
     raw_database = Map("name"     -> "test.raw_database.name"),
     impala_cmd = "test.impal_cmd",
+    user_defined = Some(Map("test1" -> "test1")),
     tables = Seq(
       Table(
         id = "test.table.id",
@@ -70,6 +71,7 @@ trait ControllerSpec
     hadoopUser = "test.hadoopUser",
     passwordFile = "test.passwordFile",
     stagingDatabase = Database("test.stagingDatabase.name", "test.stagingDatabase.name"),
-    rawDatabase = Database("test.rawDatabase.name", "test.rawDatabase.name")
+    rawDatabase = Database("test.rawDatabase.name", "test.rawDatabase.name"),
+    userDefined = Some(Map("test1" -> "test1"))
   )
 }

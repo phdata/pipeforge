@@ -32,4 +32,5 @@ case class Environment(name: String,
                        staging_database_path: String,
                        staging_database_name: String,
                        raw_database_path: String,
-                       raw_database_name: String)
+                       raw_database_name: String,
+                       user_defined: Option[Map[String, String]])

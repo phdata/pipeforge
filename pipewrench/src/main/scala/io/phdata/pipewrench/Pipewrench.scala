@@ -134,6 +134,7 @@ class PipewrenchService()
               "name" -> environment.raw_database_name
             ),
             impala_cmd = impalaCmd,
+            user_defined = environment.user_defined,
             tables = buildTables(tables, tableMetadata)
           )
         )

@@ -30,6 +30,7 @@ package io.phdata.pipeforge.common.pipewrench
  * @param source_database
  * @param staging_database
  * @param impala_cmd
+ * @param user_defined
  * @param tables
  */
 case class Configuration(name: String,
@@ -44,4 +45,5 @@ case class Configuration(name: String,
                          staging_database: Map[String, String],
                          raw_database: Map[String, String],
                          impala_cmd: String,
+                         user_defined: Option[Map[String, String]],
                          tables: Seq[Table])

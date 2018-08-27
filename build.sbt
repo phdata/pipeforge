@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.12"
+lazy val appVersion = "0.13"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -38,6 +38,7 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
     "datanucleus" at "http://www.datanucleus.org/downloads/maven2/",
+    "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
     Resolver.sonatypeRepo("releases")
   )
 )
@@ -49,14 +50,6 @@ lazy val scalafmtSettings =
     scalafmtVersion := "1.2.0"
   )
 
-lazy val assemblySettings = Seq(
-  assemblyJarName in assembly := name.value + ".jar",
-  assemblyMergeStrategy in assembly := {
-    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-    case _                             => MergeStrategy.first
-  }
-)
-
 lazy val dependencies =
   new {
 
@@ -66,6 +59,7 @@ lazy val dependencies =
     val logback           = "ch.qos.logback"             % "logback-classic"       % "1.2.3"
     val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"        % "3.7.2"
     val typesafeConf      = "com.typesafe"               % "config"                % "1.3.0"
+    val ficus             = "com.iheart"                 %% "ficus"                % "1.4.3"
     val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
     val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
@@ -75,6 +69,7 @@ lazy val dependencies =
     val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
     val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
     val akkaCors          = "ch.megard"                  %% "akka-http-cors"       % "0.3.0"
+    val hive              = "org.apache.hive"            % "hive-jdbc"             % "1.1.0-cdh5.14.2"
 
     val scalaTest         = "org.scalatest"     %% "scalatest"                   % "3.0.4"              % Test
     val scalaDockerTest   = "com.whisk"         %% "docker-testkit-scalatest"    % dockerTestKitVersion % Test
@@ -83,24 +78,7 @@ lazy val dependencies =
     val mockito           = "org.mockito"       % "mockito-core"                 % "2.18.3"             % Test
     val scalaMock         = "org.scalamock"     %% "scalamock-scalatest-support" % "3.6.0"              % Test
 
-    val common = Seq(scallop,
-                     scalaYaml,
-                     logback,
-                     scalaLogging,
-                     typesafeConf,
-                     scalaTest,
-                     mockito,
-                     scalaMock,
-                     scalaDockerTest,
-                     spotifyDockerTest)
-    val jdbc = Seq(mysql, oracle, mssql)
-    val rest = Seq(akka,
-                   akkaHttp,
-                   akkaHttpSprayJson,
-                   akkaCors,
-                   akkaHttpTestKit,
-                   scalaDockerTest,
-                   spotifyDockerTest)
+    val common = Seq(logback, scalaLogging, scalaTest, mockito, scalaMock)
   }
 
 lazy val settings = commonSettings ++ scalafmtSettings
@@ -115,29 +93,48 @@ lazy val pipeforge = project
     name := "pipeforge",
     version := appVersion,
     settings,
-    assemblySettings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
-    libraryDependencies ++= dependencies.common,
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop,
+                                                       dependencies.scalaDockerTest,
+                                                       dependencies.spotifyDockerTest),
     rpmLicense := Some("License: GPLv2"),
     rpmVendor := "phData"
   )
   .dependsOn(
+    common,
     `jdbc-metadata`,
     pipewrench,
     `rest-api`
   )
   .aggregate(
+    common,
     `jdbc-metadata`,
     pipewrench,
     `rest-api`
   )
 
+lazy val common = project
+  .settings(
+    name := "common",
+    version := appVersion,
+    settings,
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
+                                                       dependencies.typesafeConf,
+                                                       dependencies.ficus)
+  )
+
 lazy val `jdbc-metadata` = project
   .settings(
     name := "jdbc-metadata",
-    version := "0.4",
+    version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ dependencies.jdbc
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
+                                                       dependencies.oracle,
+                                                       dependencies.mssql,
+                                                       dependencies.hive)
+  )
+  .dependsOn(
+    common
   )
 
 lazy val pipewrench = project
@@ -148,6 +145,7 @@ lazy val pipewrench = project
     libraryDependencies ++= dependencies.common
   )
   .dependsOn(
+    common,
     `jdbc-metadata`
   )
 
@@ -156,9 +154,14 @@ lazy val `rest-api` = project
     name := "rest-api",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ dependencies.rest
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.akka,
+                                                       dependencies.akkaHttp,
+                                                       dependencies.akkaHttpSprayJson,
+                                                       dependencies.akkaCors,
+                                                       dependencies.akkaHttpTestKit)
   )
   .dependsOn(
+    common,
     pipewrench
   )
 

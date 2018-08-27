@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.domain
+package io.phdata.pipeforge.common.jdbc
 
 /**
  * Table definition
+ *
  * @param name Table name
  * @param comment Table comment
  * @param primaryKeys A set of primary key definitions

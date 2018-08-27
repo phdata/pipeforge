@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.domain
+package io.phdata.pipeforge.common
 
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
+import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType, ObjectType }
+import io.phdata.pipeforge.common.pipewrench.{ Environment => PipewrenchEnvironment }
 
 /**
  * Pipeforge main configuration object
@@ -54,6 +54,7 @@ case class Database(name: String, path: String)
  * Helper object converting Pipeforge configs into Pipewrench ones
  */
 object Environment {
+
   implicit class EnvironmentPipewrench(environment: Environment) {
     def toPipewrenchEnvironment: PipewrenchEnvironment =
       PipewrenchEnvironment(
@@ -81,4 +82,5 @@ object Environment {
         tables = environment.tables
       )
   }
+
 }

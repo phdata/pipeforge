@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.domain
+package io.phdata.pipeforge.common.jdbc
 
-import java.sql.SQLType
+import java.sql.{ JDBCType, SQLType }
 
 /**
  * Column Definition
@@ -30,7 +30,7 @@ import java.sql.SQLType
  */
 case class Column(name: String,
                   comment: String,
-                  dataType: SQLType,
+                  dataType: JDBCType,
                   nullable: Boolean,
                   index: Int,
                   precision: Int,

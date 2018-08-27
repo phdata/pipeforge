@@ -45,13 +45,13 @@ class AS400MetadataParser(_connection: Connection) extends DatabaseMetadataParse
    * @param table  Table name
    * @return SQL query selecting a single row from a table
    */
-  override def joinedSingleRecordQuery(schema: String, table: String): String =
-    s"""
+  override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT t.*
        |FROM QSYS2.SYSTABLES d
        |LEFT OUTER JOIN $schema.$table t ON 1=1
        |LIMIT 1
-     """.stripMargin
+     """.stripMargin)
 
   /**
    * Database specific query that returns a result set containing all views in the specified schema

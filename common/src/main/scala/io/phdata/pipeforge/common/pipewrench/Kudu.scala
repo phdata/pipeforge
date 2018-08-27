@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common.pipewrench
 
 /**
- * Column object
- * @param name
- * @param datatype
- * @param comment
- * @param scale
- * @param precision
+ * Kudu object
+ * @param hash_by
+ * @param num_partitions
  */
-case class Column(name: String,
-                  datatype: String,
-                  comment: String = "",
-                  scale: Option[Int] = None,
-                  precision: Option[Int] = None)
+case class Kudu(hash_by: List[String], num_partitions: Int)

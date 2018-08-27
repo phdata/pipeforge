@@ -24,9 +24,9 @@ import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionH
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes._
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.domain.{ Database, Environment, YamlSupport }
-import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import io.phdata.pipeforge.common.pipewrench.{ Column, Configuration, Kudu, Table }
+import io.phdata.pipeforge.common.{ Database, Environment, YamlSupport }
 import spray.json.DefaultJsonProtocol
 
 import scala.util.{ Failure, Success, Try }

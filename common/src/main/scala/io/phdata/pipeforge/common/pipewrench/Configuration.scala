@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common.pipewrench
 
 /**
  * Configuration object
+ *
  * @param name
  * @param group
  * @param user_name

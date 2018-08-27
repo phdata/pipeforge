@@ -1,5 +1,7 @@
-.idea/
-target/
-pipewrench_conf/
+.idea
+target
+tables.yml
+pipewrench_conf
+**/out
+log
 output/
-log/

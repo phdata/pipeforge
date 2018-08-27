@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.config
+package io.phdata.pipeforge.common.jdbc
 
 /**
  * Defines the database-configuration file

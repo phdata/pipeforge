@@ -38,10 +38,7 @@ import scala.util.{ Failure, Success }
  * @param pipewrenchService Pipewrench Service
  * @param executionContext Application execution context
  */
-class PipewrenchController(pipewrenchService: Pipewrench)(
-    implicit executionContext: ExecutionContext)
-    extends Handlers
-    with YamlSupport {
+class PipewrenchController(pipewrenchService: Pipewrench)(implicit executionContext: ExecutionContext) extends Handlers with YamlSupport {
 
   // base path for all uris
   val basePath = "pipewrench"

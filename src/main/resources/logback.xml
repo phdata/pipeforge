@@ -19,7 +19,7 @@
 
     </appender>
 
-    <logger name="io.phdata" level="info"
+    <logger name="io.phdata" level="DEBUG"
             additivity="false">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />

@@ -10,6 +10,7 @@ objectType: table # Database object type to be ingested must be either table or 
 metadata: # Metadata map to be applied to every table's tblproperties. https://www.cloudera.com/documentation/enterprise/latest/topics/impala_create_table.html
   SOURCE: employee database # Source database identifier
   LOAD_FREQUENCY: Daily # Frequency of data ingestion
+  test1: Daily # Frequency of data ingestion
   CONTACT: developer@phdata.io # Distribution list for data owners
 hadoopUser: ps_dev_employee # Hadoop user recommended to use a process account
 passwordFile: hdfs://user/developer/.employee_db_password # Location of sqoop's password file recommended HDFS location

@@ -21,13 +21,7 @@ import java.io.FileWriter
 import com.typesafe.scalalogging.LazyLogging
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
 import net.jcazevedo.moultingyaml._
-import io.phdata.pipeforge.common.pipewrench.{
-  Column,
-  Configuration,
-  Kudu,
-  Table,
-  Environment => PipewrenchEnvironment
-}
+import io.phdata.pipeforge.common.pipewrench.{ Column, Configuration, Kudu, Table, Environment => PipewrenchEnvironment }
 
 import scala.io.Source
 

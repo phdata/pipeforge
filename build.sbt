@@ -94,9 +94,7 @@ lazy val pipeforge = project
     version := appVersion,
     settings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop,
-                                                       dependencies.scalaDockerTest,
-                                                       dependencies.spotifyDockerTest),
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop, dependencies.scalaDockerTest, dependencies.spotifyDockerTest),
     rpmLicense := Some("License: GPLv2"),
     rpmVendor := "phData"
   )
@@ -118,9 +116,7 @@ lazy val common = project
     name := "common",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
-                                                       dependencies.typesafeConf,
-                                                       dependencies.ficus)
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml, dependencies.typesafeConf, dependencies.ficus)
   )
 
 lazy val `jdbc-metadata` = project
@@ -128,10 +124,7 @@ lazy val `jdbc-metadata` = project
     name := "jdbc-metadata",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
-                                                       dependencies.oracle,
-                                                       dependencies.mssql,
-                                                       dependencies.hive)
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql, dependencies.oracle, dependencies.mssql, dependencies.hive)
   )
   .dependsOn(
     common

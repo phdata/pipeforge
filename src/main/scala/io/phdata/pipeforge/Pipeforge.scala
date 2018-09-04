@@ -50,13 +50,12 @@ object Pipeforge extends YamlSupport with LazyLogging {
         val password =
           getArgOrAsk(cliArgs.configuration.databasePassword.toOption, "Enter database password: ")
 
-        pipewrenchService.buildAndSaveConfiguration(environment, password)
+        pipewrenchService.buildAndSaveConfiguration(environment, password, cliArgs.configuration.tablesFile.toOption)
 
       case Some(cliArgs.merge) =>
         logger.info("Running Pipewrench merge from command line")
         pipewrenchService.install()
-        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(),
-                                                 cliArgs.merge.template())
+        pipewrenchService.executePipewrenchMerge(cliArgs.merge.directory(), cliArgs.merge.template())
       case Some(cliArgs.validateSchema) =>
         logger.info("Executing schema validation")
         val environment = parseEnvironmentFile(cliArgs.validateSchema.environment())
@@ -110,6 +109,8 @@ object Pipeforge extends YamlSupport with LazyLogging {
         opt[String]("environment", 'e', descr = "environment.yml file", required = true)
       val databasePassword =
         opt[String]("password", 'p', descr = "database password", required = false)
+      val tablesFile =
+        opt[String]("tables", 't', descr = "tables.yml file performs merge with existing configuration", required = false)
 
     }
     addSubcommand(configuration)

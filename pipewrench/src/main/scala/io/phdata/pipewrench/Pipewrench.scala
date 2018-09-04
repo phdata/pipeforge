@@ -34,7 +34,7 @@ import scala.util.{ Failure, Success, Try }
  */
 trait Pipewrench {
 
-  def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String): Unit
+  def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String] = None): Unit
 
   /**
    * Builds a Pipewrench Configuratio from JDBC metadata
@@ -44,9 +44,7 @@ trait Pipewrench {
    * @param environment Pipewrench Environment
    * @return A Configuration
    */
-  def buildConfiguration(databaseConf: DatabaseConf,
-                         tableMetadata: Map[String, String],
-                         environment: Environment): Try[Configuration]
+  def buildConfiguration(databaseConf: DatabaseConf, tableMetadata: Map[String, String], environment: Environment): Try[Configuration]
 
   /**
    * Writes a Pipewrench Configuration to configured directory
@@ -81,21 +79,25 @@ trait Pipewrench {
 
 }
 
-class PipewrenchService()
-    extends Pipewrench
-    with AppConfiguration
-    with YamlSupport
-    with LazyLogging {
+class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupport with LazyLogging {
 
-  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment,
-                                         password: String): Unit = {
+  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String]): Unit = {
     val pipewrenchEnvironment = environment.toPipewrenchEnvironment
-    buildConfiguration(environment.toDatabaseConfig(password),
-                       environment.metadata,
-                       pipewrenchEnvironment) match {
+    buildConfiguration(environment.toDatabaseConfig(password), environment.metadata, pipewrenchEnvironment) match {
       case Success(configuration) =>
-        saveEnvironment(pipewrenchEnvironment)
-        saveConfiguration(configuration)
+        currentFile match {
+          case Some(path) =>
+            val currentConfiguration = parseConfigurationFile(path)
+            if (!currentConfiguration.equals(configuration)) {
+              logger.info(
+                s"Performing configuration merge current configuration: $currentConfiguration, parsed configuration: $configuration")
+              saveEnvironment(pipewrenchEnvironment)
+              saveConfiguration(configuration)
+            }
+          case None =>
+            saveEnvironment(pipewrenchEnvironment)
+            saveConfiguration(configuration)
+        }
       case Failure(ex) =>
         logger.error("Failed to build Pipewrench Config", ex)
     }
@@ -127,8 +129,7 @@ class PipewrenchService()
             source_database = Map("name"              -> databaseConf.schema,
                                   "cmd"               -> databaseConf.databaseType.toString,
                                   "connection_string" -> environment.connection_string),
-            staging_database = Map("path"             -> environment.staging_database_path,
-                                   "name"             -> environment.staging_database_name),
+            staging_database = Map("path"             -> environment.staging_database_path, "name" -> environment.staging_database_name),
             raw_database = Map(
               "path" -> environment.raw_database_path,
               "name" -> environment.raw_database_name
@@ -257,9 +258,7 @@ class PipewrenchService()
         val dataType = DataType.mapDataType(column)
         logger.trace(s"Column definition: $column, mapped dataType: $dataType")
         val columnYaml =
-          Column(column.name,
-                 dataType.toString,
-                 column.comment.replaceAll("\"", "").replaceAll("\n", " "))
+          Column(column.name, dataType.toString, column.comment.replaceAll("\"", "").replaceAll("\n", " "))
         if (dataType == JDBCType.DECIMAL) {
           logger.trace("Found decimal value: {}", column)
           columnYaml.copy(scale = Some(column.scale), precision = Some(column.precision))
@@ -274,13 +273,8 @@ class PipewrenchService()
    * @return
    */
   def getSplitByColumn(table: DbTable) = {
-    val jdbc_numerics = List(JDBCType.BIGINT,
-                             JDBCType.REAL,
-                             JDBCType.DECIMAL,
-                             JDBCType.DOUBLE,
-                             JDBCType.FLOAT,
-                             JDBCType.INTEGER,
-                             JDBCType.NUMERIC)
+    val jdbc_numerics =
+      List(JDBCType.BIGINT, JDBCType.REAL, JDBCType.DECIMAL, JDBCType.DOUBLE, JDBCType.FLOAT, JDBCType.INTEGER, JDBCType.NUMERIC)
     table.primaryKeys
       .find(x => { jdbc_numerics contains x.dataType })
       .orElse(table.primaryKeys.headOption)

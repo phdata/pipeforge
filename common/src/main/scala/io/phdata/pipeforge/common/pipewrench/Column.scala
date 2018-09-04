@@ -24,8 +24,4 @@ package io.phdata.pipeforge.common.pipewrench
  * @param scale
  * @param precision
  */
-case class Column(name: String,
-                  datatype: String,
-                  comment: String = "",
-                  scale: Option[Int] = None,
-                  precision: Option[Int] = None)
+case class Column(name: String, datatype: String, comment: String = "", scale: Option[Int] = None, precision: Option[Int] = None)

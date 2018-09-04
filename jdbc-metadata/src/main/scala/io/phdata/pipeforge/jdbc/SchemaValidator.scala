@@ -15,9 +15,7 @@ trait SchemaValidator {
 
 object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLogging {
 
-  override def validateSchema(environment: Environment,
-                              databasePassword: String,
-                              impalaPassword: String): Unit =
+  override def validateSchema(environment: Environment, databasePassword: String, impalaPassword: String): Unit =
     getImpalaJdbcUrl(environment) match {
       case Success(impalaJdbcUrl) =>
         val sourceDatabaseConf = environment.toDatabaseConfig(databasePassword)
@@ -98,17 +96,12 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
       case Some(impalaHost) =>
         impalaPortOpt match {
           case Some(impalaPort) =>
-            Success(
-              s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3")
+            Success(s"jdbc:hive2://$impalaHost:$impalaPort/${environment.rawDatabase.name};ssl=true;AuthMech=3")
           case None =>
-            Failure(
-              new Exception(
-                "`impala.port` in application.conf is required to do schema validation"))
+            Failure(new Exception("`impala.port` in application.conf is required to do schema validation"))
         }
       case None =>
-        Failure(
-          new Exception(
-            "`impala.hostname` in application.conf is required to do schema validation"))
+        Failure(new Exception("`impala.hostname` in application.conf is required to do schema validation"))
     }
 
 }

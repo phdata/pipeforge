@@ -28,13 +28,7 @@ import java.sql.{ JDBCType, SQLType }
  * @param precision Data type precision
  * @param scale Data type scale
  */
-case class Column(name: String,
-                  comment: String,
-                  dataType: JDBCType,
-                  nullable: Boolean,
-                  index: Int,
-                  precision: Int,
-                  scale: Int) {
+case class Column(name: String, comment: String, dataType: JDBCType, nullable: Boolean, index: Int, precision: Int, scale: Int) {
 
   /**
    * Determines whether the column is a decimal or not based on defined scale

@@ -26,6 +26,9 @@ import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType }
 import io.phdata.pipeforge.common.jdbc.{ DataType, Column => DbColumn, Table => DbTable }
 import io.phdata.pipeforge.common.{ Environment => PipeforgeEnvironment }
 import io.phdata.pipeforge.common.pipewrench._
+import ai.x.diff.DiffShow
+import ai.x.diff.DiffShowInstances
+import ai.x.diff.conversions._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -50,13 +53,13 @@ trait Pipewrench {
    * Writes a Pipewrench Configuration to configured directory
    * @param configuration Pipewrench Configuration
    */
-  def saveConfiguration(configuration: Configuration): Unit
+  def saveConfiguration(configuration: Configuration, fileName: String = "tables.yml"): Unit
 
   /**
    * Writes a Pipewrench Environment to configured directory
    * @param environment Pipewrench Environment
    */
-  def saveEnvironment(environment: Environment): Unit
+  def saveEnvironment(environment: Environment, fileName: String = "environment.yml"): Unit
 
   /**
    * Executes Pipewrench merge command
@@ -84,19 +87,29 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
   override def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String]): Unit = {
     val pipewrenchEnvironment = environment.toPipewrenchEnvironment
     buildConfiguration(environment.toDatabaseConfig(password), environment.metadata, pipewrenchEnvironment) match {
-      case Success(configuration) =>
+      case Success(parsedConfiguration) =>
         currentFile match {
           case Some(path) =>
             val currentConfiguration = parseConfigurationFile(path)
-            if (!currentConfiguration.equals(configuration)) {
-              logger.info(
-                s"Performing configuration merge current configuration: $currentConfiguration, parsed configuration: $configuration")
-              saveEnvironment(pipewrenchEnvironment)
-              saveConfiguration(configuration)
+            if (!currentConfiguration.equals(parsedConfiguration)) {
+              logger.debug(
+                s"""
+                   |Pipewrench configuration is different.
+                   |Current configuration:
+                   |$currentConfiguration
+                   |Parsed configuration:
+                   |$parsedConfiguration
+                 """.stripMargin)
+
+              val diff = DiffShow.diff[Configuration](currentConfiguration,  parsedConfiguration)
+              logger.info(s"Configuration difference: $diff")
+              println(diff.toString)
+              saveConfiguration(currentConfiguration, "tables.old.yml")
+              saveConfiguration(parsedConfiguration)
             }
           case None =>
             saveEnvironment(pipewrenchEnvironment)
-            saveConfiguration(configuration)
+            saveConfiguration(parsedConfiguration)
         }
       case Failure(ex) =>
         logger.error("Failed to build Pipewrench Config", ex)
@@ -147,22 +160,22 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
    * Writes a Pipewrench Configuration to configured directory
    * @param configuration Pipewrench Configuration
    */
-  override def saveConfiguration(configuration: Configuration): Unit = {
+  override def saveConfiguration(configuration: Configuration, fileName: String = "tables.yml"): Unit = {
     val dir = projectDir(configuration.group, configuration.name)
     logger.info(s"Saving configuration: $configuration, directory: $dir")
     checkIfDirExists(dir)
-    configuration.writeYamlFile(s"$dir/tables.yml")
+    configuration.writeYamlFile(s"$dir/$fileName")
   }
 
   /**
    * Writes a Pipewrench Environment to configured directory
    * @param environment Pipewrench Environment
    */
-  override def saveEnvironment(environment: Environment): Unit = {
+  override def saveEnvironment(environment: Environment, fileName: String = "environment.yml"): Unit = {
     val dir = projectDir(environment.group, environment.name)
     logger.info(s"Saving environment: $environment, directory: $dir")
     checkIfDirExists(dir)
-    environment.writeYamlFile(s"$dir/environment.yml")
+    environment.writeYamlFile(s"$dir/$fileName")
   }
 
   /**

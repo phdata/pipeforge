@@ -1,4 +1,4 @@
-name: dev # Unique name for data ingestion
+name: diff # Unique name for data ingestion
 group: edh_employee_db # Associated AD group for ingestion
 databaseType: mysql # Database type must be mysql, oracle, mssql, hana, or teradata
 schema: employees # Database schema to ingest

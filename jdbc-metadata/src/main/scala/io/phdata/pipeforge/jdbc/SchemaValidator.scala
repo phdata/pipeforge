@@ -4,8 +4,10 @@ import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.common.jdbc._
 import io.phdata.pipeforge.common.{ AppConfiguration, Environment }
 
-import scala.collection.mutable.ListBuffer
 import scala.util.{ Failure, Success, Try }
+import ai.x.diff.DiffShow
+import ai.x.diff.conversions._
+
 
 trait SchemaValidator {
 
@@ -34,7 +36,12 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
         DatabaseMetadataParser.parse(environment.toDatabaseConfig(databasePassword)) match {
           case Success(sourceTables) =>
             DatabaseMetadataParser.parse(impalaDatabaseConf) match {
-              case Success(impalaTables) => diffSchemas(sourceTables, impalaTables)
+              case Success(impalaTables) =>
+                if (DiffShow[List[Table]].diffable(sourceTables, impalaTables)) {
+                  val diff = DiffShow[List[Table]].diff(sourceTables, impalaTables)
+                  print(diff.toString)
+                  logger.info(s"Schema difference: $diff")
+                }
               case Failure(ex)           => logger.error("Failed to parse impala schema", ex)
             }
           case Failure(ex) => logger.error("Failed to parse source system schema", ex)
@@ -42,54 +49,6 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
       case Failure(ex) =>
         logger.error("Failed to build impala jdbc url from application.conf properties", ex)
     }
-
-  private def diffSchemas(source: List[Table], destination: List[Table]): Unit = {
-    logger.debug(s"Diffing schemas source: $source, destination: $destination")
-    val errors = diffTables(source, destination)
-    if (errors.nonEmpty) {
-      logger.error(s"Source schema does not match Impala schema, mismatches include:")
-      errors.foreach(e => logger.error(e))
-    }
-  }
-
-  private def diffTables(source: List[Table], destination: List[Table]): List[String] = {
-    var errors = new ListBuffer[String]()
-    source.foreach { sourceTable =>
-      destination.find(_.name.toUpperCase == sourceTable.name.toUpperCase) match {
-        case Some(destinationTable) =>
-          sourceTable.columns.foreach { sourceColumn =>
-            destinationTable.columns.find(_.name.toUpperCase == sourceColumn.name.toUpperCase) match {
-              case Some(destinationColumn) =>
-                // TODO: Add type-mapping.yml logic here
-                // Example oracle NUMBER fields can either be integers or decimals
-                if (destinationColumn.dataType != DataType.mapDataType(sourceColumn)) {
-                  errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} data type: ${sourceColumn.dataType}, does not match in impala, ${destinationColumn.dataType}"
-                }
-                // TODO: Enhance pipewrench templates to add nullable to fields that are
-//                if (destinationColumn.nullable != sourceColumn.nullable) {
-//                  errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} nullable: ${sourceColumn.nullable}, does not match in impala, ${destinationColumn.nullable}"
-//                }
-                // Necessary?
-//                if (destinationColumn.comment != sourceColumn.comment) {
-//                  errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} comment: ${sourceColumn.comment}, does not match in impala, ${destinationColumn.comment}"
-//                }
-                if (destinationColumn.isDecimal) {
-                  if (destinationColumn.scale != sourceColumn.scale) {
-                    errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} scale: ${sourceColumn.scale}, does not match in impala, ${destinationColumn.scale}"
-                  }
-                  if (destinationColumn.precision != sourceColumn.precision) {
-                    errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} precision: ${sourceColumn.precision}, does not match in impala ${destinationColumn.precision}"
-                  }
-                }
-              case None =>
-                errors += s"Source column: ${sourceTable.name}.${sourceColumn.name} is not found in impala schema"
-            }
-          }
-        case None => errors += s"Source table: ${sourceTable.name} is not found in impala schema"
-      }
-    }
-    errors.toList
-  }
 
   private def getImpalaJdbcUrl(environment: Environment): Try[String] =
     impalaHostOpt match {

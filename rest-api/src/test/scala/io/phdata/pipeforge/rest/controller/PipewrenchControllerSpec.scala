@@ -24,7 +24,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
       }
     }
     "execute Pipewrench merge" in {
-      (pipewrenchService.saveConfiguration _).expects(*).returning(Unit)
+      (pipewrenchService.saveConfiguration _).expects(*, *).returning(Unit)
       (pipewrenchService.executePipewrenchMergeApi _).expects(*, *).returning(Unit)
       val yaml = configuration.toYaml.prettyPrint
       Post(s"/${pipewrenchController.basePath}/merge?template=test.template", yaml) ~> pipewrenchController.route ~> check {
@@ -53,7 +53,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
       }
     }
     "save Pipewrench environment from yaml" in {
-      (pipewrenchService.saveEnvironment _).expects(*).returning(Unit)
+      (pipewrenchService.saveEnvironment _).expects(*, *).returning(Unit)
       val yaml = environment.toYaml.prettyPrint
       Post(s"/${pipewrenchController.basePath}/environment", yaml) ~>
       pipewrenchController.route ~>
@@ -62,7 +62,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
       }
     }
     "save Pipewrench environment from json" in {
-      (pipewrenchService.saveEnvironment _).expects(*).returning(Unit)
+      (pipewrenchService.saveEnvironment _).expects(*, *).returning(Unit)
       val json = environment.toJson.prettyPrint
       Post(s"/${pipewrenchController.basePath}/environment", json) ~>
       RawHeader("Content-Type", ContentTypes.`application/json`.toString()) ~>

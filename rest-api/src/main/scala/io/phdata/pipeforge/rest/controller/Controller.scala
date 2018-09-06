@@ -41,7 +41,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit def columnJsonFormat        = jsonFormat5(Column)
   implicit def kuduJsonFormat          = jsonFormat2(Kudu)
   implicit def tableJsonFormat         = jsonFormat9(Table)
-  implicit def configurationJsonFormat = jsonFormat13(Configuration)
+  implicit def configurationJsonFormat = jsonFormat13(Configuration.apply)
 }
 
 trait Handlers extends LazyLogging with JsonSupport with YamlSupport {

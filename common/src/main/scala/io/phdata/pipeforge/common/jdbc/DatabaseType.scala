@@ -39,6 +39,7 @@ object DatabaseType extends Enumeration {
       case TERADATA => Some("com.teradata.jdbc.TeraDriver")
       case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")
       case REDSHIFT => Some("com.amazon.redshift.jdbc41.Driver")
+      case IMPALA   => Some("org.apache.hive.jdbc.HiveDriver")
       case _        => None
     }
 

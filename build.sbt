@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.15"
+lazy val appVersion = "0.16"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -62,6 +62,7 @@ lazy val dependencies =
     val ficus             = "com.iheart"                 %% "ficus"                % "1.4.3"
     val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
     val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
+    val diff              = "ai.x"                       %% "diff"                 % "2.0"
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
     val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
@@ -94,9 +95,7 @@ lazy val pipeforge = project
     version := appVersion,
     settings,
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop,
-                                                       dependencies.scalaDockerTest,
-                                                       dependencies.spotifyDockerTest),
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop, dependencies.scalaDockerTest, dependencies.spotifyDockerTest),
     rpmLicense := Some("License: GPLv2"),
     rpmVendor := "phData"
   )
@@ -118,9 +117,7 @@ lazy val common = project
     name := "common",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
-                                                       dependencies.typesafeConf,
-                                                       dependencies.ficus)
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml, dependencies.typesafeConf, dependencies.ficus)
   )
 
 lazy val `jdbc-metadata` = project
@@ -131,7 +128,8 @@ lazy val `jdbc-metadata` = project
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.mysql,
                                                        dependencies.oracle,
                                                        dependencies.mssql,
-                                                       dependencies.hive)
+                                                       dependencies.hive,
+                                                       dependencies.diff)
   )
   .dependsOn(
     common
@@ -142,7 +140,7 @@ lazy val pipewrench = project
     name := "pipewrench",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.diff)
   )
   .dependsOn(
     common,

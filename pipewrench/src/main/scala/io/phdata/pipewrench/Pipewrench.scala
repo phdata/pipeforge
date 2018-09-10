@@ -19,6 +19,8 @@ package io.phdata.pipewrench
 import java.io.File
 import java.sql.JDBCType
 
+import ai.x.diff.DiffShow
+import ai.x.diff.conversions._
 import com.typesafe.scalalogging.LazyLogging
 import io.phdata.pipeforge.common.{ AppConfiguration, YamlSupport }
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
@@ -34,7 +36,7 @@ import scala.util.{ Failure, Success, Try }
  */
 trait Pipewrench {
 
-  def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String): Unit
+  def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String] = None): Unit
 
   /**
    * Builds a Pipewrench Configuratio from JDBC metadata
@@ -44,21 +46,19 @@ trait Pipewrench {
    * @param environment Pipewrench Environment
    * @return A Configuration
    */
-  def buildConfiguration(databaseConf: DatabaseConf,
-                         tableMetadata: Map[String, String],
-                         environment: Environment): Try[Configuration]
+  def buildConfiguration(databaseConf: DatabaseConf, tableMetadata: Map[String, String], environment: Environment): Try[Configuration]
 
   /**
    * Writes a Pipewrench Configuration to configured directory
    * @param configuration Pipewrench Configuration
    */
-  def saveConfiguration(configuration: Configuration): Unit
+  def saveConfiguration(configuration: Configuration, fileName: String = "tables.yml"): Unit
 
   /**
    * Writes a Pipewrench Environment to configured directory
    * @param environment Pipewrench Environment
    */
-  def saveEnvironment(environment: Environment): Unit
+  def saveEnvironment(environment: Environment, fileName: String = "environment.yml"): Unit
 
   /**
    * Executes Pipewrench merge command
@@ -81,21 +81,33 @@ trait Pipewrench {
 
 }
 
-class PipewrenchService()
-    extends Pipewrench
-    with AppConfiguration
-    with YamlSupport
-    with LazyLogging {
+class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupport with LazyLogging {
 
-  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment,
-                                         password: String): Unit = {
+  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String]): Unit = {
     val pipewrenchEnvironment = environment.toPipewrenchEnvironment
-    buildConfiguration(environment.toDatabaseConfig(password),
-                       environment.metadata,
-                       pipewrenchEnvironment) match {
-      case Success(configuration) =>
+    buildConfiguration(environment.toDatabaseConfig(password), environment.metadata, pipewrenchEnvironment) match {
+      case Success(parsedConfiguration) =>
+        val mergedConfiguration: Configuration = currentFile match {
+          case Some(path) =>
+            val currentConfiguration = parseConfigurationFile(path)
+            logger.debug(s"""
+                 |Pipewrench configuration is different.
+                 |Current configuration:
+                 |$currentConfiguration
+                 |Parsed configuration:
+                 |$parsedConfiguration
+               """.stripMargin)
+            val diff            = currentConfiguration.tables.diff(parsedConfiguration.tables)
+            val currentTableIds = currentConfiguration.tables.diff(parsedConfiguration.tables).map(_.id)
+            val mergedTables    = parsedConfiguration.tables.filterNot(table => currentTableIds.contains(table.id)) ++ diff
+            val conf            = parsedConfiguration.copy(tables = mergedTables)
+            logger.debug(DiffShow[Configuration].diff(currentConfiguration, conf).toString)
+            saveConfiguration(currentConfiguration, "old_tables.yml")
+            conf
+          case None => parsedConfiguration
+        }
         saveEnvironment(pipewrenchEnvironment)
-        saveConfiguration(configuration)
+        saveConfiguration(mergedConfiguration)
       case Failure(ex) =>
         logger.error("Failed to build Pipewrench Config", ex)
     }
@@ -127,8 +139,7 @@ class PipewrenchService()
             source_database = Map("name"              -> databaseConf.schema,
                                   "cmd"               -> databaseConf.databaseType.toString,
                                   "connection_string" -> environment.connection_string),
-            staging_database = Map("path"             -> environment.staging_database_path,
-                                   "name"             -> environment.staging_database_name),
+            staging_database = Map("path"             -> environment.staging_database_path, "name" -> environment.staging_database_name),
             raw_database = Map(
               "path" -> environment.raw_database_path,
               "name" -> environment.raw_database_name
@@ -147,22 +158,22 @@ class PipewrenchService()
    * Writes a Pipewrench Configuration to configured directory
    * @param configuration Pipewrench Configuration
    */
-  override def saveConfiguration(configuration: Configuration): Unit = {
+  override def saveConfiguration(configuration: Configuration, fileName: String = "tables.yml"): Unit = {
     val dir = projectDir(configuration.group, configuration.name)
     logger.info(s"Saving configuration: $configuration, directory: $dir")
     checkIfDirExists(dir)
-    configuration.writeYamlFile(s"$dir/tables.yml")
+    configuration.writeYamlFile(s"$dir/$fileName")
   }
 
   /**
    * Writes a Pipewrench Environment to configured directory
    * @param environment Pipewrench Environment
    */
-  override def saveEnvironment(environment: Environment): Unit = {
+  override def saveEnvironment(environment: Environment, fileName: String = "environment.yml"): Unit = {
     val dir = projectDir(environment.group, environment.name)
     logger.info(s"Saving environment: $environment, directory: $dir")
     checkIfDirExists(dir)
-    environment.writeYamlFile(s"$dir/environment.yml")
+    environment.writeYamlFile(s"$dir/$fileName")
   }
 
   /**
@@ -258,9 +269,7 @@ class PipewrenchService()
         val dataType = DataType.mapDataType(column)
         logger.trace(s"Column definition: $column, mapped dataType: $dataType")
         val columnYaml =
-          Column(column.name,
-                 dataType.toString,
-                 column.comment.replaceAll("\"", "").replaceAll("\n", " "))
+          Column(column.name, dataType.toString, column.comment.replaceAll("\"", "").replaceAll("\n", " "))
         if (dataType == JDBCType.DECIMAL) {
           logger.trace("Found decimal value: {}", column)
           columnYaml.copy(scale = Some(column.scale), precision = Some(column.precision))
@@ -275,13 +284,8 @@ class PipewrenchService()
    * @return
    */
   def getSplitByColumn(table: DbTable) = {
-    val jdbc_numerics = List(JDBCType.BIGINT,
-                             JDBCType.REAL,
-                             JDBCType.DECIMAL,
-                             JDBCType.DOUBLE,
-                             JDBCType.FLOAT,
-                             JDBCType.INTEGER,
-                             JDBCType.NUMERIC)
+    val jdbc_numerics =
+      List(JDBCType.BIGINT, JDBCType.REAL, JDBCType.DECIMAL, JDBCType.DOUBLE, JDBCType.FLOAT, JDBCType.INTEGER, JDBCType.NUMERIC)
     table.primaryKeys
       .find(x => { jdbc_numerics contains x.dataType })
       .orElse(table.primaryKeys.headOption)

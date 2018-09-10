@@ -107,8 +107,9 @@ trait DatabaseMetadataParser extends LazyLogging {
           if (tables.toSet.subsetOf(sourceTables.toSet)) {
             Try(tables.flatMap(getTableMetadata(configuration.schema, _)))
           } else {
-            Failure(new Exception(
-              s"A table in the whitelist was not found in the source system, whitelist: $tables, source tables: $sourceTables"))
+            Failure(
+              new Exception(
+                s"A table in the whitelist was not found in the source system, whitelist: $tables, source tables: $sourceTables"))
           }
         }
       case None =>
@@ -153,22 +154,18 @@ trait DatabaseMetadataParser extends LazyLogging {
         case None =>
           joinedSingleRecordQuery(schema, table) match {
             case Some(joinedQuery) =>
-              logger.debug(s"Table: $table does not contain any records, using joined query: {}",
-                           joinedQuery)
+              logger.debug(s"Table: $table does not contain any records, using joined query: {}", joinedQuery)
               try {
                 stmt.executeQuery(joinedQuery).toStream.map(_.getMetaData).toList.headOption match {
                   case Some(metaData) => Success(metaData)
                   case None =>
-                    Failure(
-                      new Exception(
-                        s"Failed to use join query to get column definitions, query: $joinedQuery"))
+                    Failure(new Exception(s"Failed to use join query to get column definitions, query: $joinedQuery"))
                 }
               } catch {
                 case e: Exception => Failure(e)
               }
             case None =>
-              Failure(new Exception(
-                s"Table: $schema.$table is empty and joinedSingleRecord query is None, cannot get column definitions"))
+              Failure(new Exception(s"Table: $schema.$table is empty and joinedSingleRecord query is None, cannot get column definitions"))
           }
       }
 
@@ -232,8 +229,7 @@ trait DatabaseMetadataParser extends LazyLogging {
             .toList
         } catch {
           case e: Exception =>
-            logger.warn("Failed to query source for column comments, defaulting to empty comments",
-                        e)
+            logger.warn("Failed to query source for column comments, defaulting to empty comments", e)
             // If the query fails here it is most likely due to the user not having permissions
             // Instead of failing we need to capture the exception and return an empty list of comments
             List[(String, Option[String])]()
@@ -264,9 +260,7 @@ trait DatabaseMetadataParser extends LazyLogging {
       mapPrimaryKeyToColumn(pks, columns)
     } catch {
       case e: Exception =>
-        logger.warn(
-          s"Failed to get primary keys for schema: $schema, table: $table from source system",
-          e)
+        logger.warn(s"Failed to get primary keys for schema: $schema, table: $table from source system", e)
         Set[Column]()
     }
   }
@@ -356,8 +350,7 @@ object DatabaseMetadataParser extends LazyLogging {
    * @return Set of table definitions
    */
   def parse(configuration: DatabaseConf): Try[List[Table]] = {
-    logger.info("Extracting metadata information from database: {}",
-                configuration.copy(password = "******"))
+    logger.info("Extracting metadata information from database: {}", configuration.copy(password = "******"))
 
     // Establish connection to database
     getConnection(configuration) match {
@@ -381,8 +374,7 @@ object DatabaseMetadataParser extends LazyLogging {
           case DatabaseType.IMPALA =>
             new ImpalaMetadataParser(connection).getTablesMetadata(configuration)
           case _ =>
-            Failure(new Exception(
-              s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
+            Failure(new Exception(s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
         }
       case Failure(e) =>
         logger.error(s"Failed connecting to: ${configuration.copy(password = "******")}", e)

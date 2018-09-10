@@ -8,9 +8,7 @@ import io.phdata.pipeforge.jdbc.Implicits._
 
 import scala.util.{ Failure, Success }
 
-class ImpalaMetadataParser(_connection: Connection)
-    extends DatabaseMetadataParser
-    with AppConfiguration {
+class ImpalaMetadataParser(_connection: Connection) extends DatabaseMetadataParser with AppConfiguration {
 
   val queryHiveMetastore: Boolean =
     if (hiveMetastoreUrl.isDefined && hiveMetastoreUsername.isDefined && hiveMetastoreDatabaseType.isDefined && hiveMetastorePassword.isDefined && hiveMetasotreSchema.isDefined)
@@ -120,8 +118,7 @@ class ImpalaMetadataParser(_connection: Connection)
             s"Hive Metastore configuations are not supplied via application.conf, cannot query metastore for comments on table: $schema.$table")
           List[(String, Option[String])]()
         } else {
-          logger.warn(
-            s"Error connecting hive metastore, cannot query metastore for comments on table: $schema.$table")
+          logger.warn(s"Error connecting hive metastore, cannot query metastore for comments on table: $schema.$table")
           List[(String, Option[String])]()
         }
     }

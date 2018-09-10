@@ -51,10 +51,9 @@ trait RestModule {
 
 }
 
-class RestApi(http: HttpExt, pipewrenchController: PipewrenchController)(
-    implicit actorSystem: ActorSystem,
-    materializer: Materializer,
-    executionContext: ExecutionContext)
+class RestApi(http: HttpExt, pipewrenchController: PipewrenchController)(implicit actorSystem: ActorSystem,
+                                                                         materializer: Materializer,
+                                                                         executionContext: ExecutionContext)
     extends LazyLogging {
 
   val route: Route =

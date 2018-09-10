@@ -64,8 +64,7 @@ trait Handlers extends LazyLogging with JsonSupport with YamlSupport {
       .newBuilder()
       .handleAll[MethodRejection] { rejections =>
         val supportedOptions = rejections.map(_.supported.name())
-        complete(MethodNotAllowed,
-                 s"Method not supported, options include: ${supportedOptions.mkString(",")}")
+        complete(MethodNotAllowed, s"Method not supported, options include: ${supportedOptions.mkString(",")}")
       }
       .handleNotFound {
         complete(NotFound, "The requested resource is not found")

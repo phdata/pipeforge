@@ -9,6 +9,7 @@ Pipeforge uses JDBC metadata to build the tables.yml file used with Pipewrench.
 - `configuration`: Builds Pipewrench `tables.yml` and `environment.yml` files from JDBC Metadata.  Writes the results to the configured output directory
     - `-e, --environment`: Path to source environment.yml file
     - `-p, --password`: Optional. Source database user password, user will be prompted to enter password if it is not supplied
+    - `-t, --tables`: Optional.  Existing tables.yml file path.  A merge operation will be performed newly parsed tables will be appended to the original table definitions. 
 - `merge`: Executes Pipewrench merge and stores the Pipewrench output to the specified directory.
     - `-d, --directory`: Pipewrench configuration directory containing both the Pipewrench `environment.yml` and `tables.yml`
     - `-t, --template`: Pipewrench template name

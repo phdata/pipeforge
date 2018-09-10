@@ -22,14 +22,14 @@ import java.sql.JDBCType
 import ai.x.diff.DiffShow
 import ai.x.diff.conversions._
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.common.{AppConfiguration, YamlSupport}
+import io.phdata.pipeforge.common.{ AppConfiguration, YamlSupport }
 import io.phdata.pipeforge.jdbc.DatabaseMetadataParser
-import io.phdata.pipeforge.common.jdbc.{DatabaseConf, DatabaseType}
-import io.phdata.pipeforge.common.jdbc.{DataType, Column => DbColumn, Table => DbTable}
-import io.phdata.pipeforge.common.{Environment => PipeforgeEnvironment}
+import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType }
+import io.phdata.pipeforge.common.jdbc.{ DataType, Column => DbColumn, Table => DbTable }
+import io.phdata.pipeforge.common.{ Environment => PipeforgeEnvironment }
 import io.phdata.pipeforge.common.pipewrench._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Pipewrench service
@@ -90,18 +90,17 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
         val mergedConfiguration: Configuration = currentFile match {
           case Some(path) =>
             val currentConfiguration = parseConfigurationFile(path)
-            logger.debug(
-              s"""
+            logger.debug(s"""
                  |Pipewrench configuration is different.
                  |Current configuration:
                  |$currentConfiguration
                  |Parsed configuration:
                  |$parsedConfiguration
                """.stripMargin)
-            val diff = currentConfiguration.tables.diff(parsedConfiguration.tables)
+            val diff            = currentConfiguration.tables.diff(parsedConfiguration.tables)
             val currentTableIds = currentConfiguration.tables.diff(parsedConfiguration.tables).map(_.id)
-            val mergedTables = parsedConfiguration.tables.filterNot(table => currentTableIds.contains(table.id)) ++ diff
-            val conf = parsedConfiguration.copy(tables = mergedTables)
+            val mergedTables    = parsedConfiguration.tables.filterNot(table => currentTableIds.contains(table.id)) ++ diff
+            val conf            = parsedConfiguration.copy(tables = mergedTables)
             logger.debug(DiffShow[Configuration].diff(currentConfiguration, conf).toString)
             saveConfiguration(currentConfiguration, "old_tables.yml")
             conf

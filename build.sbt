@@ -63,8 +63,6 @@ lazy val dependencies =
     val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
     val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
     val diff              = "ai.x"                       %% "diff"                 % "2.0"
-    val shapeless         = "com.chuusai"                %% "shapeless"            % "2.3.3"
-    val cats              = "org.typelevel"              %% "cats-free"            % "1.3.0"
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
     val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
@@ -119,11 +117,7 @@ lazy val common = project
     name := "common",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml,
-                                                       dependencies.typesafeConf,
-                                                       dependencies.ficus,
-                                                       dependencies.shapeless,
-                                                       dependencies.cats)
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.scalaYaml, dependencies.typesafeConf, dependencies.ficus)
   )
 
 lazy val `jdbc-metadata` = project
@@ -146,7 +140,7 @@ lazy val pipewrench = project
     name := "pipewrench",
     version := appVersion,
     settings,
-    libraryDependencies ++= dependencies.common ++ Seq(dependencies.diff, dependencies.shapeless, dependencies.cats)
+    libraryDependencies ++= dependencies.common ++ Seq(dependencies.diff)
   )
   .dependsOn(
     common,

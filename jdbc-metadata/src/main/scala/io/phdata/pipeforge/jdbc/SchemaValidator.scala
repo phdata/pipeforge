@@ -8,7 +8,6 @@ import scala.util.{ Failure, Success, Try }
 import ai.x.diff.DiffShow
 import ai.x.diff.conversions._
 
-
 trait SchemaValidator {
 
   def validateSchema(environment: Environment, databasePassword: String, impalaPassword: String)
@@ -42,7 +41,7 @@ object SchemaValidator extends SchemaValidator with AppConfiguration with LazyLo
                   print(diff.toString)
                   logger.info(s"Schema difference: $diff")
                 }
-              case Failure(ex)           => logger.error("Failed to parse impala schema", ex)
+              case Failure(ex) => logger.error("Failed to parse impala schema", ex)
             }
           case Failure(ex) => logger.error("Failed to parse source system schema", ex)
         }

@@ -28,13 +28,13 @@ import scala.io.Source
 trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
 
   implicit def databaseYamlFormat    = yamlFormat2(Database)
-  implicit def environmentYamlFormat = yamlFormat13(Environment.apply)
+  implicit def environmentYamlFormat = yamlFormat14(Environment.apply)
 
-  implicit def pipewrenchEnvironmentFormat   = yamlFormat9(PipewrenchEnvironment)
+  implicit def pipewrenchEnvironmentFormat   = yamlFormat10(PipewrenchEnvironment)
   implicit def pipewrenchColumnFormat        = yamlFormat5(Column)
   implicit def pipewrenchKuduFormat          = yamlFormat2(Kudu)
   implicit def pipewrenchTableFormat         = yamlFormat9(Table)
-  implicit def pipewrenchConfigurationFormat = yamlFormat13(Configuration)
+  implicit def pipewrenchConfigurationFormat = yamlFormat14(Configuration)
 
   /**
    * Parses input file into Environment object

@@ -32,6 +32,7 @@ import io.phdata.pipeforge.common.pipewrench.{ Environment => PipewrenchEnvironm
  * @param metadata Metadata map to be added to Hadoop tblproperties
  * @param hadoopUser Hadoop user
  * @param passwordFile Location of database password file
+ * @param userDefined Map of user defined key values
  * @param tables A whitelist of table names
  */
 case class Environment(name: String,
@@ -46,6 +47,7 @@ case class Environment(name: String,
                        passwordFile: String,
                        stagingDatabase: Database,
                        rawDatabase: Database,
+                       userDefined: Option[Map[String, String]],
                        tables: Option[List[String]] = None)
 
 case class Database(name: String, path: String)
@@ -66,7 +68,8 @@ object Environment {
         staging_database_name = environment.stagingDatabase.name,
         staging_database_path = environment.stagingDatabase.path,
         raw_database_name = environment.rawDatabase.name,
-        raw_database_path = environment.rawDatabase.path
+        raw_database_path = environment.rawDatabase.path,
+        user_defined = environment.userDefined
       )
   }
 

@@ -26,6 +26,7 @@ class YamlSupportTest extends FunSuite with YamlSupport {
       "test_password_file",
       Database("test_name", "test_path"),
       Database("test_name", "test_path"),
+      Some(Map("test1" -> "test1")),
       Some(List("test_table1", "test_table2"))
     )
     assertResult(expected)(environment)

@@ -145,6 +145,7 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
               "name" -> environment.raw_database_name
             ),
             impala_cmd = impalaCmd,
+            user_defined = environment.user_defined,
             tables = buildTables(tables, tableMetadata)
           )
         )

@@ -98,23 +98,10 @@ rawDatabase:
 #  table_suffix: _ingest
 ```
 
-## Build
-
-### Creating a Jar
+## Distributing application
 
 ```sbtshell
-sbt clean assembly
-```
-
-Creates a jar with the required dependencies ([sbt-assembly](https://github.com/sbt/sbt-assembly)).  The jar is found in  `target/scala-2.12/pipeforce_2.12-<version>.jar`.
-
-1. Copy jar to `$INSTALL_LOCATION`
-2. Change directory to `$INSTALL_LOCATION`
-
-### Distributing application
-
-```sbtshell
-sbt clean assembly universal:packageBin
+sbt clean universal:packageBin
 ```
 Creates a bundled zip application with required dependencies and executable scripts ([sbt-native-packager](https://github.com/sbt/sbt-native-packager)).  Package is found in `target/universal/pipeforge-<version>.zip`.
 

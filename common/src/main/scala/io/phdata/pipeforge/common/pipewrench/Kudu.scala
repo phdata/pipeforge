@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.domain
+package io.phdata.pipeforge.common.pipewrench
 
 /**
- * Table definition
- * @param name Table name
- * @param comment Table comment
- * @param primaryKeys A set of primary key definitions
- * @param columns A set of column definitions
+ * Kudu object
+ * @param hash_by
+ * @param num_partitions
  */
-case class Table(name: String, comment: String, primaryKeys: Set[Column], columns: Set[Column])
+case class Kudu(hash_by: List[String], num_partitions: Int)

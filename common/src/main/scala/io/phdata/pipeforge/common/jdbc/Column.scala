@@ -14,28 +14,26 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.domain
+package io.phdata.pipeforge.common.jdbc
 
-import net.jcazevedo.moultingyaml.DefaultYamlProtocol
-import net.jcazevedo.moultingyaml._
-
-import scala.io.Source
+import java.sql.{ JDBCType, SQLType }
 
 /**
- * Provides Yaml support
+ * Column Definition
+ * @param name Column name
+ * @param comment Column comment
+ * @param dataType SQL data type
+ * @param nullable Is column nullable
+ * @param index Column position
+ * @param precision Data type precision
+ * @param scale Data type scale
  */
-trait YamlSupport extends DefaultYamlProtocol {
-
-  implicit def databaseYamlFormat    = yamlFormat2(Database)
-  implicit def environmentYamlFormat = yamlFormat13(Environment.apply)
+case class Column(name: String, comment: String, dataType: JDBCType, nullable: Boolean, index: Int, precision: Int, scale: Int) {
 
   /**
-   * Parses input file into Environment object
-   * @param path
+   * Determines whether the column is a decimal or not based on defined scale
    * @return
    */
-  def parseFile(path: String): Environment = {
-    val file = Source.fromFile(path).getLines.mkString("\n")
-    file.parseYaml.convertTo[Environment]
-  }
+  def isDecimal = scale > 0
+
 }

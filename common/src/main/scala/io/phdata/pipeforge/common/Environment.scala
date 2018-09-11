@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.rest.domain
+package io.phdata.pipeforge.common
 
-import io.phdata.pipeforge.jdbc.config.{ DatabaseConf, DatabaseType, ObjectType }
-import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
+import io.phdata.pipeforge.common.jdbc.{ DatabaseConf, DatabaseType, ObjectType }
+import io.phdata.pipeforge.common.pipewrench.{ Environment => PipewrenchEnvironment }
 
 /**
  * Pipeforge main configuration object
@@ -32,6 +32,7 @@ import io.phdata.pipewrench.domain.{ Environment => PipewrenchEnvironment }
  * @param metadata Metadata map to be added to Hadoop tblproperties
  * @param hadoopUser Hadoop user
  * @param passwordFile Location of database password file
+ * @param userDefined Map of user defined key values
  * @param tables A whitelist of table names
  */
 case class Environment(name: String,
@@ -46,6 +47,7 @@ case class Environment(name: String,
                        passwordFile: String,
                        stagingDatabase: Database,
                        rawDatabase: Database,
+                       userDefined: Option[Map[String, String]],
                        tables: Option[List[String]] = None)
 
 case class Database(name: String, path: String)
@@ -54,6 +56,7 @@ case class Database(name: String, path: String)
  * Helper object converting Pipeforge configs into Pipewrench ones
  */
 object Environment {
+
   implicit class EnvironmentPipewrench(environment: Environment) {
     def toPipewrenchEnvironment: PipewrenchEnvironment =
       PipewrenchEnvironment(
@@ -65,7 +68,8 @@ object Environment {
         staging_database_name = environment.stagingDatabase.name,
         staging_database_path = environment.stagingDatabase.path,
         raw_database_name = environment.rawDatabase.name,
-        raw_database_path = environment.rawDatabase.path
+        raw_database_path = environment.rawDatabase.path,
+        user_defined = environment.userDefined
       )
   }
 
@@ -81,4 +85,5 @@ object Environment {
         tables = environment.tables
       )
   }
+
 }

@@ -14,31 +14,46 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common
 
 import java.io.FileWriter
 
 import com.typesafe.scalalogging.LazyLogging
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
+import net.jcazevedo.moultingyaml._
+import io.phdata.pipeforge.common.pipewrench.{ Column, Configuration, Kudu, Table, Environment => PipewrenchEnvironment }
 
-/**
- * Provides Yaml support
- */
+import scala.io.Source
+
 trait YamlSupport extends DefaultYamlProtocol with LazyLogging {
 
-  import net.jcazevedo.moultingyaml._
+  implicit def databaseYamlFormat    = yamlFormat2(Database)
+  implicit def environmentYamlFormat = yamlFormat14(Environment.apply)
 
-  implicit def pipewrenchEnvironmentFormat   = yamlFormat9(Environment)
+  implicit def pipewrenchEnvironmentFormat   = yamlFormat10(PipewrenchEnvironment)
   implicit def pipewrenchColumnFormat        = yamlFormat5(Column)
   implicit def pipewrenchKuduFormat          = yamlFormat2(Kudu)
   implicit def pipewrenchTableFormat         = yamlFormat9(Table)
-  implicit def pipewrenchConfigurationFormat = yamlFormat13(Configuration)
+  implicit def pipewrenchConfigurationFormat = yamlFormat14(Configuration)
+
+  /**
+   * Parses input file into Environment object
+   * @param path
+   * @return
+   */
+  def parseEnvironmentFile(path: String): Environment =
+    readFile(path).parseYaml.convertTo[Environment]
+
+  def parseConfigurationFile(path: String): Configuration =
+    readFile(path).parseYaml.convertTo[Configuration]
+
+  private def readFile(path: String): String = Source.fromFile(path).getLines.mkString("\n")
 
   /**
    * Implicit class for writing yaml files
    * @param environment
    */
-  implicit class WriteEnvironmentYamlFile(environment: Environment) {
+  implicit class WriteEnvironmentYamlFile(environment: PipewrenchEnvironment) {
     def writeYamlFile(path: String): Unit = writeFile(environment.toYaml, path)
   }
 

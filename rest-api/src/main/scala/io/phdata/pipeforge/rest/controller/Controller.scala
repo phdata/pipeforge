@@ -24,9 +24,9 @@ import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionH
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes._
 import com.typesafe.scalalogging.LazyLogging
-import io.phdata.pipeforge.rest.domain.{ Database, Environment, YamlSupport }
-import io.phdata.pipewrench.domain.{ Column, Configuration, Kudu, Table }
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import io.phdata.pipeforge.common.pipewrench.{ Column, Configuration, Kudu, Table }
+import io.phdata.pipeforge.common.{ Database, Environment, YamlSupport }
 import spray.json.DefaultJsonProtocol
 
 import scala.util.{ Failure, Success, Try }
@@ -35,13 +35,13 @@ case class ErrorMessage(message: String, stacktrace: Option[String] = None)
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit def databaseJsonFormat     = jsonFormat2(Database)
-  implicit def environmentJsonFormat  = jsonFormat13(Environment.apply)
+  implicit def environmentJsonFormat  = jsonFormat14(Environment.apply)
   implicit def errorMessageJsonFormat = jsonFormat2(ErrorMessage)
 
   implicit def columnJsonFormat        = jsonFormat5(Column)
   implicit def kuduJsonFormat          = jsonFormat2(Kudu)
   implicit def tableJsonFormat         = jsonFormat9(Table)
-  implicit def configurationJsonFormat = jsonFormat13(Configuration)
+  implicit def configurationJsonFormat = jsonFormat14(Configuration)
 }
 
 trait Handlers extends LazyLogging with JsonSupport with YamlSupport {
@@ -64,8 +64,7 @@ trait Handlers extends LazyLogging with JsonSupport with YamlSupport {
       .newBuilder()
       .handleAll[MethodRejection] { rejections =>
         val supportedOptions = rejections.map(_.supported.name())
-        complete(MethodNotAllowed,
-                 s"Method not supported, options include: ${supportedOptions.mkString(",")}")
+        complete(MethodNotAllowed, s"Method not supported, options include: ${supportedOptions.mkString(",")}")
       }
       .handleNotFound {
         complete(NotFound, "The requested resource is not found")

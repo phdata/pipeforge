@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common.pipewrench
 
 /**
  * Column object
@@ -24,8 +24,4 @@ package io.phdata.pipewrench.domain
  * @param scale
  * @param precision
  */
-case class Column(name: String,
-                  datatype: String,
-                  comment: String = "",
-                  scale: Option[Int] = None,
-                  precision: Option[Int] = None)
+case class Column(name: String, datatype: String, comment: String = "", scale: Option[Int] = None, precision: Option[Int] = None)

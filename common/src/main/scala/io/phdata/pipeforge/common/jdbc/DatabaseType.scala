@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.config
+package io.phdata.pipeforge.common.jdbc
 
 /**
  * Supported database types
@@ -28,6 +28,7 @@ object DatabaseType extends Enumeration {
   val TERADATA = Value("teradata")
   val AS400    = Value("as400")
   val REDSHIFT = Value("redshift")
+  val IMPALA   = Value("impala")
 
   def getDriver(dbType: DatabaseType.Value): Option[String] =
     dbType match {
@@ -38,6 +39,7 @@ object DatabaseType extends Enumeration {
       case TERADATA => Some("com.teradata.jdbc.TeraDriver")
       case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")
       case REDSHIFT => Some("com.amazon.redshift.jdbc41.Driver")
+      case IMPALA   => Some("org.apache.hive.jdbc.HiveDriver")
       case _        => None
     }
 

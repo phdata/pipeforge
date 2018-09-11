@@ -2,15 +2,15 @@ package io.phdata.pipeforge.rest.controller
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import io.phdata.pipeforge.rest.domain.YamlSupport
-import io.phdata.pipewrench.domain.{ Configuration, YamlSupport => PipewrenchYamlSupport }
+import io.phdata.pipeforge.common.YamlSupport
+import io.phdata.pipeforge.common.pipewrench.Configuration
 
 import scala.util.Success
 
 /**
  * Pipewrench endpoint tests
  */
-class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with PipewrenchYamlSupport {
+class PipewrenchControllerSpec extends ControllerSpec with YamlSupport {
 
   import spray.json._
   import net.jcazevedo.moultingyaml._
@@ -24,7 +24,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with Pipe
       }
     }
     "execute Pipewrench merge" in {
-      (pipewrenchService.saveConfiguration _).expects(*).returning(Unit)
+      (pipewrenchService.saveConfiguration _).expects(*, *).returning(Unit)
       (pipewrenchService.executePipewrenchMergeApi _).expects(*, *).returning(Unit)
       val yaml = configuration.toYaml.prettyPrint
       Post(s"/${pipewrenchController.basePath}/merge?template=test.template", yaml) ~> pipewrenchController.route ~> check {
@@ -32,7 +32,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with Pipe
       }
     }
     "generate configuration from Yaml environment" in {
-      (pipewrenchService.buildConfiguration _).expects(*, *, *, *).returning(Success(configuration))
+      (pipewrenchService.buildConfiguration _).expects(*, *, *).returning(Success(configuration))
       val yaml = environment.toYaml.prettyPrint
       Put(s"/${pipewrenchController.basePath}/configuration", yaml) ~>
       RawHeader("password", "cGFzcw==") ~>
@@ -42,7 +42,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with Pipe
       }
     }
     "generate configuration from Json environment" in {
-      (pipewrenchService.buildConfiguration _).expects(*, *, *, *).returning(Success(configuration))
+      (pipewrenchService.buildConfiguration _).expects(*, *, *).returning(Success(configuration))
       val json = environment.toJson.prettyPrint
       Put(s"/${pipewrenchController.basePath}/configuration", json) ~>
       RawHeader("Content-Type", ContentTypes.`application/json`.toString()) ~>
@@ -53,7 +53,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with Pipe
       }
     }
     "save Pipewrench environment from yaml" in {
-      (pipewrenchService.saveEnvironment _).expects(*).returning(Unit)
+      (pipewrenchService.saveEnvironment _).expects(*, *).returning(Unit)
       val yaml = environment.toYaml.prettyPrint
       Post(s"/${pipewrenchController.basePath}/environment", yaml) ~>
       pipewrenchController.route ~>
@@ -62,7 +62,7 @@ class PipewrenchControllerSpec extends ControllerSpec with YamlSupport with Pipe
       }
     }
     "save Pipewrench environment from json" in {
-      (pipewrenchService.saveEnvironment _).expects(*).returning(Unit)
+      (pipewrenchService.saveEnvironment _).expects(*, *).returning(Unit)
       val json = environment.toJson.prettyPrint
       Post(s"/${pipewrenchController.basePath}/environment", json) ~>
       RawHeader("Content-Type", ContentTypes.`application/json`.toString()) ~>

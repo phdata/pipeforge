@@ -32,12 +32,12 @@ class TeradataMetadataParser(_connection: Connection) extends DatabaseMetadataPa
        |FROM $schema.$table
      """.stripMargin
 
-  override def joinedSingleRecordQuery(schema: String, table: String): String =
-    s"""
+  override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =
+    Some(s"""
        |SELECT TOP 1 t.*
        |FROM dbc.tables AS d
        |  LEFT OUTER JOIN $schema.$table AS t ON 1 = 1
-     """.stripMargin
+     """.stripMargin)
 
   override def listTablesStatement(schema: String) =
     s"""

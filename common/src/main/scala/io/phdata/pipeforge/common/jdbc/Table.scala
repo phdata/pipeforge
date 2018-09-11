@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package io.phdata.pipeforge.jdbc.config
+package io.phdata.pipeforge.common.jdbc
 
 /**
- * Supported Database objects
+ * Table definition
+ *
+ * @param name Table name
+ * @param comment Table comment
+ * @param primaryKeys A set of primary key definitions
+ * @param columns A set of column definitions
  */
-object ObjectType extends Enumeration {
-  val VIEW  = Value("view")
-  val TABLE = Value("table")
-}
+case class Table(name: String, comment: String, primaryKeys: Set[Column], columns: Set[Column])

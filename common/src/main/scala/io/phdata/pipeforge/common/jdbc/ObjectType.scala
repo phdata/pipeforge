@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-package io.phdata.pipewrench.domain
+package io.phdata.pipeforge.common.jdbc
 
 /**
- * Table object
- * @param id
- * @param source
- * @param destination
- * @param split_by_column
- * @param primary_keys
- * @param kudu
- * @param columns
- * @param metadata
+ * Supported Database objects
  */
-case class Table(id: String,
-                 source: Map[String, String],
-                 destination: Map[String, String],
-                 split_by_column: String,
-                 primary_keys: Seq[String],
-                 kudu: Kudu,
-                 columns: Seq[Column],
-                 metadata: Map[String, String],
-                 comment: String = "")
+object ObjectType extends Enumeration {
+  val VIEW  = Value("view")
+  val TABLE = Value("table")
+}

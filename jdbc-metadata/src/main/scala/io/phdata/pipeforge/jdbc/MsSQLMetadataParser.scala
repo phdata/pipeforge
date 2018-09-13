@@ -39,7 +39,7 @@ class MsSQLMetadataParser(_connection: Connection) extends DatabaseMetadataParse
   override def singleRecordQuery(schema: String, table: String) =
     s"""
        |SELECT TOP 1 *
-       |FROM \"$table\"
+       |FROM \"$schema\".\"$table\"
      """.stripMargin
 
   override def joinedSingleRecordQuery(schema: String, table: String): Option[String] =

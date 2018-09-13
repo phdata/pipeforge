@@ -34,7 +34,7 @@ object DatabaseType extends Enumeration {
     dbType match {
       case MYSQL    => Some("com.mysql.jdbc.Driver")
       case ORACLE   => Some("oracle.jdbc.OracleDriver")
-      case MSSQL    => Some("com.microsoft.sql.server.jdbc.SQLServerDriver")
+      case MSSQL    => Some("com.microsoft.sqlserver.jdbc.SQLServerDriver")
       case HANA     => Some("com.sap.db.jdbc.Driver")
       case TERADATA => Some("com.teradata.jdbc.TeraDriver")
       case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")

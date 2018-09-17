@@ -35,12 +35,12 @@ case class ErrorMessage(message: String, stacktrace: Option[String] = None)
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit def databaseJsonFormat     = jsonFormat2(Database)
-  implicit def environmentJsonFormat  = jsonFormat14(Environment.apply)
+  implicit def environmentJsonFormat  = jsonFormat15(Environment.apply)
   implicit def errorMessageJsonFormat = jsonFormat2(ErrorMessage)
 
   implicit def columnJsonFormat        = jsonFormat5(Column)
   implicit def kuduJsonFormat          = jsonFormat2(Kudu)
-  implicit def tableJsonFormat         = jsonFormat9(Table)
+  implicit def tableJsonFormat         = jsonFormat10(Table)
   implicit def configurationJsonFormat = jsonFormat14(Configuration)
 }
 

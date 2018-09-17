@@ -30,6 +30,7 @@ package io.phdata.pipeforge.common.pipewrench
 case class Table(id: String,
                  source: Map[String, String],
                  destination: Map[String, String],
+                 check_column: Option[String] = None,
                  split_by_column: String,
                  primary_keys: Seq[String],
                  kudu: Kudu,

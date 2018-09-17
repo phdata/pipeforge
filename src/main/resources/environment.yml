@@ -7,6 +7,7 @@ username: employee # Database user name
 objectType: table # Database object type to be ingested must be either table or view
 # tables: # Optionally add a whitelisting of tables to ingest
 #   - employee
+#checkColumn: last_updated # Optional configuration for specifying a schema wide check column.  `checkColumn` is used for Sqoop incremental ingest
 metadata: # Metadata map to be applied to every table's tblproperties. https://www.cloudera.com/documentation/enterprise/latest/topics/impala_create_table.html
   SOURCE: employee database # Source database identifier
   LOAD_FREQUENCY: Daily # Frequency of data ingestion

@@ -36,17 +36,23 @@ import scala.util.{ Failure, Success, Try }
  */
 trait Pipewrench {
 
+  /**
+   * Builds and writes out Pipewrench configuration and environment files
+   *
+   * @param environment Pipeforge environment
+   * @param password Database password
+   * @param currentFile Optional existing tables.yml when provided a merge operation is performed
+   */
   def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String] = None): Unit
 
   /**
    * Builds a Pipewrench Configuratio from JDBC metadata
    *
-   * @param databaseConf Database configuration
-   * @param tableMetadata Metadata map used in Hive tblproperties
-   * @param environment Pipewrench Environment
+   * @param environment Pipeforge environment
+   * @param password Database password
    * @return A Configuration
    */
-  def buildConfiguration(databaseConf: DatabaseConf, tableMetadata: Map[String, String], environment: Environment): Try[Configuration]
+  def buildConfiguration(environment: PipeforgeEnvironment, password: String): Try[Configuration]
 
   /**
    * Writes a Pipewrench Configuration to configured directory
@@ -83,9 +89,15 @@ trait Pipewrench {
 
 class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupport with LazyLogging {
 
-  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String]): Unit = {
-    val pipewrenchEnvironment = environment.toPipewrenchEnvironment
-    buildConfiguration(environment.toDatabaseConfig(password), environment.metadata, pipewrenchEnvironment) match {
+  /**
+   * Builds and writes out Pipewrench configuration and environment files
+   *
+   * @param environment Pipeforge environment
+   * @param password Database password
+   * @param currentFile Optional existing tables.yml when provided a merge operation is performed
+   */
+  override def buildAndSaveConfiguration(environment: PipeforgeEnvironment, password: String, currentFile: Option[String]): Unit =
+    buildConfiguration(environment, password) match {
       case Success(parsedConfiguration) =>
         val mergedConfiguration: Configuration = currentFile match {
           case Some(path) =>
@@ -106,24 +118,22 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
             conf
           case None => parsedConfiguration
         }
-        saveEnvironment(pipewrenchEnvironment)
+        saveEnvironment(environment.toPipewrenchEnvironment)
         saveConfiguration(mergedConfiguration)
       case Failure(ex) =>
         logger.error("Failed to build Pipewrench Config", ex)
     }
-  }
 
   /**
    * Builds a Pipewrench Configuration from JDBC metadata
    *
-   * @param databaseConf Database configuration
-   * @param tableMetadata Metadata map used in Hive tblproperties
-   * @param environment Pipewrench Environment
-   * @return A Configuration
+   * @param pipeforgeEnvironment Pipeforge environment
+   * @param password Database password
+   * @return Pipewrench Configuration
    */
-  override def buildConfiguration(databaseConf: DatabaseConf,
-                                  tableMetadata: Map[String, String],
-                                  environment: Environment): Try[Configuration] =
+  override def buildConfiguration(pipeforgeEnvironment: PipeforgeEnvironment, password: String): Try[Configuration] = {
+    val databaseConf = pipeforgeEnvironment.toDatabaseConfig(password)
+    val environment  = pipeforgeEnvironment.toPipewrenchEnvironment
     DatabaseMetadataParser.parse(databaseConf) match {
       case Success(tables: Seq[DbTable]) =>
         logger.debug(s"Successfully parsed JDBC metadata: $tables")
@@ -146,13 +156,14 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
             ),
             impala_cmd = impalaCmd,
             user_defined = environment.user_defined,
-            tables = buildTables(tables, tableMetadata)
+            tables = buildTables(tables, pipeforgeEnvironment.metadata, pipeforgeEnvironment.checkColumn)
           )
         )
       case Failure(ex) =>
         logger.error("Failed to parse metadata config", ex)
         Failure(ex)
     }
+  }
 
   /**
    * Writes a Pipewrench Configuration to configured directory
@@ -212,9 +223,10 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
    * Builds Pipewrench Table object from Jdbc metadata DbTable
    * @param tables Database tables DbTable
    * @param tableMetadata A map of expanded tblproperties
+   * @param checkColumn Column name for incremental data ingestion
    * @return A list of Tables
    */
-  private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String]): Seq[Table] =
+  private def buildTables(tables: Seq[DbTable], tableMetadata: Map[String, String], checkColumn: Option[String] = None): Seq[Table] =
     tables.toList
       .sortBy(_.name)
       .map { table =>
@@ -222,15 +234,16 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
         val allColumns = table.primaryKeys ++ table.columns
         val pks        = table.primaryKeys.toList.sortBy(_.index).map(_.name)
         Table(
-          table.name,
-          Map("name" -> table.name),
-          Map("name" -> cleanTableName(table.name)),
-          getSplitByColumn(table),
-          pks,
-          Kudu(pks, 2),
-          buildColumns(allColumns),
-          tableMetadata,
-          table.comment.replaceAll("\"", "").replaceAll("\n", " ")
+          id = table.name,
+          source = Map("name"      -> table.name),
+          destination = Map("name" -> cleanTableName(table.name)),
+          check_column = checkColumn,
+          split_by_column = getSplitByColumn(table),
+          primary_keys = pks,
+          kudu = Kudu(pks, 2),
+          columns = buildColumns(allColumns),
+          metadata = tableMetadata,
+          comment = table.comment.replaceAll("\"", "").replaceAll("\n", " ")
         )
       }
 

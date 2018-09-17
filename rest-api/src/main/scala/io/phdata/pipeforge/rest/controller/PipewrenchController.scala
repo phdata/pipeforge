@@ -146,9 +146,7 @@ class PipewrenchController(pipewrenchService: Pipewrench)(implicit executionCont
    * @return Configuration
    */
   def buildConfiguration(password: String, environment: Environment) =
-    pipewrenchService.buildConfiguration(databaseConf = environment.toDatabaseConfig(password),
-                                         tableMetadata = environment.metadata,
-                                         environment = environment.toPipewrenchEnvironment)
+    pipewrenchService.buildConfiguration(environment, password)
 
   /**
    * Writes a Pipewrench Environment to the configured directory

@@ -32,6 +32,7 @@ import io.phdata.pipeforge.common.pipewrench.{ Environment => PipewrenchEnvironm
  * @param metadata Metadata map to be added to Hadoop tblproperties
  * @param hadoopUser Hadoop user
  * @param passwordFile Location of database password file
+ * @param checkColumn Check column to be used for incremental loads.
  * @param userDefined Map of user defined key values
  * @param tables A whitelist of table names
  */
@@ -47,7 +48,8 @@ case class Environment(name: String,
                        passwordFile: String,
                        stagingDatabase: Database,
                        rawDatabase: Database,
-                       userDefined: Option[Map[String, String]],
+                       checkColumn: Option[String] = None,
+                       userDefined: Option[Map[String, String]] = None,
                        tables: Option[List[String]] = None)
 
 case class Database(name: String, path: String)

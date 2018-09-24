@@ -29,7 +29,7 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
   override def singleRecordQuery(schema: String, table: String) =
     s"""
        |SELECT *
-       |FROM '$schema.$table'
+       |FROM '$schema'.'$table'
        |WHERE ROWNUM = 1
      """.stripMargin
 
@@ -37,7 +37,7 @@ class OracleMetadataParser(_connection: Connection) extends DatabaseMetadataPars
     Some(s"""
        |SELECT t.*
        |FROM SYS.DUAL d
-       |  LEFT OUTER JOIN '$schema.$table' t ON 1=1
+       |  LEFT OUTER JOIN '$schema'.'$table' t ON 1=1
        |WHERE ROWNUM = 1
      """.stripMargin)
 

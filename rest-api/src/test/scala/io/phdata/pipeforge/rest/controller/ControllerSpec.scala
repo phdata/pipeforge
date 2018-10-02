@@ -41,6 +41,7 @@ trait ControllerSpec
         source = Map("name"      -> "test.table.source.name"),
         destination = Map("name" -> "test.table.source.name"),
         split_by_column = "test.table.split_by_column",
+        check_column = Some("test.table.check_column"),
         primary_keys = Seq("test.table.primary_keys.col1"),
         kudu = Kudu(
           hash_by = List("col1"),

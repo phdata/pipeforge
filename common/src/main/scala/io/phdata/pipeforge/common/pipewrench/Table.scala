@@ -21,6 +21,8 @@ package io.phdata.pipeforge.common.pipewrench
  * @param id
  * @param source
  * @param destination
+ * @param check_column
+ * @param num_mappers
  * @param split_by_column
  * @param primary_keys
  * @param kudu
@@ -30,7 +32,8 @@ package io.phdata.pipeforge.common.pipewrench
 case class Table(id: String,
                  source: Map[String, String],
                  destination: Map[String, String],
-                 check_column: Option[String] = None,
+                 check_column: Option[String],
+                 num_mappers: Option[Int] = Some(1),
                  split_by_column: String,
                  primary_keys: Seq[String],
                  kudu: Kudu,

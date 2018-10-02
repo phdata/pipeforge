@@ -40,7 +40,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit def columnJsonFormat        = jsonFormat5(Column)
   implicit def kuduJsonFormat          = jsonFormat2(Kudu)
-  implicit def tableJsonFormat         = jsonFormat10(Table)
+  implicit def tableJsonFormat         = jsonFormat11(Table)
   implicit def configurationJsonFormat = jsonFormat14(Configuration)
 }
 

@@ -237,7 +237,7 @@ class PipewrenchService() extends Pipewrench with AppConfiguration with YamlSupp
           id = table.name,
           source = Map("name"      -> table.name),
           destination = Map("name" -> cleanTableName(table.name)),
-          check_column = checkColumn,
+          check_column = Some(checkColumn.getOrElse("<MANUAL ENTRY>")),
           split_by_column = getSplitByColumn(table),
           primary_keys = pks,
           kudu = Kudu(pks, 2),

@@ -94,6 +94,7 @@ stagingDatabase:
 rawDatabase:
   name: employee_raw
   path: hdfs:///ns/user/developer/raw/db
+# checkColumn: last_updated # Optional check column parameter. This value will be added to all pipewrench table configs for incremental ingest.
 # userDefined: Optional user defined parameters.  These key values will be added to the pipewrench environment and configuration files to be used in templates
 #  table_suffix: _ingest
 ```

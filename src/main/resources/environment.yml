@@ -14,13 +14,13 @@ metadata: # Metadata map to be applied to every table's tblproperties. https://w
   test1: Daily # Frequency of data ingestion
   CONTACT: developer@phdata.io # Distribution list for data owners
 hadoopUser: ps_dev_employee # Hadoop user recommended to use a process account
-passwordFile: hdfs://user/developer/.employee_db_password # Location of sqoop's password file recommended HDFS location
+passwordFile: hdfs:///user/developer/.employee_db_password # Location of sqoop's password file recommended HDFS location
 stagingDatabase:
   name: edh_employee_staging
-  path: hdfs://user/developer/staging/db
+  path: hdfs:///user/developer/staging/db
 rawDatabase:
   name: edh_employee_raw
-  path: hdfs://user/developer/raw/db
+  path: hdfs:///user/developer/raw/db
 # checkColumn: last_updated # Optional check_column parameter.  This value will be added to all pipewrench table configs for incremental ingest
 # userDefined: Optional user defined parameters.  These key values will be added to the pipewrench environment and configuration files to be used in templates
 #  table_suffix: _ingest

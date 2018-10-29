@@ -18,7 +18,7 @@ import sbt._
 name := "pipeforge"
 organization in ThisBuild := "io.phdata"
 scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.17"
+lazy val appVersion = "0.18"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -66,6 +66,7 @@ lazy val dependencies =
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
     val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"
+    val sybase            = "net.sourceforge.jtds"       % "jtds"                  % "1.3.1"
     val akka              = "com.typesafe.akka"          %% "akka-stream"          % "2.5.11"
     val akkaHttp          = "com.typesafe.akka"          %% "akka-http"            % akkaHttpVersion
     val akkaHttpSprayJson = "com.typesafe.akka"          %% "akka-http-spray-json" % akkaHttpVersion
@@ -129,6 +130,7 @@ lazy val `jdbc-metadata` = project
                                                        dependencies.oracle,
                                                        dependencies.mssql,
                                                        dependencies.hive,
+                                                       dependencies.sybase,
                                                        dependencies.diff)
   )
   .dependsOn(

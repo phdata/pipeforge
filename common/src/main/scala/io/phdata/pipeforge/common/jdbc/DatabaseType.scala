@@ -29,6 +29,7 @@ object DatabaseType extends Enumeration {
   val AS400    = Value("as400")
   val REDSHIFT = Value("redshift")
   val IMPALA   = Value("impala")
+  val SYBASE   = Value("sybase")
 
   def getDriver(dbType: DatabaseType.Value): Option[String] =
     dbType match {
@@ -40,6 +41,7 @@ object DatabaseType extends Enumeration {
       case AS400    => Some("com.ibm.as400.access.AS400JDBCDriver")
       case REDSHIFT => Some("com.amazon.redshift.jdbc41.Driver")
       case IMPALA   => Some("org.apache.hive.jdbc.HiveDriver")
+      case SYBASE   => Some("net.sourceforge.jtds.jdbc.Driver")
       case _        => None
     }
 

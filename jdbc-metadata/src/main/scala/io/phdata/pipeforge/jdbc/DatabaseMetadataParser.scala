@@ -373,6 +373,8 @@ object DatabaseMetadataParser extends LazyLogging {
             new RedshiftMetadataParser(connection).getTablesMetadata(configuration)
           case DatabaseType.IMPALA =>
             new ImpalaMetadataParser(connection).getTablesMetadata(configuration)
+          case DatabaseType.SYBASE =>
+            new SybaseMetadataParser(connection).getTablesMetadata(configuration)
           case _ =>
             Failure(new Exception(s"Metadata parser for database type: ${configuration.databaseType} has not been configured"))
         }

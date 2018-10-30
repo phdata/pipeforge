@@ -8,7 +8,8 @@ object DataType extends Enumeration {
     column match {
       case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s > 0               => JDBCType.DECIMAL
       case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19    => JDBCType.DECIMAL
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10    => JDBCType.BIGINT
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p >= 10   => JDBCType.BIGINT
+      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10    => JDBCType.INTEGER
       case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5     => JDBCType.INTEGER
       case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3     => JDBCType.INTEGER
       case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == -127 && p == 0 => JDBCType.VARCHAR

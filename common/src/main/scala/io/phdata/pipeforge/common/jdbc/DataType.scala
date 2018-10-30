@@ -4,20 +4,25 @@ import java.sql.JDBCType
 
 object DataType extends Enumeration {
 
-  def mapDataType(column: Column): JDBCType =
-    column match {
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s > 0               => JDBCType.DECIMAL
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 19    => JDBCType.DECIMAL
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p >= 10   => JDBCType.BIGINT
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 10    => JDBCType.INTEGER
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 5     => JDBCType.INTEGER
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == 0 && p > 3     => JDBCType.INTEGER
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s == -127 && p == 0 => JDBCType.VARCHAR
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s) if s < 0 && p == 0     => JDBCType.INTEGER
-      case Column(_, _, JDBCType.NUMERIC, _, _, p, s)                        => JDBCType.INTEGER
-      case Column(_, _, JDBCType.CHAR, _, _, p, s)                           => JDBCType.VARCHAR
-      case Column(_, _, JDBCType.NCHAR, _, _, p, s)                          => JDBCType.VARCHAR
-      case _                                                                 => column.dataType
+  def mapDataType(column: Column): JDBCType = {
+    val dataType = column.dataType
+    if (dataType == JDBCType.NUMERIC) {
+      if (column.scale == 0) {
+        JDBCType.DECIMAL
+      } else if (column.precision > 19) {
+        JDBCType.DECIMAL
+      } else if (column.precision >= 10 && column.precision <= 19) {
+        JDBCType.BIGINT
+      } else if (column.scale == -127 && column.precision == 0) {
+        // Oracle datatypes can be defined simply as NUMBER with no precision or scale
+        // In this case the value can be either 123 or 1.23 so keep these as Strings
+        JDBCType.VARCHAR
+      } else {
+        JDBCType.INTEGER
+      }
+    } else {
+      dataType
     }
+  }
 
 }

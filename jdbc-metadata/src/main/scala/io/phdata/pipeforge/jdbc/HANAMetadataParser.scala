@@ -50,7 +50,7 @@ class HANAMetadataParser(_connection: Connection) extends DatabaseMetadataParser
 
   override def listViewsStatement(schema: String): String =
     s"""
-       |SELECT TABLE_NAME
+       |SELECT VIEW_NAME
        |FROM SYS.VIEWS
        |WHERE SCHEMA_NAME = '$schema'
      """.stripMargin

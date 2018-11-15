@@ -16,9 +16,12 @@
 import sbt._
 
 name := "pipeforge"
-organization in ThisBuild := "io.phdata"
-scalaVersion in ThisBuild := "2.12.3"
-lazy val appVersion = "0.20"
+organization in ThisBuild := "io.phdata.pipeforge"
+scalaVersion in ThisBuild := "2.11.12"
+
+lazy val artifactoryApiKey = sys.env("ARTIFACTORY_API_KEY")
+lazy val artifactoryUser   = sys.env("ARTIFACTORY_USER")
+lazy val appVersion        = "0.20-SNAPSHOT"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -40,7 +43,10 @@ lazy val commonSettings = Seq(
     "datanucleus" at "http://www.datanucleus.org/downloads/maven2/",
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
     Resolver.sonatypeRepo("releases")
-  )
+  ),
+  publishTo := Some(
+    "Artifactory Realm" at "http://artifactory.valhalla.phdata.io/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
+  credentials += Credentials("Artifactory Realm", "artifactory.valhalla.phdata.io", artifactoryUser, artifactoryApiKey)
 )
 
 lazy val scalafmtSettings =
@@ -62,7 +68,7 @@ lazy val dependencies =
     val ficus             = "com.iheart"                 %% "ficus"                % "1.4.3"
     val scallop           = "org.rogach"                 %% "scallop"              % "3.1.1"
     val scalaYaml         = "net.jcazevedo"              %% "moultingyaml"         % "0.4.0"
-    val diff              = "ai.x"                       %% "diff"                 % "2.0"
+    val diff              = "ai.x"                       %% "diff"                 % "1.2.1"
     val mysql             = "mysql"                      % "mysql-connector-java"  % "6.0.6"
     val oracle            = "oracle"                     % "ojdbc6"                % "11.2.0.3"
     val mssql             = "com.microsoft.sqlserver"    % "mssql-jdbc"            % "6.2.2.jre8"

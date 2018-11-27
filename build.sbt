@@ -19,9 +19,7 @@ name := "pipeforge"
 organization in ThisBuild := "io.phdata.pipeforge"
 scalaVersion in ThisBuild := "2.11.12"
 
-lazy val artifactoryApiKey = sys.env("ARTIFACTORY_API_KEY")
-lazy val artifactoryUser   = sys.env("ARTIFACTORY_USER")
-lazy val appVersion        = "0.20-SNAPSHOT"
+lazy val appVersion = "0.21-SNAPSHOT"
 
 lazy val compilerOptions = Seq(
   "-unchecked",
@@ -36,6 +34,7 @@ lazy val compilerOptions = Seq(
   "utf8"
 )
 
+
 lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
@@ -44,9 +43,14 @@ lazy val commonSettings = Seq(
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
     Resolver.sonatypeRepo("releases")
   ),
-  publishTo := Some(
-    "Artifactory Realm" at "http://artifactory.valhalla.phdata.io/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
-  credentials += Credentials("Artifactory Realm", "artifactory.valhalla.phdata.io", artifactoryUser, artifactoryApiKey)
+  publishTo := {
+    val artifactory = "https://repository.phdata.io/artifactory/list"
+    if (isSnapshot.value)
+      Some("phData Snapshots" at s"$artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime)
+    else
+      Some("phData Releases" at s"$artifactory/libs-release-local")
+  },
+  credentials += Credentials(Path.userHome / ".sbt" / ".credentials")
 )
 
 lazy val scalafmtSettings =
@@ -93,6 +97,14 @@ lazy val settings = commonSettings ++ scalafmtSettings
 
 lazy val integrationTests = config("it") extend Test
 
+enablePlugins(JavaServerAppPackaging, UniversalDeployPlugin, RpmArtifactoryDeployPlugin)
+
+mappings in Universal ++= {
+  ((sourceDirectory in Compile).value / "resources" * "*").get.map { f =>
+    f -> s"conf/${f.name}"
+  }
+}
+
 lazy val pipeforge = project
   .in(file("."))
   .configs(integrationTests)
@@ -104,7 +116,17 @@ lazy val pipeforge = project
     mainClass in Compile := Some("io.phdata.pipeforge.Pipeforge"),
     libraryDependencies ++= dependencies.common ++ Seq(dependencies.scallop, dependencies.scalaDockerTest, dependencies.spotifyDockerTest),
     rpmLicense := Some("License: GPLv2"),
-    rpmVendor := "phData"
+    rpmVendor := "phData",
+    rpmArtifactoryUrl in Rpm := "https://repository.phdata.io/artifactory/list",
+    rpmArtifactoryRepo in Rpm := {
+      if (isSnapshot.value) {
+        "rpm-unstable"
+      } else {
+        "rpm-stable"
+      }
+    },
+    rpmArtifactoryPath in Rpm := s"${packageName.value}",
+    publish in Rpm := (rpmArtifactoryPublish in Rpm).value
   )
   .dependsOn(
     common,
@@ -170,11 +192,3 @@ lazy val `rest-api` = project
     common,
     pipewrench
   )
-
-mappings in Universal ++= {
-  ((sourceDirectory in Compile).value / "resources" * "*").get.map { f =>
-    f -> s"conf/${f.name}"
-  }
-}
-
-enablePlugins(JavaServerAppPackaging, UniversalDeployPlugin, RpmPlugin, RpmDeployPlugin)

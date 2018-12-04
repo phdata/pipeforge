@@ -284,10 +284,19 @@ trait DatabaseMetadataParser extends LazyLogging {
         case None                       => ""
       }
 
+      // Fix for incorrect Oracle JDBCType mapping.  Oracle JDBC library sets TIMESTAMP WITH TIMEZONE to -101
+      // the java.sql.JDBCType for TIMESTAMP_WITH_TIMEZONE is 2014
+      val columnType = rsMetadata.getColumnType(i)
+      val dataType = if (columnType == -101) {
+        JDBCType.TIMESTAMP_WITH_TIMEZONE
+      } else {
+        JDBCType.valueOf(rsMetadata.getColumnType(i))
+      }
+
       Column(
         columnName,
         comment,
-        JDBCType.valueOf(rsMetadata.getColumnType(i)),
+        dataType,
         asBoolean(metaData.isNullable(i)),
         i,
         metaData.getPrecision(i),
